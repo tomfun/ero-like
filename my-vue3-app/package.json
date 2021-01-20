@@ -29,5 +29,6 @@
     "node-sass": "^4.12.0",
     "sass-loader": "^8.0.2",
     "typescript": "~3.9.3"
-  }
+  },
+  "resolutions": { "eslint-loader": "2.1.2" }
 }
