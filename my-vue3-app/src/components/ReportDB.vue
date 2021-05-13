@@ -33,7 +33,7 @@ export default defineComponent({
   },
   methods: {
     async getName() {
-      const res = await fetch('http://localhost:3001/api/report');
+      const res = await fetch('/api/report');
       const data = await res.json();
       this.data = data;
     },
