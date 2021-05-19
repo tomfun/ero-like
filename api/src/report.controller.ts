@@ -6,7 +6,7 @@ export class ReportController {
   constructor(private readonly appService: ReportService) {}
 
   @Get('/api/report')
-  getReports(): Paginable<ReportForList> {
+  getReports(): Promise<Paginable<ReportForList>> {
     return this.appService.getList();
   }
 
