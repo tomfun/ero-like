@@ -36,7 +36,7 @@ export interface ReportForList {
 
 @Entity('report')
 export class ReportEntity extends ReportBodyPayload implements ReportForList {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   substances: Array<{
@@ -52,7 +52,7 @@ export class ReportEntity extends ReportBodyPayload implements ReportForList {
   nick: string;
 
   @Column()
-  gpgSignature: string;
+  gpgSignature: string = '';
 
   // @Column()
   // @IsInt()

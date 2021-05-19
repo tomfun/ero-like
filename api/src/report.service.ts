@@ -60,8 +60,6 @@ export class ReportService {
       console.log(errors);
       throw new Error(`Validation failed!`);
     }
-    // todo: id?
-    // https://www.npmjs.com/package/uuid
     await this.reportRepo.save(report);
     console.log(report);
     return report;
