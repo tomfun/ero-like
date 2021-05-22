@@ -4,15 +4,15 @@
       <div class="main-frame__left-column">
         <div class="main-frame__prop-block">
           <h3 class="main-frame__prop-title">Уличное название:</h3>
-          <h4>{{ item.substances[0].name }}</h4>
+          <h4>{{ item.substances }}</h4>
         </div>
         <div class="main-frame__prop-block">
           <h3 class="main-frame__prop-title">Действующее вещество:</h3>
-          <h4>{{ item.substances[0].activeSubstance }}</h4>
+          <h4>{{ item.substances }}</h4>
         </div>
         <div class="main-frame__prop-block">
           <h3 class="main-frame__prop-title">Уверенность в товаре:</h3>
-          <h4>{{ item.substances[0].sure }}</h4>
+          <h4>{{ item.substances  }}</h4>
         </div>
       </div>
       <div class="main-frame__right-column">

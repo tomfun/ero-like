@@ -1,0 +1,13 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:13.3
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: pass
+      POSTGRES_USER: user
+      POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data/postgres
+    volumes:
+      - ./docker/data/postgres:/var/lib/postgresql/data
