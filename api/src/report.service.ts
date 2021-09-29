@@ -24,7 +24,7 @@ export class ReportService {
   }
 
   async getList(
-    { skip, take } = { skip: 0, take: 10 },
+    { skip, take } = { skip: 0, take: 1000 }, //
   ): Promise<Paginable<ReportForList>> {
     const pageSize = 10;
     const [items, itemsTotal] = await this.reportRepo.findAndCount({

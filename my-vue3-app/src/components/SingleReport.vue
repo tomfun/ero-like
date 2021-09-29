@@ -39,8 +39,9 @@ export default defineComponent({
 <style scoped lang="scss">
 .table-element {
   width: 90%;
-  margin: auto 50px;
+  margin: auto;
   margin-top: 70px;
+  list-style: none;
 }
 .main-frame {
   display: flex;

@@ -1,12 +1,13 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    <SingleReport
-      v-for="item in data.items"
-      v-bind:key="item.id"
-      v-bind:item="item"
-    ></SingleReport>
-    </div>
+      <SingleReport
+        v-for="item in data"
+        v-bind:key="item.id"
+        v-bind:item="item"
+      ></SingleReport>
+      <button  v-on:click="handleMoreClick">MOARE!!</button>
+  </div>
 </template>
 
 <script lang="ts">
@@ -23,9 +24,9 @@ export default defineComponent({
   },
   data() {
     return {
-      data: {
-        items: [],
-      },
+      data: [],
+      pageCounter: 1,
+      reportsArray: [],
     };
   },
   beforeMount() {
@@ -35,7 +36,12 @@ export default defineComponent({
     async getName() {
       const res = await fetch('/api/report');
       const data = await res.json();
-      this.data = data;
+      this.data = data.items.slice(0, 10);
+      this.reportsArray = data.items;
+    },
+    handleMoreClick: function handleMoreButtonClick() {
+      this.pageCounter += 1;
+      this.data = this.reportsArray.slice(0, 10 * this.pageCounter);
     },
   },
 });
@@ -46,5 +52,11 @@ export default defineComponent({
 h1 {
   margin: 40px 0 0;
   font-size: 48px;
+}
+
+button {
+  width: 200px;
+  height: 30px;
+  margin: 30px
 }
 </style>
