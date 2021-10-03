@@ -1,12 +1,16 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <SingleReport
-      v-for="item in data.items"
-      v-bind:key="item.id"
-      v-bind:item="item"
-    ></SingleReport>
-    </div>
+  <section class="reports-section">
+    <ul class="report-table">
+      <h1>{{ msg }}</h1>
+      <SingleReport
+        v-for="item in currentPageReports"
+        v-bind:key="item.id"
+        v-bind:item="item"
+      ></SingleReport>
+    </ul>
+    <button class="page-btn" @click="handleFirstPageClick">1</button>
+    <button class="page-btn" @click="handleLastPageClick">last</button>
+  </section>
 </template>
 
 <script lang="ts">
@@ -23,19 +27,29 @@ export default defineComponent({
   },
   data() {
     return {
-      data: {
-        items: [],
-      },
+      reports: [],
+      currentPageReports: [],
+      firstPageReports: [],
+      lastPageReports: [],
     };
   },
   beforeMount() {
-    this.getName();
+    this.getReports();
   },
   methods: {
-    async getName() {
+    async getReports() {
       const res = await fetch('/api/report');
       const data = await res.json();
-      this.data = data;
+      this.reports = data.items;
+      this.currentPageReports = data.items.slice(0, 10);
+      this.firstPageReports = data.items.slice(0, 10);
+      this.lastPageReports = data.items.slice(data.items.length - 10, data.items.length);
+    },
+    handleLastPageClick() {
+      this.currentPageReports = this.lastPageReports;
+    },
+    handleFirstPageClick() {
+      this.currentPageReports = this.firstPageReports;
     },
   },
 });
@@ -46,5 +60,9 @@ export default defineComponent({
 h1 {
   margin: 40px 0 0;
   font-size: 48px;
+}
+
+.report-table {
+  list-style: none;
 }
 </style>
