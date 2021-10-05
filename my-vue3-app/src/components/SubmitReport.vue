@@ -1,11 +1,4 @@
 <template>
-  <!-- <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      Сайт для наркетов!
-    </p>
-    <h3>Installed CLI Plugins</h3>
-  </div> -->
   <div class="submitReportForm">
     <h1 class="submitReportForm__title">Расскажите о ваших впечатлениях в подробностях</h1>
       <input v-model="title" placeholder="Add title">
@@ -19,7 +12,6 @@
       <br />
       <br />
       <button v-on:click="handleSubmit">Отправить</button>
-
   </div>
 </template>
 
@@ -58,14 +50,11 @@ export default defineComponent({
       };
       const response = await fetch('/api/report', requestOptions);
       const data = await response.json();
-
-      console.log(data);
     },
   },
 });
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 h3 {
   margin: 40px 0 0;
