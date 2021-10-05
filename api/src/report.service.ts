@@ -20,8 +20,8 @@ export interface Paginable<Entity> {
 export class ReportService {
   private reportRepo: Repository<ReportEntity>;
   constructor(connection: Connection) {
-    this.reportRepo = connection.getRepository<ReportEntity>(ReportEntity);
-  }
+  this.reportRepo = connection.getRepository<ReportEntity>(ReportEntity);
+}
 
   async getList(
     { skip, take } = { skip: 0, take: 1000 },
@@ -39,7 +39,9 @@ export class ReportService {
     };
   }
 
-  async create(createReportDto: ReportBodyPayload): Promise<ReportForList> {
+  async create(
+    createReportDto: ReportBodyPayload
+  ): Promise<ReportForList> {
     const report = new ReportEntity();
     Object.assign(report, createReportDto);
     const errors = await validate(report);
