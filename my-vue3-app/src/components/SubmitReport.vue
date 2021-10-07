@@ -2,6 +2,7 @@
   <div class="submitReportForm">
     <h1 class="submitReportForm__title">Расскажите о ваших впечатлениях в подробностях</h1>
       <input v-model="title" placeholder="Add title">
+      <p>The title is: {{ msg }}</p>
       <p>The title is: {{ title }}</p>
       <br />
       <br />
@@ -20,8 +21,13 @@ import { defineComponent } from 'vue';
 
 export default defineComponent({
   name: 'SubmitReport',
-  props: {
-    msg: String,
+  // props: {
+  //   msg: String,
+  // },
+  computed: {
+    msg() {
+      return (this as any).$store.state.msg;
+    },
   },
   data() {
     return {

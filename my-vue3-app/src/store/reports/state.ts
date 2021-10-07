@@ -8,4 +8,5 @@ export default {
     limit: 10,
     totalPages: 0,
   },
+  msg: 'Messssssage',
 };
