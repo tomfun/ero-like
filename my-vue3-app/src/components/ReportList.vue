@@ -27,7 +27,7 @@ import SingleReport from './SingleReport.vue';
 import { REPORTS_MODULE } from '../store/reports';
 
 export default defineComponent({
-  name: 'ReportDB',
+  name: 'ReportList',
   components: {
     SingleReport,
   },
