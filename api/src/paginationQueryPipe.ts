@@ -27,3 +27,10 @@ export class PaginationQueryDto {
 export const PaginateQuery = Query(
   new PaginationQueryPipe({ whitelist: true, transform: true }),
 );
+
+export interface Paginable<Entity> {
+  items: Entity[];
+  page: number;
+  pageSize: number;
+  itemsTotal: number;
+}

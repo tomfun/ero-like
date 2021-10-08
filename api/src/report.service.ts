@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Connection, getRepository, Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 export { ReportForList, ReportBodyPayload } from './report.entity';
 import {
   ReportEntity,
@@ -7,41 +7,32 @@ import {
   ReportBodyPayload,
 } from './report.entity';
 import { validate } from 'class-validator';
-import { type } from 'os';
-// import { Document } from './db/entity/Document';
-
-export interface Paginable<Entity> {
-  items: Entity[];
-  page: number;
-  pageSize: number;
-  itemsTotal: number;
-}
+import { Paginable, PaginationQueryDto } from './paginationQueryPipe';
 
 @Injectable()
 export class ReportService {
   private reportRepo: Repository<ReportEntity>;
   constructor(connection: Connection) {
-  this.reportRepo = connection.getRepository<ReportEntity>(ReportEntity);
-}
+    this.reportRepo = connection.getRepository<ReportEntity>(ReportEntity);
+  }
 
-  async getList(
-    { skip, take },
-  ): Promise<Paginable<ReportForList>> {
+  async getList({
+    page,
+    pageSize,
+  }: PaginationQueryDto): Promise<Paginable<ReportForList>> {
     const [items, itemsTotal] = await this.reportRepo.findAndCount({
-      skip,
-      take,
+      skip: page * pageSize,
+      take: pageSize,
     });
     return {
       items,
       itemsTotal,
-      page: skip / take,
-      pageSize: take,
+      page,
+      pageSize,
     };
   }
 
-  async create(
-    createReportDto: ReportBodyPayload
-  ): Promise<ReportForList> {
+  async create(createReportDto: ReportBodyPayload): Promise<ReportForList> {
     const report = new ReportEntity();
     Object.assign(report, createReportDto);
     const errors = await validate(report);
