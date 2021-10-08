@@ -7,11 +7,11 @@ export class PaginationQueryPipe extends ValidationPipe {
     metadata: ArgumentMetadata,
   ): Promise<PaginationQueryDto> {
     const result = new PaginationQueryDto();
-    if (query.page && query.page.match(/\d+/)) {
-      result.page = +query.page;
+    if (query.page) {
+      result.page = query.page.match(/\d+/) ? +query.page : null;
     }
-    if (query.pageSize && query.pageSize.match(/\d+/)) {
-      result.pageSize = +query.pageSize;
+    if (query.pageSize) {
+      result.pageSize = query.pageSize.match(/\d+/) ? +query.pageSize : null;
     }
     return super.transform(result, metadata);
   }
