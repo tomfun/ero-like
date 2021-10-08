@@ -1,6 +1,7 @@
 <template>
   <div class="submitReportForm">
     <h1 class="submitReportForm__title">Расскажите о ваших впечатлениях в подробностях</h1>
+      <input v-model="id" disabled v-if="id">
       <input v-model="title" placeholder="Add title">
       <br />
       <textarea v-model="reportText" placeholder="add your report"></textarea>
@@ -16,8 +17,11 @@ export default defineComponent({
   name: 'SubmitReport',
   data() {
     return {
+      id: '',
+      nick: '',
       title: '',
       reportText: '',
+      gpgSignature: '',
     };
   },
   methods: {
@@ -41,6 +45,11 @@ export default defineComponent({
       };
       const response = await fetch('/api/report', requestOptions);
       const data = await response.json();
+      this.$data.id = data.id;
+      this.$data.nick = data.nick;
+      this.$data.title = data.title;
+      this.$data.reportText = data.reportText; // ... hm
+      this.$data.gpgSignature = data.gpgSignature;
     },
   },
 });
