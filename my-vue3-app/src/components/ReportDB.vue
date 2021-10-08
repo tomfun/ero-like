@@ -1,7 +1,6 @@
 <template>
   <section class="reports-section">
     <ul class="report-table">
-      <h1>{{ msg }}</h1>
       <SingleReport
         v-for="item in reports"
         v-bind:key="item.id"
@@ -16,20 +15,26 @@
       <option>50</option>
     </select>
     <button class="page-btn" @click="handleLastPgClick">Last</button>
+    <p>vuex page: {{ pagination.page }}</p>
+    <p>vuex pageSize: {{ pagination.pageSize }}</p>
+    <p>vuex itemsTotal: {{ pagination.itemsTotal }}</p>
   </section>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 import SingleReport from './SingleReport.vue';
+import { REPORTS_MODULE } from '../store/reports';
 
 export default defineComponent({
   name: 'ReportDB',
-  props: {
-    msg: String,
-  },
   components: {
     SingleReport,
+  },
+  computed: {
+    pagination() {
+      return this.$store.state[REPORTS_MODULE].pagination;
+    },
   },
   data() {
     return {
@@ -43,8 +48,7 @@ export default defineComponent({
   methods: {
     async getReports(page: number, pageSize: number) {
       const res = await fetch(`/api/report?page=${page}&pageSize=${pageSize}`);
-      const data = await res.json();
-      return data;
+      return res.json();
     },
     async handleRepAmountSelect() {
       const data = await this.getReports(0, +this.selected);

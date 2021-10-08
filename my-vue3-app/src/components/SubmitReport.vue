@@ -2,15 +2,8 @@
   <div class="submitReportForm">
     <h1 class="submitReportForm__title">Расскажите о ваших впечатлениях в подробностях</h1>
       <input v-model="title" placeholder="Add title">
-      <p>The title is: {{ msg }}</p>
-      <p>The title is: {{ title }}</p>
-      <br />
-      <br />
-      <span>Multiline message is:</span>
-      <p style="white-space: pre-line;">{{ reportText }}</p>
       <br />
       <textarea v-model="reportText" placeholder="add your report"></textarea>
-      <br />
       <br />
       <button v-on:click="handleSubmit">Отправить</button>
   </div>
@@ -21,14 +14,6 @@ import { defineComponent } from 'vue';
 
 export default defineComponent({
   name: 'SubmitReport',
-  // props: {
-  //   msg: String,
-  // },
-  computed: {
-    msg() {
-      return (this as any).$store.state.msg;
-    },
-  },
   data() {
     return {
       title: '',

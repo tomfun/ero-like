@@ -13,10 +13,15 @@
 
 import Vuex from 'vuex';
 
-import employees, { REPORTS_MODULE } from './reports';
+import reports, { REPORTS_MODULE } from './reports';
+import { State as ReportsModuleState } from './reports/state';
 
-export default new Vuex.Store({
+export interface State {
+  [REPORTS_MODULE]: ReportsModuleState;
+}
+
+export default new Vuex.Store<State>({
   modules: {
-    [REPORTS_MODULE]: employees,
+    [REPORTS_MODULE]: reports,
   },
 });
