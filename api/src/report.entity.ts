@@ -1,15 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import {
-  Contains,
-  IsInt,
-  Length,
-  IsEmail,
-  IsFQDN,
-  IsDate,
-  Min,
-  Max,
-  Allow,
-} from 'class-validator';
+import { Length } from 'class-validator';
 
 export class ReportBodyPayload {
   @Length(4, 250)
@@ -52,7 +42,7 @@ export class ReportEntity extends ReportBodyPayload implements ReportForList {
   nick: string;
 
   @Column()
-  gpgSignature: string = '';
+  gpgSignature = '';
 
   // @Column()
   // @IsInt()
