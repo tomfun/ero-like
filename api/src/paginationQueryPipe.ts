@@ -1,5 +1,5 @@
 import { ArgumentMetadata, Query, ValidationPipe } from '@nestjs/common';
-import { IsInt } from 'class-validator';
+import { IsIn, IsInt, Min } from 'class-validator';
 
 export class PaginationQueryPipe extends ValidationPipe {
   transform(
@@ -19,8 +19,10 @@ export class PaginationQueryPipe extends ValidationPipe {
 
 export class PaginationQueryDto {
   @IsInt()
+  @Min(0)
   page = 0;
   @IsInt()
+  @IsIn([10, 20, 50, 100])
   pageSize = 10;
 }
 
