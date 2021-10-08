@@ -16,7 +16,7 @@
       <option>20</option>
       <option>50</option>
     </select>
-    <button class="page-btn" @click="handleFirstPageClick">Next</button>
+    <button class="page-btn" @click="handleNextClick">Next</button>
     <button class="page-btn" @click="handleLastPageClick">Last</button>
   </section>
 </template>
@@ -36,7 +36,7 @@ export default defineComponent({
   data() {
     return {
       reports: [],
-      currentPageReports: [],
+      currentPage: 0,
       firstPageReports: [],
       reportsArrLength: 0,
       selected: '',
@@ -52,14 +52,27 @@ export default defineComponent({
       this.reports = data.items;
       this.reportsArrLength = this.reports.length;
     },
+    async handleNextClick() {
+      const res = await fetch(
+        `/api/report?skip=${parseInt((this.selected), 10) * this.currentPage}&take=${parseInt((this.selected), 10) * (this.currentPage + 1)}&pageSize=${this.selected}`,
+      );
+      const data = await res.json();
+      this.reports = data.items;
+      this.currentPage = data.page;
+      console.log(data);
+    },
     // async handleLastPageClick() {
     // },
     // handleFirstPageClick() {
     // },
     async handleRepAmountSelect() {
-      const res = await fetch(`/api/report?page=0&pageSize=${this.selected}`);
+      const res = await fetch(
+        `/api/report?skip=0&take=${this.selected}&pageSize=${this.selected}`,
+      );
       const data = await res.json();
       this.reports = data.items;
+      this.currentPage = data.page;
+      console.log(data);
     },
   },
 });

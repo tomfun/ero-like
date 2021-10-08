@@ -31,10 +31,11 @@ export class ReportService {
       skip,
       take,
     });
+    console.log(items.length)
     return {
       items,
       itemsTotal,
-      page: Math.ceil((itemsTotal - skip) / pageSize),
+      page: (parseInt(take) / parseInt(pageSize)),
       pageSize,
     };
   }

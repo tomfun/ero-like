@@ -1,6 +1,5 @@
 import { Body, Query, Controller, Get, Post,} from '@nestjs/common';
 import { IsInt } from 'class-validator';
-import { query } from 'express';
 import { ReportService, Paginable, ReportBodyPayload, ReportForList,} from './report.service';
 
 export class PaginationQuery {
@@ -16,12 +15,9 @@ export class ReportController {
 
   @Get('/api/report?') // :page:pageSize ??
   getReports(@Query() query): Promise<Paginable<ReportForList>> { // turned off validation query: PaginationQuery !!checktype validation, query param = str but valid param IsInt
-    console.log(query)
-    console.log(query.page)
-    console.log(query.pageSize)
     return this.appService.getList({
-      skip: query.page, 
-      take: query.pageSize,
+      skip: query.skip, 
+      take: query.take,
       pageSize: query.pageSize,
     });
   }
