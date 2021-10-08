@@ -7,14 +7,12 @@
         v-bind:item="item"
       ></SingleReport>
     </ul>
-    <button class="page-btn" @click="handleRepAmountSelect">First</button>
-    <select v-model="selected" v-on:change="handleRepAmountSelect">
-      <option class="page-btn" disabled value="">Please select one</option>
-      <option>10</option>
-      <option>20</option>
-      <option>50</option>
-    </select>
-    <button class="page-btn" @click="handleLastPgClick">Last</button>
+    <Paginator
+      :rows="pagination.pageSize"
+      :totalRecords="pagination.itemsTotal"
+      :rowsPerPageOptions="[10,20,50,100]"
+      @page="onPage($event)" />
+
     <p>vuex page: {{ pagination.page }}</p>
     <p>vuex pageSize: {{ pagination.pageSize }}</p>
     <p>vuex itemsTotal: {{ pagination.itemsTotal }}</p>
@@ -39,10 +37,6 @@ export default defineComponent({
   data() {
     return {
       reports: [],
-      currentPage: 0,
-      firstPageReports: [],
-      reportsArrLength: 0,
-      selected: '',
     };
   },
   methods: {
@@ -50,16 +44,12 @@ export default defineComponent({
       const res = await fetch(`/api/report?page=${page}&pageSize=${pageSize}`);
       return res.json();
     },
-    async handleRepAmountSelect() {
-      const data = await this.getReports(0, +this.selected);
-      this.reports = data.items;
-      this.reportsArrLength = data.itemsTotal;
+    async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
+      this.$data.reports = (await this.getReports(page, pageSize)).items;
     },
-    async handleLastPgClick() {
-      const currentLastPage = Math.floor(this.reportsArrLength / +this.selected);
-      const data = await this.getReports(currentLastPage, +this.selected);
-      this.reports = data.items;
-    },
+  },
+  beforeMount() {
+    this.onPage({ page: 0, rows: 10 });
   },
 });
 </script>

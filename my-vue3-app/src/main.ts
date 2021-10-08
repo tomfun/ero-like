@@ -1,9 +1,20 @@
 import { createApp } from 'vue';
+import PrimeVue from 'primevue/config';
+import Paginator from 'primevue/paginator';
 import App from './App.vue';
 import router from './router';
 import store from './store';
 
-createApp(App).use(store).use(router).mount('#app');
+import 'primevue/resources/themes/saga-blue/theme.css';
+import 'primevue/resources/primevue.min.css';
+import 'primeicons/primeicons.css';
+
+createApp(App)
+  .use(PrimeVue)
+  .component('Paginator', Paginator)
+  .use(store)
+  .use(router)
+  .mount('#app');
 
 declare module '@vue/runtime-core' {
   export interface ComponentCustomProperties {
