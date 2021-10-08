@@ -1,10 +1,12 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      Сайт для наркетов!
-    </p>
-    <h3>Installed CLI Plugins</h3>
+  <div class="submitReportForm">
+    <h1 class="submitReportForm__title">Расскажите о ваших впечатлениях в подробностях</h1>
+      <input v-model="id" disabled v-if="id">
+      <input v-model="title" placeholder="Add title">
+      <br />
+      <textarea v-model="reportText" placeholder="add your report"></textarea>
+      <br />
+      <button v-on:click="handleSubmit">Отправить</button>
   </div>
 </template>
 
@@ -13,13 +15,46 @@ import { defineComponent } from 'vue';
 
 export default defineComponent({
   name: 'SubmitReport',
-  props: {
-    msg: String,
+  data() {
+    return {
+      id: '',
+      nick: '',
+      title: '',
+      reportText: '',
+      gpgSignature: '',
+    };
+  },
+  methods: {
+    async handleSubmit() {
+      const requestOptions = {
+        method: 'Post',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          // id: '5424b448-2450-4fd2-9883-8000de6f8343',
+          gpgSigned: false,
+          substances: [
+            {
+              name: 'Хмурый',
+              activeSubstance: 'heroin',
+              sure: '70',
+            },
+          ],
+          nick: this.reportText,
+          title: this.title,
+        }),
+      };
+      const response = await fetch('/api/report', requestOptions);
+      const data = await response.json();
+      this.$data.id = data.id;
+      this.$data.nick = data.nick;
+      this.$data.title = data.title;
+      this.$data.reportText = data.reportText; // ... hm
+      this.$data.gpgSignature = data.gpgSignature;
+    },
   },
 });
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 h3 {
   margin: 40px 0 0;

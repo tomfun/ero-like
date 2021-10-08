@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Connection, getRepository, Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 export { ReportForList, ReportBodyPayload } from './report.entity';
 import {
   ReportEntity,
@@ -7,14 +7,7 @@ import {
   ReportBodyPayload,
 } from './report.entity';
 import { validate } from 'class-validator';
-// import { Document } from './db/entity/Document';
-
-export interface Paginable<Entity> {
-  items: Entity[];
-  page: number;
-  pageSize: number;
-  itemsTotal: number;
-}
+import { Paginable, PaginationQueryDto } from './paginationQueryPipe';
 
 @Injectable()
 export class ReportService {
@@ -23,18 +16,18 @@ export class ReportService {
     this.reportRepo = connection.getRepository<ReportEntity>(ReportEntity);
   }
 
-  async getList(
-    { skip, take } = { skip: 0, take: 10 },
-  ): Promise<Paginable<ReportForList>> {
-    const pageSize = 10;
+  async getList({
+    page,
+    pageSize,
+  }: PaginationQueryDto): Promise<Paginable<ReportForList>> {
     const [items, itemsTotal] = await this.reportRepo.findAndCount({
-      skip,
-      take,
+      skip: page * pageSize,
+      take: pageSize,
     });
     return {
       items,
       itemsTotal,
-      page: Math.ceil((itemsTotal - skip) / pageSize),
+      page,
       pageSize,
     };
   }
