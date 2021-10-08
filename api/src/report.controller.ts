@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import {
   ReportService,
   ReportBodyPayload,
@@ -9,6 +9,7 @@ import {
   PaginateQuery,
   PaginationQueryDto,
 } from './paginationQueryPipe';
+import { ValidBody } from './validBodyPipe';
 
 @Controller()
 export class ReportController {
@@ -23,7 +24,7 @@ export class ReportController {
 
   @Post('/api/report')
   postReport(
-    @Body(new ValidationPipe({ whitelist: true, transform: true }))
+    @ValidBody
     createReportDto: ReportBodyPayload,
   ): Promise<ReportForList> {
     return this.appService.create(createReportDto);
