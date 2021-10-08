@@ -42,7 +42,7 @@ export class ReportEntity extends ReportBodyPayload implements ReportForList {
   nick: string;
 
   @Column()
-  gpgSignature = '';
+  gpgSignature: string = '';
 
   // @Column()
   // @IsInt()
