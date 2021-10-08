@@ -7,6 +7,7 @@ import {
   ReportBodyPayload,
 } from './report.entity';
 import { validate } from 'class-validator';
+import { type } from 'os';
 // import { Document } from './db/entity/Document';
 
 export interface Paginable<Entity> {
@@ -24,19 +25,17 @@ export class ReportService {
 }
 
   async getList(
-    { skip, take, pageSize },
+    { skip, take },
   ): Promise<Paginable<ReportForList>> {
-    // const pageSize = 10;
     const [items, itemsTotal] = await this.reportRepo.findAndCount({
       skip,
       take,
     });
-    console.log(items.length)
     return {
       items,
       itemsTotal,
-      page: (parseInt(take) / parseInt(pageSize)),
-      pageSize,
+      page: skip / take,
+      pageSize: take,
     };
   }
 

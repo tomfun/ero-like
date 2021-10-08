@@ -10,8 +10,8 @@ export class ReportController {
   // getReports(@Query(new PaginationQueryPipe({ whitelist: true, transform: true})) query: PaginationQuery): Promise<Paginable<ReportForList>> { // turned off validation query: PaginationQuery !!checktype validation, query param = str but valid param IsInt
   getReports(@PaginateQuery query: PaginationQueryDto): Promise<Paginable<ReportForList>> { // turned off validation query: PaginationQuery !!checktype validation, query param = str but valid param IsInt
     return this.appService.getList({
-      page: query.page,
-      pageSize: query.pageSize,
+      skip: query.page*query.pageSize,
+      take: query.pageSize,
     });
   }
 

@@ -8,16 +8,14 @@
         v-bind:item="item"
       ></SingleReport>
     </ul>
-    <button class="page-btn" @click="handleFirstPageClick">First</button>
-    <button class="page-btn" @click="handleFirstPageClick">Previous</button>
+    <button class="page-btn" @click="handleRepAmountSelect">First</button>
     <select v-model="selected" v-on:change="handleRepAmountSelect">
-      <option disabled value="">Please select one</option>
+      <option class="page-btn" disabled value="">Please select one</option>
       <option>10</option>
       <option>20</option>
       <option>50</option>
     </select>
-    <button class="page-btn" @click="handleNextClick">Next</button>
-    <button class="page-btn" @click="handleLastPageClick">Last</button>
+    <button class="page-btn" @click="handleLastPgClick">Last</button>
   </section>
 </template>
 
@@ -42,37 +40,21 @@ export default defineComponent({
       selected: '',
     };
   },
-  // beforeMount() {
-  //   this.getReports();
-  // },
   methods: {
-    async getReports() {
-      const res = await fetch('/api/report?page=0&pageSize=10');
+    async getReports(page: number, pageSize: number) {
+      const res = await fetch(`/api/report?page=${page}&pageSize=${pageSize}`);
       const data = await res.json();
-      this.reports = data.items;
-      this.reportsArrLength = this.reports.length;
+      return data;
     },
-    async handleNextClick() {
-      const res = await fetch(
-        `/api/report?skip=${parseInt((this.selected), 10) * this.currentPage}&take=${parseInt((this.selected), 10) * (this.currentPage + 1)}&pageSize=${this.selected}`,
-      );
-      const data = await res.json();
-      this.reports = data.items;
-      this.currentPage = data.page;
-      console.log(data);
-    },
-    // async handleLastPageClick() {
-    // },
-    // handleFirstPageClick() {
-    // },
     async handleRepAmountSelect() {
-      const res = await fetch(
-        `/api/report?skip=0&take=${this.selected}&pageSize=${this.selected}`,
-      );
-      const data = await res.json();
+      const data = await this.getReports(0, +this.selected);
       this.reports = data.items;
-      this.currentPage = data.page;
-      console.log(data);
+      this.reportsArrLength = data.itemsTotal;
+    },
+    async handleLastPgClick() {
+      const currentLastPage = Math.floor(this.reportsArrLength / +this.selected);
+      const data = await this.getReports(currentLastPage, +this.selected);
+      this.reports = data.items;
     },
   },
 });
@@ -87,5 +69,10 @@ h1 {
 
 .report-table {
   list-style: none;
+}
+
+.page-btn {
+  width: 200px;
+  height: 40px;
 }
 </style>
