@@ -20,8 +20,8 @@ export interface State {
 export default {
   [REPORTS]: [],
   [PAGINATION]: {
-    page: 1,
+    page: 0,
     pageSize: 10,
-    itemsTotal: 13,
+    itemsTotal: 133,
   },
 } as State;
