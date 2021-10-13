@@ -24,6 +24,7 @@
 import { defineComponent } from 'vue';
 import SingleReport from './SingleReport.vue';
 import { REPORTS_MODULE } from '../store/reports';
+import {FETCH_REPORTS} from '../store/reports/actions';
 
 export default defineComponent({
   name: 'ReportList',
@@ -44,7 +45,7 @@ export default defineComponent({
       return res.json();
     },
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
-      this.reports = (await this.getReports(page, pageSize)).items;
+      
     },
   },
   beforeMount() {
