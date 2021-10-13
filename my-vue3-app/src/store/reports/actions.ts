@@ -1,24 +1,21 @@
-import api from "@/services/api";
-import {
-    SET_DATA,
-    SET_PAGINATION,
-  } from './mutations'
-import state, { PAGINATION } from './state';
+import api from '@/services/api';
+import { Pagination } from './state';
+import { SET_DATA, SET_PAGINATION } from './mutations';
 
 export const FETCH_REPORTS = 'load_reports';
 
 export default {
-    async [FETCH_REPORTS]({ commit }: any, payload: any) {
+  async [FETCH_REPORTS]({ commit }: any, payload: Pagination) {
     const data = await api.fetchReports(
-        state[PAGINATION].page,
-        state[PAGINATION].pageSize
-    )
+      payload.page,
+      payload.pageSize,
+    );
 
-    commit(SET_DATA, data.items)
+    commit(SET_DATA, data.items);
     commit(SET_PAGINATION, {
       page: data.page,
       pageSize: data.pageSize,
-      itemsTotal : data.itemsTotal,
-    })
+      itemsTotal: data.itemsTotal,
+    });
   },
-}
+};

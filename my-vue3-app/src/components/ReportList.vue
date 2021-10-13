@@ -21,10 +21,11 @@
 </template>
 
 <script lang="ts">
+import { mapActions } from 'vuex';
 import { defineComponent } from 'vue';
 import SingleReport from './SingleReport.vue';
 import { REPORTS_MODULE } from '../store/reports';
-import {FETCH_REPORTS} from '../store/reports/actions';
+import { FETCH_REPORTS } from '../store/reports/actions';
 
 export default defineComponent({
   name: 'ReportList',
@@ -40,13 +41,18 @@ export default defineComponent({
     },
   },
   methods: {
+    ...mapActions(REPORTS_MODULE, {
+      fetchReports: FETCH_REPORTS,
+    }),
     async getReports(page: number, pageSize: number) {
       const res = await fetch(`/api/report?page=${page}&pageSize=${pageSize}`);
       return res.json();
     },
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
-      FETCH_REPORTS(page, pageSize)
+      console.log('Hello');
+      this.fetchReports(page, pageSize);
     },
+
   },
   beforeMount() {
     this.onPage({ page: 0, rows: 10 });
