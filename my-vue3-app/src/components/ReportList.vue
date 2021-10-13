@@ -45,7 +45,7 @@ export default defineComponent({
       return res.json();
     },
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
-      
+      FETCH_REPORTS(page, pageSize)
     },
   },
   beforeMount() {
