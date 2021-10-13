@@ -10,15 +10,23 @@ export interface Report {
 
 export interface State {
   [REPORTS]: Array<Report>;
-  [PAGINATION]: {
+  [PAGINATION]: Pagination;
+}
+
+export interface Pagination {
     page: number;
     pageSize: number;
     itemsTotal: number;
-  };
 }
 
 export default {
-  [REPORTS]: [],
+  [REPORTS]: [
+    {
+      title: 'Title',
+      nick: 'Nick',
+      gpgSignature: 'string',
+    },
+  ],
   [PAGINATION]: {
     page: 0,
     pageSize: 10,

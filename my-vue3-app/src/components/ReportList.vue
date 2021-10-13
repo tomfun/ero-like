@@ -16,6 +16,7 @@
     <p>vuex page: {{ pagination.page }}</p>
     <p>vuex pageSize: {{ pagination.pageSize }}</p>
     <p>vuex itemsTotal: {{ pagination.itemsTotal }}</p>
+    <p>vuex reports: {{ reports }}</p>
   </section>
 </template>
 
@@ -33,11 +34,9 @@ export default defineComponent({
     pagination() {
       return this.$store.state[REPORTS_MODULE].pagination;
     },
-  },
-  data() {
-    return {
-      reports: [],
-    };
+    reports() {
+      return this.$store.state[REPORTS_MODULE].data;
+    },
   },
   methods: {
     async getReports(page: number, pageSize: number) {
@@ -45,7 +44,7 @@ export default defineComponent({
       return res.json();
     },
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
-      this.$data.reports = (await this.getReports(page, pageSize)).items;
+      this.reports = (await this.getReports(page, pageSize)).items;
     },
   },
   beforeMount() {
