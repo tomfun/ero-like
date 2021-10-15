@@ -1,16 +1,3 @@
-// import { createStore } from 'vuex';
-
-// export default createStore({
-//   state: {
-//   },
-//   mutations: {
-//   },
-//   actions: {
-//   },
-//   modules: {
-//   },
-// });
-
 import Vuex from 'vuex';
 
 import reports, { REPORTS_MODULE } from './reports';

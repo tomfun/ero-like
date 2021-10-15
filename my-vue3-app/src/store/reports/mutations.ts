@@ -1,5 +1,4 @@
-import { Report } from '.';
-import { State, Pagination } from './state';
+import { State, Pagination, Report } from './state';
 
 export const SET_PAGINATION = 'set_pagination';
 export const SET_DATA = 'set_data';

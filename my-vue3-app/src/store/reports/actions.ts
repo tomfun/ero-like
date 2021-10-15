@@ -6,6 +6,7 @@ export const FETCH_REPORTS = 'load_reports';
 
 export default {
   async [FETCH_REPORTS]({ commit }: any, payload: Pagination) {
+    console.log(payload);
     const data = await api.fetchReports(
       payload.page,
       payload.pageSize,

@@ -12,11 +12,6 @@
       :totalRecords="pagination.itemsTotal"
       :rowsPerPageOptions="[10,20,50,100]"
       @page="onPage($event)" />
-
-    <p>vuex page: {{ pagination.page }}</p>
-    <p>vuex pageSize: {{ pagination.pageSize }}</p>
-    <p>vuex itemsTotal: {{ pagination.itemsTotal }}</p>
-    <p>vuex reports: {{ reports }}</p>
   </section>
 </template>
 
@@ -44,15 +39,9 @@ export default defineComponent({
     ...mapActions(REPORTS_MODULE, {
       fetchReports: FETCH_REPORTS,
     }),
-    async getReports(page: number, pageSize: number) {
-      const res = await fetch(`/api/report?page=${page}&pageSize=${pageSize}`);
-      return res.json();
-    },
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
-      console.log('Hello');
-      this.fetchReports(page, pageSize);
+      this.fetchReports({ page, pageSize });
     },
-
   },
   beforeMount() {
     this.onPage({ page: 0, rows: 10 });
@@ -69,6 +58,8 @@ h1 {
 
 .report-table {
   list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .page-btn {
