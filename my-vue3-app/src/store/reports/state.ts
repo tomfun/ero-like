@@ -20,16 +20,10 @@ export interface Pagination {
 }
 
 export default {
-  [REPORTS]: [
-    {
-      title: 'Title',
-      nick: 'Nick',
-      gpgSignature: 'string',
-    },
-  ],
+  [REPORTS]: [],
   [PAGINATION]: {
     page: 0,
-    pageSize: 10,
-    itemsTotal: 133,
+    pageSize: 0,
+    itemsTotal: 0,
   },
 } as State;

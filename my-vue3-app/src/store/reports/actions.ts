@@ -7,12 +7,7 @@ export const FETCH_REPORTS = 'load_reports';
 
 export default {
   async [FETCH_REPORTS]({ commit }: ActionContext<unknown, unknown>, payload: Pagination) {
-    console.log(payload);
-    const data = await api.fetchReports(
-      payload.page,
-      payload.pageSize,
-    );
-
+    const data = await api.fetchReports(payload);
     commit(SET_DATA, data.items);
     commit(SET_PAGINATION, {
       page: data.page,
