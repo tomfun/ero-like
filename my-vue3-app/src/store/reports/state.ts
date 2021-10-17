@@ -21,9 +21,5 @@ export interface Pagination {
 
 export default {
   [REPORTS]: [],
-  [PAGINATION]: {
-    page: 0,
-    pageSize: 0,
-    itemsTotal: 0,
-  },
+  [PAGINATION]: Object(),
 } as State;
