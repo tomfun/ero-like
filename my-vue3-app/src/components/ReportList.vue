@@ -8,6 +8,10 @@
       ></SingleReport>
     </ul>
     <!-- <LoadingBar ></LoadingBar> -->
+     <vue-loading
+      type="bars"
+      color="#d9544e"
+      :size="{ width: '50px', height: '50px'}" />
     <Paginator
       :rows="pagination.pageSize"
       :totalRecords="pagination.itemsTotal"
@@ -17,10 +21,11 @@
 </template>
 
 <script lang="ts">
+import { VueLoading } from 'vue-loading-template';
 import { mapActions } from 'vuex';
 import { defineComponent } from 'vue';
 import SingleReport from './SingleReport.vue';
-import LoadingBar from './LoadingBar.vue';
+// import LoadingBar from './LoadingBar.vue';
 import { REPORTS_MODULE } from '../store/reports';
 import { FETCH_REPORTS } from '../store/reports/actions';
 
@@ -28,7 +33,7 @@ export default defineComponent({
   name: 'ReportList',
   components: {
     SingleReport,
-    // LoadingBar,
+    VueLoading,
   },
   computed: {
     pagination() {
