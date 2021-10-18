@@ -7,6 +7,7 @@
         v-bind:item="item"
       ></SingleReport>
     </ul>
+    <!-- <LoadingBar ></LoadingBar> -->
     <Paginator
       :rows="pagination.pageSize"
       :totalRecords="pagination.itemsTotal"
@@ -19,6 +20,7 @@
 import { mapActions } from 'vuex';
 import { defineComponent } from 'vue';
 import SingleReport from './SingleReport.vue';
+import LoadingBar from './LoadingBar.vue';
 import { REPORTS_MODULE } from '../store/reports';
 import { FETCH_REPORTS } from '../store/reports/actions';
 
@@ -26,6 +28,7 @@ export default defineComponent({
   name: 'ReportList',
   components: {
     SingleReport,
+    // LoadingBar,
   },
   computed: {
     pagination() {
