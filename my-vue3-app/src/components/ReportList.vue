@@ -2,9 +2,10 @@
   <section class="reports-section">
     <ul class="report-table">
       <ProgressBar
+        v-if="barStatus"
         mode="indeterminate"
-        class="progress-bar"
-        :class="{progressbar_active: barStatus}" />
+        style="height: .5em"
+      />
       <SingleReport
         v-for="item in reports"
         v-bind:key="item.id"
@@ -41,7 +42,7 @@ export default defineComponent({
   },
   data() {
     return {
-      barStatus: false,
+      barStatus: false, // todo: @ilyapozh move me to $store
     };
   },
   methods: {
@@ -49,23 +50,15 @@ export default defineComponent({
       fetchReports: FETCH_REPORTS,
     }),
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
+      this.barStatus = true; // todo: @ilyapozh delete it
       this.fetchReports({ page, pageSize });
-    },
-    toggleProgressBar() {
-      console.log(this.barStatus);
-      this.barStatus = !(this.barStatus);
-      console.log(this.barStatus);
+      setTimeout(() => { // todo: @ilyapozh delete it
+        this.barStatus = false;
+      }, 5000);
     },
   },
-  // beforeCreate() {
-  //   this.toggleProgressBar();
-  // },
   beforeMount() {
-    this.toggleProgressBar();
     this.onPage({ page: 0, rows: 10 });
-  },
-  mounted() {
-    this.toggleProgressBar();
   },
 });
 </script>
@@ -86,13 +79,5 @@ h1 {
 .page-btn {
   width: 200px;
   height: 40px;
-}
-
-.progress-bar{
-  display: none;
-}
-
-.progressbar_active{
-  display: block;
 }
 </style>
