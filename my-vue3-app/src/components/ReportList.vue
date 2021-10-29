@@ -25,7 +25,6 @@
 </template>
 
 <script lang="ts">
-import { VueLoading } from 'vue-loading-template';
 import { mapActions } from 'vuex';
 import { defineComponent } from 'vue';
 import SingleReport from './SingleReport.vue';
@@ -36,7 +35,6 @@ export default defineComponent({
   name: 'ReportList',
   components: {
     SingleReport,
-    VueLoading,
   },
   computed: {
     pagination() {
@@ -60,7 +58,7 @@ export default defineComponent({
       this.fetchReports({ page, pageSize });
       setTimeout(() => { // todo: @ilyapozh delete it
         this.barStatus = false;
-      }, 5000);
+      }, 500);
     },
   },
   beforeMount() {

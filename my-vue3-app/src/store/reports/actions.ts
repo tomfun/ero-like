@@ -2,12 +2,13 @@ import { ActionContext } from 'vuex';
 import api from '@/services/api';
 import { Pagination } from './state';
 import { SET_DATA, SET_PAGINATION } from './mutations';
+import { SET_LOADING } from '../loader/mutations';
 
 export const FETCH_REPORTS = 'load_reports';
 
 export default {
   async [FETCH_REPORTS]({ commit }: ActionContext<unknown, unknown>, payload: Pagination) {
-    // commit(SET_LOADING, true);
+    commit(SET_LOADING, true);
     try {
       const data = await api.fetchReports(payload);
       commit(SET_DATA, data.items);
@@ -17,7 +18,7 @@ export default {
         itemsTotal: data.itemsTotal,
       });
     } finally {
-      // commit(SET_LOADING, false);
+      commit(SET_LOADING, false);
     }
   },
 };
