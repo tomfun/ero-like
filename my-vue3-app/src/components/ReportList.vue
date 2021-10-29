@@ -12,7 +12,6 @@
         v-bind:item="item"
       ></SingleReport>
     </ul>
-    <!-- <LoadingBar ></LoadingBar> -->
      <vue-loading
       type="bars"
       color="#d9544e"
