@@ -29,7 +29,6 @@ import { VueLoading } from 'vue-loading-template';
 import { mapActions } from 'vuex';
 import { defineComponent } from 'vue';
 import SingleReport from './SingleReport.vue';
-// import LoadingBar from './LoadingBar.vue';
 import { REPORTS_MODULE } from '../store/reports';
 import { FETCH_REPORTS } from '../store/reports/actions';
 
