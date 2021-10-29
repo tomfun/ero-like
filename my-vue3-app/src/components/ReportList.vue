@@ -57,9 +57,6 @@ export default defineComponent({
       console.log(this.barStatus);
     },
   },
-  // beforeCreate() {
-  //   this.toggleProgressBar();
-  // },
   beforeMount() {
     this.toggleProgressBar();
     this.onPage({ page: 0, rows: 10 });
