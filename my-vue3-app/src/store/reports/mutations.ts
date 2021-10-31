@@ -16,7 +16,6 @@ export default {
   },
 
   [SET_LOADING](state: State, isLoading: IsLoading) {
-    console.log(isLoading);
     state.isLoading = isLoading;
   },
 
