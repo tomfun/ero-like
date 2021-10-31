@@ -1,8 +1,7 @@
 import { ActionContext } from 'vuex';
 import api from '@/services/api';
 import { Pagination } from './state';
-import { SET_DATA, SET_PAGINATION } from './mutations';
-import { SET_LOADING } from '../loader/mutations';
+import { SET_DATA, SET_PAGINATION, SET_LOADING } from './mutations';
 
 export const FETCH_REPORTS = 'load_reports';
 

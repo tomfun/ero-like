@@ -2,7 +2,7 @@
   <section class="reports-section">
     <ul class="report-table">
       <ProgressBar
-        v-if="barStatus"
+        v-if="isLoading"
         mode="indeterminate"
         style="height: .5em"
       />
@@ -43,22 +43,16 @@ export default defineComponent({
     reports() {
       return this.$store.state[REPORTS_MODULE].data;
     },
-  },
-  data() {
-    return {
-      barStatus: false, // todo: @ilyapozh move me to $store
-    };
+    isLoading() {
+      return this.$store.state[REPORTS_MODULE].isLoading;
+    },
   },
   methods: {
     ...mapActions(REPORTS_MODULE, {
       fetchReports: FETCH_REPORTS,
     }),
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
-      this.barStatus = true; // todo: @ilyapozh delete it
       this.fetchReports({ page, pageSize });
-      setTimeout(() => { // todo: @ilyapozh delete it
-        this.barStatus = false;
-      }, 500);
     },
   },
   beforeMount() {
