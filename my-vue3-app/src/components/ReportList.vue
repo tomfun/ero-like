@@ -12,10 +12,6 @@
         v-bind:item="item"
       ></SingleReport>
     </ul>
-     <vue-loading
-      type="bars"
-      color="#d9544e"
-      :size="{ width: '50px', height: '50px'}" />
     <Paginator
       :rows="pagination.pageSize"
       :totalRecords="pagination.itemsTotal"
