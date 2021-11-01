@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import PrimeVue from 'primevue/config';
 import Paginator from 'primevue/paginator';
+import ProgressBar from 'primevue/progressbar';
 import App from './App.vue';
 import router from './router';
 import store from './store';
@@ -12,6 +13,7 @@ import 'primeicons/primeicons.css';
 createApp(App)
   .use(PrimeVue)
   .component('Paginator', Paginator)
+  .component('ProgressBar', ProgressBar)
   .use(store)
   .use(router)
   .mount('#app');

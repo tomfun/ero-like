@@ -1,6 +1,11 @@
 <template>
   <section class="reports-section">
     <ul class="report-table">
+      <ProgressBar
+        v-if="isLoading"
+        mode="indeterminate"
+        style="height: .5em"
+      />
       <SingleReport
         v-for="item in reports"
         v-bind:key="item.id"
@@ -12,17 +17,15 @@
       :totalRecords="pagination.itemsTotal"
       :rowsPerPageOptions="[10,20,50,100]"
       @page="onPage($event)" />
-
-    <p>vuex page: {{ pagination.page }}</p>
-    <p>vuex pageSize: {{ pagination.pageSize }}</p>
-    <p>vuex itemsTotal: {{ pagination.itemsTotal }}</p>
   </section>
 </template>
 
 <script lang="ts">
+import { mapActions } from 'vuex';
 import { defineComponent } from 'vue';
 import SingleReport from './SingleReport.vue';
 import { REPORTS_MODULE } from '../store/reports';
+import { FETCH_REPORTS } from '../store/reports/actions';
 
 export default defineComponent({
   name: 'ReportList',
@@ -33,19 +36,19 @@ export default defineComponent({
     pagination() {
       return this.$store.state[REPORTS_MODULE].pagination;
     },
-  },
-  data() {
-    return {
-      reports: [],
-    };
+    reports() {
+      return this.$store.state[REPORTS_MODULE].data;
+    },
+    isLoading() {
+      return this.$store.state[REPORTS_MODULE].isLoading;
+    },
   },
   methods: {
-    async getReports(page: number, pageSize: number) {
-      const res = await fetch(`/api/report?page=${page}&pageSize=${pageSize}`);
-      return res.json();
-    },
+    ...mapActions(REPORTS_MODULE, {
+      fetchReports: FETCH_REPORTS,
+    }),
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
-      this.$data.reports = (await this.getReports(page, pageSize)).items;
+      this.fetchReports({ page, pageSize });
     },
   },
   beforeMount() {
@@ -63,6 +66,8 @@ h1 {
 
 .report-table {
   list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .page-btn {
