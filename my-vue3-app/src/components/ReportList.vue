@@ -47,12 +47,23 @@ export default defineComponent({
     ...mapActions(REPORTS_MODULE, {
       fetchReports: FETCH_REPORTS,
     }),
+    checkPageExist({ page, pageSize }: {page: number; pageSize: number}) {
+      const fetchedPagesArr = this.$store.state[REPORTS_MODULE].fetchedPages;
+      return fetchedPagesArr.find((element) => (element.pagination.page === page
+      && element.pagination.pageSize === pageSize));
+    },
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
-      this.fetchReports({ page, pageSize });
+      const reportsModuleState = this.$store.state[REPORTS_MODULE];
+      const pageExist = this.checkPageExist({ page, pageSize });
+      if (pageExist === undefined) {
+        this.fetchReports({ page, pageSize });
+      } else {
+        reportsModuleState.data = pageExist.reports;
+      }
     },
   },
   beforeMount() {
-    this.onPage({ page: 0, rows: 10 });
+    this.fetchReports({ page: 0, pageSize: 10 });
   },
 });
 </script>

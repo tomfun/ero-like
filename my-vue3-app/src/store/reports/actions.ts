@@ -1,7 +1,9 @@
 import { ActionContext } from 'vuex';
 import api from '@/services/api';
 import { Pagination } from './state';
-import { SET_DATA, SET_PAGINATION, SET_LOADING } from './mutations';
+import {
+  SET_DATA, SET_PAGINATION, SET_LOADING, SET_FETCHED_PAGE,
+} from './mutations';
 
 export const FETCH_REPORTS = 'load_reports';
 
@@ -15,6 +17,14 @@ export default {
         page: data.page,
         pageSize: data.pageSize,
         itemsTotal: data.itemsTotal,
+      });
+      commit(SET_FETCHED_PAGE, {
+        reports: data.items,
+        pagination: {
+          page: data.page,
+          pageSize: data.pageSize,
+          itemsTotal: data.itemsTotal,
+        },
       });
     } finally {
       commit(SET_LOADING, false);
