@@ -62,7 +62,7 @@ export default defineComponent({
     },
   },
   beforeMount() {
-    this.onPage({ page: 0, rows: 10 });
+    this.fetchReports({ page: 0, pageSize: 10 });
   },
 });
 </script>
