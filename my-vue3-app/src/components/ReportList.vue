@@ -37,7 +37,8 @@ export default defineComponent({
       return this.$store.state[REPORTS_MODULE].pagination;
     },
     reports() {
-      return this.$store.state[REPORTS_MODULE].data;
+      const { data } = this.$store.state[REPORTS_MODULE];
+      return this.$store.state[REPORTS_MODULE].pagination.viewIds.map((id) => data[id]);
     },
     isLoading() {
       return this.$store.state[REPORTS_MODULE].isLoading;

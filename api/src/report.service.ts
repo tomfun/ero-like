@@ -23,6 +23,7 @@ export class ReportService {
     const [items, itemsTotal] = await this.reportRepo.findAndCount({
       skip: page * pageSize,
       take: pageSize,
+      order: { id: 1 },
     });
     return {
       items,

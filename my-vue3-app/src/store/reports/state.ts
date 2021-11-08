@@ -1,18 +1,24 @@
+import { Report as ApiFetchReport } from '@/services/api';
+
 export const REPORTS = 'data';
 export const PAGINATION = 'pagination';
 export const IS_LOADING = 'isLoading';
 
-// should be imported from API or somewhere else
-export interface Report {
-  title: string;
-  nick: string;
-  gpgSignature: string;
+export type Report = ApiFetchReport;
+
+export interface Reports {
+  [id: string]: Report;
 }
 
 export interface Pagination {
-    page: number;
-    pageSize: number;
-    itemsTotal: number;
+  page: number;
+  pageSize: number;
+  itemsTotal: number;
+  order: {
+    id: 1|-1;
+  };
+  ids: Array<string>;
+  viewIds: Array<string>;
 }
 
 export interface IsLoading {
@@ -20,17 +26,22 @@ export interface IsLoading {
 }
 
 export interface State {
-  [REPORTS]: Array<Report>;
+  [REPORTS]: Reports;
   [PAGINATION]: Pagination;
   [IS_LOADING]: IsLoading;
 }
 
 export default {
-  [REPORTS]: [],
+  [REPORTS]: {} as Reports,
   [PAGINATION]: {
     page: 0,
     pageSize: 10,
     itemsTotal: 0,
+    order: {
+      id: 1,
+    },
+    ids: [],
+    viewIds: [],
   },
   [IS_LOADING]: {
     isLoading: false,
