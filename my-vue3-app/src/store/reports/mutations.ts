@@ -1,10 +1,11 @@
 import {
-  State, Pagination, Report, IsLoading,
+  State, Pagination, Report, IsLoading, ReportInStorage,
 } from './state';
 
 export const SET_PAGINATION = 'set_pagination';
 export const SET_DATA = 'set_data';
 export const SET_LOADING = 'set_loading';
+export const SET_REPORT_IN_STORAGE = 'set_report_in_storage';
 
 export default {
   [SET_PAGINATION](state: State, pagination: Pagination) {
@@ -17,6 +18,10 @@ export default {
 
   [SET_LOADING](state: State, isLoading: IsLoading) {
     state.isLoading = isLoading;
+  },
+
+  [SET_REPORT_IN_STORAGE](state: State, reportInStorage: ReportInStorage) {
+    state.reportStorage.push(reportInStorage);
   },
 
 };
