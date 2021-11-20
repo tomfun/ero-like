@@ -37,7 +37,9 @@ export default defineComponent({
       return this.$store.state[REPORTS_MODULE].pagination;
     },
     reports() {
-      return this.$store.state[REPORTS_MODULE].data;
+      const { pagination } = this.$store.state[REPORTS_MODULE];
+      const { data } = this.$store.state[REPORTS_MODULE];
+      return pagination.viewIds.map((id) => data[id]);
     },
     isLoading() {
       return this.$store.state[REPORTS_MODULE].isLoading;
@@ -47,22 +49,12 @@ export default defineComponent({
     ...mapActions(REPORTS_MODULE, {
       fetchReports: FETCH_REPORTS,
     }),
-    checkForReports({ page, pageSize }: {page: number; pageSize: number}) {
-      const repArr = [];
-      for (let i = page * pageSize; i < (page + 1) * pageSize; i += 1) {
-        if (this.$store.state[REPORTS_MODULE].reportStorage[i]) {
-          repArr.push(this.$store.state[REPORTS_MODULE].reportStorage[i].report);
-        }
-      }
-      return repArr;
-    },
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
       this.fetchReports({ page, pageSize });
-      this.$store.state[REPORTS_MODULE].data = this.checkForReports({ page, pageSize });
     },
   },
   beforeMount() {
-    this.fetchReports({ page: 0, pageSize: 10 });
+    this.onPage({ page: 0, rows: 10 });
   },
 });
 </script>
