@@ -1,9 +1,9 @@
 import {
-  State, Pagination, Report, IsLoading,
+  IsLoading, Pagination, Report, REPORTS, State,
 } from './state';
 
 export const SET_PAGINATION = 'set_pagination';
-export const SET_DATA = 'set_data';
+export const ADD_DATA = 'add_data';
 export const SET_LOADING = 'set_loading';
 
 export default {
@@ -11,12 +11,13 @@ export default {
     state.pagination = pagination;
   },
 
-  [SET_DATA](state: State, data: Array<Report>) {
-    state.data = data;
+  [ADD_DATA](state: State, data: Array<Report>) {
+    data.forEach((report) => {
+      state[REPORTS][report.id] = report;
+    });
   },
 
   [SET_LOADING](state: State, isLoading: IsLoading) {
     state.isLoading = isLoading;
   },
-
 };
