@@ -19,6 +19,20 @@ const applyFilterSortToReports = (
   // .map((report) => report.id);
   .sort((a, b) => a.localeCompare(b) * pagination.order.id);
 
+const calcLocalIndex = ({ pagination, desired, localReportIds }: {
+  pagination: Pagination;
+  desired: Pick<Pagination, 'page'|'pageSize'>;
+  localReportIds: string[];
+}) => {
+  const remoteIndex = pagination.page * pagination.pageSize;
+  const localIndex = localReportIds.indexOf(pagination.ids[0]);
+  const remoteIndexDesired = desired.page * desired.pageSize;
+  const remoteIndexShift = remoteIndexDesired - remoteIndex;
+  const localIndexShift = remoteIndexShift; // guess. we made assumption
+  const localIndexDesired = localIndex + localIndexShift;
+  return localIndexDesired;
+};
+
 export default {
   async [FETCH_REPORTS](
     { commit, state }: ActionContext<State, unknown>,
@@ -27,13 +41,15 @@ export default {
     commit(SET_LOADING, true);
 
     const { pagination } = state;
-    const allReportIds = applyFilterSortToReports(pagination, state[REPORTS]);
-    const indexShift = desired.page * desired.pageSize - pagination.page * pagination.pageSize;
-    const remoteIndex = allReportIds.indexOf(pagination.ids[0]);
-    const localIndex = remoteIndex + indexShift;
+    const localReportIds = applyFilterSortToReports(pagination, state[REPORTS]);
+    const localIndexDesired = calcLocalIndex({
+      pagination,
+      desired,
+      localReportIds,
+    });
     commit(SET_PAGINATION, {
       ...state[PAGINATION],
-      viewIds: allReportIds.slice(localIndex, localIndex + desired.pageSize),
+      viewIds: localReportIds.slice(localIndexDesired, localIndexDesired + desired.pageSize),
     });
 
     try {
