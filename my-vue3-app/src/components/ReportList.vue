@@ -6,6 +6,8 @@
         mode="indeterminate"
         style="height: .5em"
       />
+      <input v-model="nick" placeholder="edit me" v-on:keyup="onNickInput">
+      <p>Message is: {{ nick }}</p>
       <SingleReport
         v-for="item in reports"
         v-bind:key="item.id"
@@ -32,6 +34,11 @@ export default defineComponent({
   components: {
     SingleReport,
   },
+  data() {
+    return {
+      nick: '',
+    };
+  },
   computed: {
     pagination() {
       return this.$store.state[REPORTS_MODULE].pagination;
@@ -50,6 +57,19 @@ export default defineComponent({
     }),
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
       this.fetchReports({ page, pageSize });
+    },
+    async onNickInput(event: any) {
+      this.fetchReports(
+        {
+          page: 0,
+          pageSize: 10,
+          filters:
+            {
+              nick: this.nick,
+            },
+        },
+      );
+      // pagesize should depend on state
     },
   },
   beforeMount() {

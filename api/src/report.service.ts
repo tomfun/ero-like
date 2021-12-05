@@ -9,6 +9,10 @@ import {
 import { validate } from 'class-validator';
 import { Paginable, PaginationQueryDto } from './paginationQueryPipe';
 
+export interface nick {
+  nick: string
+}
+
 @Injectable()
 export class ReportService {
   private reportRepo: Repository<ReportEntity>;
@@ -33,6 +37,24 @@ export class ReportService {
     };
   }
 
+  async getListByNick({
+    page,
+    pageSize,
+  }: PaginationQueryDto, nick: nick): Promise<Paginable<ReportForList>> {
+    const [items, itemsTotal] = await this.reportRepo.findAndCount({
+      skip: page * pageSize,
+      take: pageSize,
+      order: { id: 1 },
+      where: {nick: nick}
+    });
+    return {
+      items,
+      itemsTotal,
+      page,
+      pageSize,
+    };
+  }
+
   async create(createReportDto: ReportBodyPayload): Promise<ReportForList> {
     const report = new ReportEntity();
     Object.assign(report, createReportDto);
@@ -42,7 +64,7 @@ export class ReportService {
       throw new Error(`Validation failed!`);
     }
     await this.reportRepo.save(report);
-    console.log(report);
+    
     return report;
   }
 }

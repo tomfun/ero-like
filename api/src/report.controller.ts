@@ -1,8 +1,9 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Post, Query } from '@nestjs/common';
 import {
   ReportService,
   ReportBodyPayload,
   ReportForList,
+  nick,
 } from './report.service';
 import {
   Paginable,
@@ -18,8 +19,13 @@ export class ReportController {
   @Get('/api/report?')
   getReports(
     @PaginateQuery query: PaginationQueryDto,
+    @Query('nick') nick: nick,
   ): Promise<Paginable<ReportForList>> {
-    return this.appService.getList(query);
+    if (nick) {
+      return this.appService.getListByNick(query,nick);
+    } else {
+      return this.appService.getList(query)
+    }  
   }
 
   @Post('/api/report')

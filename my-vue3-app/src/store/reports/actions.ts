@@ -1,5 +1,5 @@
 import { ActionContext } from 'vuex';
-import api from '@/services/api';
+import api from '../../services/api';
 import {
   PAGINATION, Pagination, Reports, REPORTS, State,
 } from './state';
@@ -37,6 +37,7 @@ export default {
   async [FETCH_REPORTS](
     { commit, state }: ActionContext<State, unknown>,
     desired: Omit<Pagination, 'viewIds'|'ids'>,
+    // filters: Pick<Report, 'nick'>
   ) {
     commit(SET_LOADING, true);
 
@@ -53,6 +54,7 @@ export default {
     });
 
     try {
+      console.log(desired);
       const data = await api.fetchReports(desired);
       const ids = data.items.map((r) => r.id);
       commit(SET_PAGINATION, {
@@ -71,4 +73,5 @@ export default {
       commit(SET_LOADING, false);
     }
   },
+
 };
