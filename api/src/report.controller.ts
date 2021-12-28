@@ -3,7 +3,7 @@ import {
   ReportService,
   ReportBodyPayload,
   ReportForList,
-  nick,
+  ReportFIlters,
 } from './report.service';
 import {
   Paginable,
@@ -19,7 +19,7 @@ export class ReportController {
   @Get('/api/report?')
   getReports(
     @PaginateQuery query: PaginationQueryDto,
-    @Query('nick') nick: nick,
+    @Query('nick') nick: ReportFIlters,
   ): Promise<Paginable<ReportForList>> {
     if (nick) {
       return this.appService.getListByNick(query,nick);

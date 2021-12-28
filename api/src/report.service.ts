@@ -9,7 +9,7 @@ import {
 import { validate } from 'class-validator';
 import { Paginable, PaginationQueryDto } from './paginationQueryPipe';
 
-export interface nick {
+export interface ReportFIlters {
   nick: string
 }
 
@@ -40,7 +40,7 @@ export class ReportService {
   async getListByNick({
     page,
     pageSize,
-  }: PaginationQueryDto, nick: nick): Promise<Paginable<ReportForList>> {
+  }: PaginationQueryDto, nick: ReportFIlters): Promise<Paginable<ReportForList>> {
     const [items, itemsTotal] = await this.reportRepo.findAndCount({
       skip: page * pageSize,
       take: pageSize,
