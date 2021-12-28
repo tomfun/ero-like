@@ -43,6 +43,7 @@ export default {
 
     const { pagination } = state;
     const localReportIds = applyFilterSortToReports(pagination, state[REPORTS]);
+    console.log(localReportIds);
     const localIndexDesired = calcLocalIndex({
       pagination,
       desired,

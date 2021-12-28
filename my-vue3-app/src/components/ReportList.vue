@@ -7,7 +7,7 @@
         style="height: .5em"
       />
       <input v-model="nick" placeholder="edit me" v-on:keyup="onNickInput">
-      <p>Message is: {{ nick }}</p>
+      <p>The nick you are looking for is: {{ nick }}</p>
       <SingleReport
         v-for="item in reports"
         v-bind:key="item.id"
@@ -50,26 +50,33 @@ export default defineComponent({
     isLoading() {
       return this.$store.state[REPORTS_MODULE].isLoading;
     },
+    // nick() {
+    //   return this.$store.state[REPORTS_MODULE].pagination.filters.nick;
+    // },
+  },
+  watch: {
+    pagination() {
+      // console.log(this.$store.state[REPORTS_MODULE].pagination.filters.nick);
+    },
   },
   methods: {
     ...mapActions(REPORTS_MODULE, {
       fetchReports: FETCH_REPORTS,
     }),
-    async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
-      this.fetchReports({ page, pageSize });
+    async fetchWith(fetchParams: unknown) {
+      this.fetchReports(fetchParams);
     },
-    async onNickInput(event: any) {
-      this.fetchReports(
+    async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
+      this.fetchWith({ page, pageSize });
+    },
+    async onNickInput() {
+      this.fetchWith(
         {
-          page: 0,
-          pageSize: 10,
-          filters:
-            {
-              nick: this.nick,
-            },
+          filters: {
+            nick: this.nick,
+          },
         },
       );
-      // pagesize should depend on state
     },
   },
   beforeMount() {

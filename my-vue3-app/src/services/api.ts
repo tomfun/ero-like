@@ -15,7 +15,7 @@ function extractNick(filters: object) {
 export default {
   async fetchReports(
     { page, pageSize, filters }:
-    {page: number; pageSize: number; filters: object},
+    {page: number; pageSize: number; filters: {nick: string}},
   ):
   Promise<{
     page: number;
@@ -23,7 +23,12 @@ export default {
     itemsTotal: number;
     items: Array<Report>;
   }> {
-    const res = await fetch(`/api/report?page=${page}&pageSize=${pageSize}${filters ? `&nick=${extractNick(filters)}` : ''}`);
+    const curPage = (page === undefined) ? '' : `page=${page}`;
+    const curPageSize = (pageSize === undefined) ? '' : `pageSize=${pageSize}`;
+    const curFilter = filters ? `nick=${filters.nick}` : '';
+    console.log(curPage);
+    console.log(curPageSize);
+    const res = await fetch(`/api/report?${curPage}&${curPageSize}&${curFilter}`);
     return res.json();
   },
 };
