@@ -10,14 +10,18 @@ import {
 export const FETCH_REPORTS = 'load_reports';
 
 const applyFilterSortToReports = (
-  pagination: Pick<Pagination, 'order'>,
+  pagination: Pick<Pagination, 'order' | 'filters'>,
   reports: Reports,
-): Array<string> => Object
-  .keys(reports)
-  // .map((id) => reports[id]);
-  // filter
-  // .map((report) => report.id);
-  .sort((a, b) => a.localeCompare(b) * pagination.order.id);
+  desired: Omit<Pagination, 'viewIds'|'ids'>,
+): Array<string> => {
+  const filteredSortedReports = desired.filters ? Object.keys(reports)
+    .map((id) => reports[id])
+    .filter((report) => report.nick === desired.filters.nick)
+    .map((report) => report.id)
+    .sort((a, b) => a.localeCompare(b) * pagination.order.id)
+    : Object.keys(reports).sort((a, b) => a.localeCompare(b) * pagination.order.id);
+  return filteredSortedReports;
+};
 
 const calcLocalIndex = ({ pagination, desired, localReportIds }: {
   pagination: Pagination;
@@ -37,25 +41,26 @@ export default {
   async [FETCH_REPORTS](
     { commit, state }: ActionContext<State, unknown>,
     desired: Omit<Pagination, 'viewIds'|'ids'>,
-    // filters: Pick<Report, 'nick'>
   ) {
     commit(SET_LOADING, true);
-
     const { pagination } = state;
-    const localReportIds = applyFilterSortToReports(pagination, state[REPORTS]);
-    console.log(localReportIds);
-    const localIndexDesired = calcLocalIndex({
+    const localReportIds = applyFilterSortToReports(pagination, state[REPORTS], desired);
+    let localIndexDesired = calcLocalIndex({
       pagination,
       desired,
       localReportIds,
     });
+    let desiredPageSize = desired.pageSize;
+    if (desired.page === undefined || desired.pageSize === undefined) {
+      localIndexDesired = 0;
+      desiredPageSize = state[PAGINATION].pageSize;
+    }
     commit(SET_PAGINATION, {
       ...state[PAGINATION],
-      viewIds: localReportIds.slice(localIndexDesired, localIndexDesired + desired.pageSize),
+      viewIds: localReportIds.slice(localIndexDesired, localIndexDesired + desiredPageSize),
     });
 
     try {
-      console.log(desired);
       const data = await api.fetchReports(desired);
       const ids = data.items.map((r) => r.id);
       commit(SET_PAGINATION, {

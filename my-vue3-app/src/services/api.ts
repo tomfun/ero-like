@@ -7,11 +7,6 @@ export interface Report {
   gpgSignature: string;
 }
 
-function extractNick(filters: object) {
-  return Object.values(filters);
-  // return nick
-}
-
 export default {
   async fetchReports(
     { page, pageSize, filters }:
@@ -26,8 +21,6 @@ export default {
     const curPage = (page === undefined) ? '' : `page=${page}`;
     const curPageSize = (pageSize === undefined) ? '' : `pageSize=${pageSize}`;
     const curFilter = filters ? `nick=${filters.nick}` : '';
-    console.log(curPage);
-    console.log(curPageSize);
     const res = await fetch(`/api/report?${curPage}&${curPageSize}&${curFilter}`);
     return res.json();
   },
