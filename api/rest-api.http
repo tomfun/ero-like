@@ -1,0 +1,25 @@
+POST http://localhost:3000/api/report
+Content-Type: application/json
+
+{
+  "id": "5424b448-2450-4fd2-9883-8000de6f8343",
+  "gpgSigned": false,
+  "substances": [
+    {
+      "name": "Хмурый",
+      "activeSubstance": "heroin",
+      "sure": 70
+    }
+  ],
+  "nick": "tomfun",
+  "title": "Теперь, я подсел"
+}
+
+###
+
+GET http://localhost:3000/api/report?page=2&pageSize=3&nick=tomfun
+
+###
+
+GET http://localhost:3000/api/report?page=1&nick[eq]=tomfun
+
