@@ -66,9 +66,6 @@ export default defineComponent({
     isLoading() {
       return this.$store.state[REPORTS_MODULE].isLoading;
     },
-    // nick() {
-    //   return this.$store.state[REPORTS_MODULE].pagination.filters.nick;
-    // },
   },
   watch: {
     pagination() {
