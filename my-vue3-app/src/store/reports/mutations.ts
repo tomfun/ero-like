@@ -9,6 +9,7 @@ export const SET_LOADING = 'set_loading';
 export default {
   [SET_PAGINATION](state: State, pagination: Pagination) {
     state.pagination = pagination;
+    state.pagination.filters.nick = pagination.filters.nick;
   },
 
   [ADD_DATA](state: State, data: Array<Report>) {

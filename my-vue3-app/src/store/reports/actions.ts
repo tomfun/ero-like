@@ -1,5 +1,5 @@
 import { ActionContext } from 'vuex';
-import api from '@/services/api';
+import api from '../../services/api';
 import {
   PAGINATION, Pagination, Reports, REPORTS, State,
 } from './state';
@@ -10,14 +10,19 @@ import {
 export const FETCH_REPORTS = 'load_reports';
 
 const applyFilterSortToReports = (
-  pagination: Pick<Pagination, 'order'>,
+  pagination: Pick<Pagination, 'order' | 'filters'>,
   reports: Reports,
-): Array<string> => Object
-  .keys(reports)
-  // .map((id) => reports[id]);
-  // filter
-  // .map((report) => report.id);
-  .sort((a, b) => a.localeCompare(b) * pagination.order.id);
+  desired: Omit<Pagination, 'viewIds'|'ids'>,
+): Array<string> => {
+  const ids = Object.keys(reports);
+  const filtered = desired.filters && desired.filters.nick
+    ? ids
+      .map((id) => reports[id])
+      .filter((report) => report.nick === desired.filters.nick)
+      .map((report) => report.id)
+    : ids;
+  return filtered.sort((a, b) => a.localeCompare(b) * pagination.order.id);
+};
 
 const calcLocalIndex = ({ pagination, desired, localReportIds }: {
   pagination: Pagination;
@@ -33,42 +38,56 @@ const calcLocalIndex = ({ pagination, desired, localReportIds }: {
   return localIndexDesired;
 };
 
+let fetchReportsConsistentlyPromiseCallCount = 0;
+
 export default {
   async [FETCH_REPORTS](
     { commit, state }: ActionContext<State, unknown>,
     desired: Omit<Pagination, 'viewIds'|'ids'>,
   ) {
     commit(SET_LOADING, true);
-
-    const { pagination } = state;
-    const localReportIds = applyFilterSortToReports(pagination, state[REPORTS]);
-    const localIndexDesired = calcLocalIndex({
+    const pagination = state[PAGINATION];
+    const localReportIds = applyFilterSortToReports(pagination, state[REPORTS], desired);
+    let localIndexDesired = calcLocalIndex({
       pagination,
       desired,
       localReportIds,
     });
+    let desiredPageSize = desired.pageSize;
+    if (desired.page === undefined || desired.pageSize === undefined) {
+      localIndexDesired = 0;
+      desiredPageSize = pagination.pageSize;
+    }
     commit(SET_PAGINATION, {
-      ...state[PAGINATION],
-      viewIds: localReportIds.slice(localIndexDesired, localIndexDesired + desired.pageSize),
+      ...pagination,
+      viewIds: localReportIds.slice(localIndexDesired, localIndexDesired + desiredPageSize),
     });
 
+    fetchReportsConsistentlyPromiseCallCount += 1;
+    const dataPromiseCallCount = fetchReportsConsistentlyPromiseCallCount;
     try {
       const data = await api.fetchReports(desired);
+      commit(ADD_DATA, data.items);
+      if (dataPromiseCallCount !== fetchReportsConsistentlyPromiseCallCount) {
+        return;
+      }
+
       const ids = data.items.map((r) => r.id);
       commit(SET_PAGINATION, {
-        ...state[PAGINATION],
+        ...pagination,
         ...desired,
         page: data.page,
         pageSize: data.pageSize,
         itemsTotal: data.itemsTotal,
         // sort: '',
-        // filter: '',
         ids,
         viewIds: ids,
       });
-      commit(ADD_DATA, data.items);
     } finally {
-      commit(SET_LOADING, false);
+      if (dataPromiseCallCount === fetchReportsConsistentlyPromiseCallCount) {
+        commit(SET_LOADING, false);
+      }
     }
   },
+
 };

@@ -19,6 +19,9 @@ export interface Pagination {
   };
   ids: Array<string>;
   viewIds: Array<string>;
+  filters: {
+    nick: string;
+  };
 }
 
 export interface IsLoading {
@@ -42,6 +45,9 @@ export default {
     },
     ids: [],
     viewIds: [],
+    filters: {
+      nick: '',
+    },
   },
   [IS_LOADING]: {
     isLoading: false,
