@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Connection, Repository } from 'typeorm';
+import { FindConditions } from 'typeorm/find-options/FindConditions';
 export { ReportForList, ReportBodyPayload } from './report.entity';
 import {
   ReportEntity,
@@ -20,32 +21,19 @@ export class ReportService {
     this.reportRepo = connection.getRepository<ReportEntity>(ReportEntity);
   }
 
-  async getList({
-    page,
-    pageSize,
-  }: PaginationQueryDto): Promise<Paginable<ReportForList>> {
+  async getList(
+    { page, pageSize }: PaginationQueryDto,
+    filters: ReportFilters,
+  ): Promise<Paginable<ReportForList>> {
+    const where = {} as FindConditions<ReportEntity>;
+    if (filters.nick) {
+      where.nick = filters.nick;
+    }
     const [items, itemsTotal] = await this.reportRepo.findAndCount({
       skip: page * pageSize,
       take: pageSize,
       order: { id: 1 },
-    });
-    return {
-      items,
-      itemsTotal,
-      page,
-      pageSize,
-    };
-  }
-
-  async getListByNick({
-    page,
-    pageSize,
-  }: PaginationQueryDto, nick: ReportFilters): Promise<Paginable<ReportForList>> {
-    const [items, itemsTotal] = await this.reportRepo.findAndCount({
-      skip: page * pageSize,
-      take: pageSize,
-      order: { id: 1 },
-      where: { nick: nick },
+      where: where,
     });
     return {
       items,
