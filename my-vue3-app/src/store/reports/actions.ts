@@ -18,7 +18,7 @@ const applyFilterSortToReports = (
   const filtered = desired.filters && desired.filters.nick
     ? ids
       .map((id) => reports[id])
-      .filter((report) => report.nick === desired.filters.nick)
+      .filter((report) => report.nick === desired.filters.nick.value)
       .map((report) => report.id)
     : ids;
   return filtered.sort((a, b) => a.localeCompare(b) * pagination.order.id);

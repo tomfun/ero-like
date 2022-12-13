@@ -11,7 +11,9 @@ import { validate } from 'class-validator';
 import { Paginable, PaginationQueryDto } from './paginationQueryPipe';
 
 export interface ReportFilters {
-  nick: string;
+  nick: {
+    equal: string
+  }
 }
 
 @Injectable()
@@ -26,8 +28,8 @@ export class ReportService {
     filters: ReportFilters,
   ): Promise<Paginable<ReportForList>> {
     const where = {} as FindConditions<ReportEntity>;
-    if (filters.nick) {
-      where.nick = filters.nick;
+    if (filters.nick.equal.length > 0) {
+      where.nick = filters.nick.equal;
     }
     const [items, itemsTotal] = await this.reportRepo.findAndCount({
       skip: page * pageSize,

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query } from '@nestjs/common';
+import { Controller, Get, Post, Query, Req, Request } from '@nestjs/common';
 import {
   ReportService,
   ReportBodyPayload,
@@ -10,6 +10,7 @@ import {
   PaginationQueryDto,
 } from './paginationQueryPipe';
 import { ValidBody } from './validBodyPipe';
+import { NickQueryDto, FiltersQuery } from './filtersQueryPipe';
 
 @Controller()
 export class ReportController {
@@ -18,9 +19,10 @@ export class ReportController {
   @Get('/api/report?')
   getReports(
     @PaginateQuery query: PaginationQueryDto,
-    @Query('nick') nick: string,
+    @FiltersQuery nick: NickQueryDto,
+    //@Req() request: any, // find correct interface
   ): Promise<Paginable<ReportForList>> {
-    return this.appService.getList(query, { nick });
+    return this.appService.getList(query,  {nick: nick} );
   }
 
   @Post('/api/report')

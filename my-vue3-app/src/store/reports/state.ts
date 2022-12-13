@@ -20,7 +20,10 @@ export interface Pagination {
   ids: Array<string>;
   viewIds: Array<string>;
   filters: {
-    nick: string;
+    nick: {
+      value: string | undefined;
+      type: string;
+    };
   };
 }
 
@@ -46,7 +49,11 @@ export default {
     ids: [],
     viewIds: [],
     filters: {
-      nick: '',
+      // nick: '',
+      nick: {
+        value: '',
+        type: '',
+      },
     },
   },
   [IS_LOADING]: {

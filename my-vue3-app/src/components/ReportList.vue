@@ -8,6 +8,26 @@
       />
       <input v-model="nick" placeholder="edit me">
       <p>The nick you are looking for is: {{ nick }}</p>
+      <p>Filters: {{ filters }}</p>
+      <div
+        :filter="filter"
+        id="{{filter.name}}"
+        v-for="(filter, index) in filters"
+        v-bind:key="index"
+        class="m-2">
+        <input class="mx-1" type="checkbox" :value="filter.name" v-model="filter.checked"/>
+        <label>{{filter.name}}</label>
+        <div v-if="filter.checked">
+          <select v-model="filter.filterType">
+            <option
+              v-for="(filType, index) in filterTypes"
+              v-bind:key="index">
+              {{filType.name}}
+            </option>
+          </select>
+          <input v-model="filter.inputValue" placeholder="edit me"/>
+        </div>
+      </div><br>
       <SingleReport
         v-for="item in reports"
         v-bind:key="item.id"
@@ -34,7 +54,10 @@ type FetchParams = {
   page: number;
   pageSize: number;
   filters: {
-    nick: string;
+    nick: {
+      value: string | undefined;
+      type: string | undefined;
+    };
   };
 };
 
@@ -53,6 +76,25 @@ export default defineComponent({
           maxWait: 5000,
         },
       ),
+      filters: {
+        nick: {
+          name: 'nick',
+          checked: false,
+          filterType: 'equal',
+          inputValue: '',
+        },
+        title: {
+          name: 'title',
+          checked: false,
+          filterType: 'equal',
+          inputValue: '',
+        },
+      },
+      filterTypes: [{
+        name: 'equal',
+      }, {
+        name: 'contain',
+      }],
     };
   },
   computed: {
@@ -74,6 +116,16 @@ export default defineComponent({
     nick() {
       this.onNickInput();
     },
+    filters: {
+      handler(newValue, oldValue) {
+        if (newValue.nick.inputValue.length === 0) { // avoid empty nick request
+          this.fetchWith({ });
+          return;
+        }
+        this.onFiltersChange();
+      },
+      deep: true,
+    },
   },
   methods: {
     ...mapActions(REPORTS_MODULE, {
@@ -90,7 +142,26 @@ export default defineComponent({
       this.fetchWith(
         {
           filters: {
-            nick: this.nick,
+            nick: {
+              value: this.nick,
+              type: this.filters.nick.filterType,
+            },
+          },
+        },
+      );
+    },
+    async onFiltersChange() {
+      const curFilter = this.filters.nick;
+      const nickFilter = curFilter?.filterType;
+      const nickValue = curFilter?.inputValue;
+
+      this.fetchWith(
+        {
+          filters: {
+            nick: {
+              value: nickValue,
+              type: nickFilter,
+            },
           },
         },
       );
