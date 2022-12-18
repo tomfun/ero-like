@@ -20,7 +20,48 @@ jobs:
 
       - run: |
           cd my-vue3-app
+          mkdir public/.wtf/
+          echo ${{ github.ref_name }} > public/.wtf/D_I_TAG_UNIQ
+          echo ${{ github.sha }} >> public/.wtf/D_I_TAG_UNIQ
+          cat public/.wtf/D_I_TAG_UNIQ
           npm ci
           npm run lint
           npm run build --if-present
 #       npm test
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.HUB_DOCKER_USER }}
+          password: ${{ secrets.HUB_DOCKER_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          buildkitd-flags: --debug
+      - name: Build and push static
+        id: docker_build_nginx
+        uses: docker/build-push-action@v3
+        with:
+          context: ./
+          file: ./docker/nginx/Dockerfile
+          push: true
+          platform: linux/arm64
+          tags: |
+            ${{ secrets.HUB_DOCKER_USER }}/ero-like-nginx:${{ github.ref_name }}
+            ${{ secrets.HUB_DOCKER_USER }}/ero-like-nginx:${{ github.sha }}
+      - name: Build and push API
+        id: docker_build_api
+        uses: docker/build-push-action@v3
+        with:
+          context: ./
+          file: ./docker/api/Dockerfile
+          push: true
+          platform: linux/arm64
+          tags: |
+            ${{ secrets.HUB_DOCKER_USER }}/ero-like-api:${{ github.ref_name }}
+            ${{ secrets.HUB_DOCKER_USER }}/ero-like-api:${{ github.sha }}
+
+      - name: Image digest
+        run: echo ${{ steps.docker_build_api.outputs.digest }}

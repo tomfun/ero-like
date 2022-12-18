@@ -1,9 +1,8 @@
 version: '3'
 services:
   postgres:
+    restart: always
     image: postgres:14.6
-    ports:
-      - 5432:5432
     environment:
       POSTGRES_PASSWORD: pass
       POSTGRES_USER: user
@@ -11,3 +10,15 @@ services:
       PGDATA: /var/lib/postgresql/data/postgres
     volumes:
       - ./docker/data/postgres:/var/lib/postgresql/data
+
+  api:
+    restart: always
+    image: ero-like:latest
+
+  public:
+    restart: always
+    image: ero-like:latest
+    environment:
+      VIRTUAL_HOST: test_ero-like.tomfun.co
+    labels:
+      co_tomfun_ssl_inner_name: tomfun.co
