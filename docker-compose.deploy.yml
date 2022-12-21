@@ -14,6 +14,8 @@ services:
   api:
     restart: always
     image: tomfun/ero-like-api:${IMAGE_TAG:-latest}
+    environment:
+      POSTGRES_HOST: postgres
 
   public:
     restart: always
