@@ -13,12 +13,12 @@ services:
 
   api:
     restart: always
-    image: ero-like:latest
+    image: tomfun/ero-like-api:${IMAGE_TAG:-latest}
 
   public:
     restart: always
-    image: ero-like:latest
+    image: tomfun/ero-like-nginx:${IMAGE_TAG:-latest}
     environment:
-      VIRTUAL_HOST: test_ero-like.tomfun.co
+      VIRTUAL_HOST: ${PUBLIC_HTTP_HOST:-default-demo_ero-like.tomfun.co}
     labels:
       co_tomfun_ssl_inner_name: tomfun.co
