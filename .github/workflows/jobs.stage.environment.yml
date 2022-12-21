@@ -14,16 +14,28 @@ on:
 
 jobs:
   deployment:
-    runs-on: curlimages/curl:latest
+    runs-on: ubuntu-latest
     environment:
-      name: production
+      name: stage
       url: default-demo_ero-like.tomfun.co
-    # url
-    # https://stackoverflow.com/questions/67385568/github-actions-how-to-dynamically-set-environment-url-based-on-deployment-step
+      # url
+      # https://stackoverflow.com/questions/67385568/github-actions-how-to-dynamically-set-environment-url-based-on-deployment-step
+    env:
+      JENKINS_DEMO_DEPLOY_TOKEN: ${{ secrets.JENKINS_DEMO_DEPLOY_TOKEN }}
+      CI_BUILD_REF: ${{ github.ref_name }}
+      #          PUBLIC_HTTP_HOST: ${{ jobs.deployment.environment.url }}
+      PUBLIC_HTTP_HOST: default-demo_ero-like.tomfun.co
     steps:
+      - name: echo
+        run: |
+          #          export PUBLIC_HTTP_HOST=${CI_ENVIRONMENT_SLUG}-demo_blog.tomfun.co
+          export PUBLIC_HTTP_URL=https://$PUBLIC_HTTP_HOST
+          export URI_TO_TEST=${PUBLIC_HTTP_URL}/revison-keingeew6eewoh6zangu2eiG7oic9aevaepheew2
+          echo "$PUBLIC_HTTP_URL"
+          echo "https://jenkins.tomfun.co/buildByToken/buildWithParameters?job=ero-like.tomfun.co%2Fdeploy&token=$JENKINS_DEMO_DEPLOY_TOKEN&IMAGE_TAG=$CI_BUILD_REF&PUBLIC_HTTP_HOST=$PUBLIC_HTTP_HOST"
       - name: deploy
         run: |
-          export PUBLIC_HTTP_HOST=${CI_ENVIRONMENT_SLUG}-demo_blog.tomfun.co
+          #          export PUBLIC_HTTP_HOST=${CI_ENVIRONMENT_SLUG}-demo_blog.tomfun.co
           export PUBLIC_HTTP_URL=https://$PUBLIC_HTTP_HOST
           export URI_TO_TEST=${PUBLIC_HTTP_URL}/revison-keingeew6eewoh6zangu2eiG7oic9aevaepheew2
           echo "$PUBLIC_HTTP_URL"
@@ -32,4 +44,3 @@ jobs:
           curl --fail -XGET $URI_TO_TEST | grep -i "$CI_BUILD_REF" || sleep 20
           curl --fail -XGET $URI_TO_TEST | grep -i "$CI_BUILD_REF" || sleep 10
           curl --fail -XGET $URI_TO_TEST | grep -i "$CI_BUILD_REF"
-
