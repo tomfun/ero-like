@@ -47,7 +47,7 @@ jobs:
           context: ./
           file: ./docker/nginx/Dockerfile
           push: true
-          platform: linux/arm64
+          platforms: linux/arm64,linux/amd64,linux/arm/v8
           tags: |
             ${{ secrets.HUB_DOCKER_USER }}/ero-like-nginx:${{ github.ref_name }}
             ${{ secrets.HUB_DOCKER_USER }}/ero-like-nginx:${{ github.sha }}
@@ -58,7 +58,7 @@ jobs:
           context: ./
           file: ./docker/api/Dockerfile
           push: true
-          platform: linux/arm64
+          platforms: linux/arm64,linux/amd64,linux/arm/v8
           tags: |
             ${{ secrets.HUB_DOCKER_USER }}/ero-like-api:${{ github.ref_name }}
             ${{ secrets.HUB_DOCKER_USER }}/ero-like-api:${{ github.sha }}
