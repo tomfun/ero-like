@@ -1,4 +1,4 @@
-FROM node:18 as artifacts
+FROM node:18
 
 WORKDIR /app/api
 
