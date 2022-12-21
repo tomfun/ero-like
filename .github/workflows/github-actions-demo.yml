@@ -1,7 +1,7 @@
-name: GitHub Actions Demo
+name: minimal tests & build
 on: [ push ]
 jobs:
-  Explore-GitHub-Actions:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
@@ -29,6 +29,10 @@ jobs:
           npm run build --if-present
 #       npm test
 
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Login to DockerHub
@@ -47,10 +51,15 @@ jobs:
           context: ./
           file: ./docker/nginx/Dockerfile
           push: true
-          platforms: linux/arm64,linux/amd64,linux/arm/v8
+          pull: true
+#          platforms: linux/arm64,linux/amd64,linux/arm/v8
           tags: |
             ${{ secrets.HUB_DOCKER_USER }}/ero-like-nginx:${{ github.ref_name }}
             ${{ secrets.HUB_DOCKER_USER }}/ero-like-nginx:${{ github.sha }}
+          labels: |
+            LABEL org.opencontainers.image.source=https://github.com/tomfun/ero-like
+            LABEL org.opencontainers.image.licenses=MIT
+#            LABEL org.opencontainers.image.documentation=https://i2pd.readthedocs.io/en/latest/
       - name: Build and push API
         id: docker_build_api
         uses: docker/build-push-action@v3
@@ -58,10 +67,14 @@ jobs:
           context: ./
           file: ./docker/api/Dockerfile
           push: true
-          platforms: linux/arm64,linux/amd64,linux/arm/v8
+          pull: true
+#          platforms: linux/arm64,linux/amd64,linux/arm/v8
           tags: |
             ${{ secrets.HUB_DOCKER_USER }}/ero-like-api:${{ github.ref_name }}
             ${{ secrets.HUB_DOCKER_USER }}/ero-like-api:${{ github.sha }}
+          labels: |
+            LABEL org.opencontainers.image.source=https://github.com/tomfun/ero-like
+            LABEL org.opencontainers.image.licenses=MIT
 
       - name: Image digest
         run: echo ${{ steps.docker_build_api.outputs.digest }}

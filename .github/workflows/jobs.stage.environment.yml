@@ -7,6 +7,7 @@ on:
 
 jobs:
   deployment:
+    needs: docker-build
     runs-on: curlimages/curl:latest
     environment:
       name: production
