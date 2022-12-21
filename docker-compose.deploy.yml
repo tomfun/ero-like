@@ -14,12 +14,16 @@ services:
   api:
     restart: always
     image: tomfun/ero-like-api:${IMAGE_TAG:-latest}
+    depends_on:
+      - postgres
     environment:
       POSTGRES_HOST: postgres
 
   public:
     restart: always
     image: tomfun/ero-like-nginx:${IMAGE_TAG:-latest}
+    depends_on:
+      - api
     environment:
       VIRTUAL_HOST: ${PUBLIC_HTTP_HOST:-default-demo_ero-like.tomfun.co}
     labels:
