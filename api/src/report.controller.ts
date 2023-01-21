@@ -3,6 +3,7 @@ import {
   ReportService,
   ReportBodyPayload,
   ReportForList,
+  ReportEntity
 } from './report.service';
 import {
   Paginable,
@@ -10,19 +11,18 @@ import {
   PaginationQueryDto,
 } from './paginationQueryPipe';
 import { ValidBody } from './validBodyPipe';
-import { NickQueryDto, FiltersQuery } from './filtersQueryPipe';
+import { PaginationFilters, PaginationFilter } from './filtersQueryPipe';
 
-@Controller()
+@Controller() // maybe we can move '/api/report' here, or only '/api/
 export class ReportController {
   constructor(private readonly appService: ReportService) {}
 
   @Get('/api/report?')
   getReports(
     @PaginateQuery query: PaginationQueryDto,
-    @FiltersQuery nick: NickQueryDto,
-    //@Req() request: any, // find correct interface
+    @PaginationFilters filters: PaginationFilter<ReportEntity>,
   ): Promise<Paginable<ReportForList>> {
-    return this.appService.getList(query,  {nick: nick} );
+    return this.appService.getList(query, filters ? filters : {});
   }
 
   @Post('/api/report')

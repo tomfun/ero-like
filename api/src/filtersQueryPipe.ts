@@ -1,5 +1,7 @@
-import { ArgumentMetadata, Query, ValidationPipe } from '@nestjs/common';
-import { IsIn, IsInt, Min, IsString, MaxLength } from 'class-validator';
+import { ArgumentMetadata, Query, PipeTransform } from '@nestjs/common';
+import { IsString, MaxLength, ValidateNested } from 'class-validator';
+
+import { Type } from 'class-transformer';
 
 export class NickQueryDto {
     @IsString()
@@ -7,20 +9,42 @@ export class NickQueryDto {
     equal = '';
 }
 
-export class FiltersQueryPipe extends ValidationPipe {
-    transform(
-        query: any, // I guess it's possible to move the condition described in the 'if' block here
-        metadata: ArgumentMetadata
-        ): Promise<NickQueryDto> {
-        const result = new NickQueryDto();
-        if (query.nick) {
-            result.equal = query.nick.equal.match(/^[a-zA-Z]+$/) ? query.nick.equal : null;
+export class TitleQueryDto {
+    @IsString()
+    @MaxLength(20)
+    equal = '';
+}
+
+export class PaginationFilter<ReportEntity> {
+    @ValidateNested()
+    @Type(() => NickQueryDto)
+    nick: NickQueryDto
+    @ValidateNested()
+    @Type(() => TitleQueryDto)
+    title: TitleQueryDto
+}
+
+export class FiltersQueryPipe implements PipeTransform {
+    transform(value: any, metadata: ArgumentMetadata) {
+        let filters = {};
+        if (value.nick) {
+            Object.assign(filters, value.nick.equal ? {
+                nick: {
+                    equal: value.nick.equal
+                }
+            } : '')
         }
-        return super.transform(result, metadata);
+        if (value.title) {
+            Object.assign(filters, value.title.equal ? {
+                title: {
+                    equal: value.title.equal
+                }
+            } : '')
+        }
+        return filters
     }
 }
 
-
-export const FiltersQuery = Query(
-    new FiltersQueryPipe({ whitelist: true, transform: true }),
+export const PaginationFilters = Query(
+    new FiltersQueryPipe(),
 );

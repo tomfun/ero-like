@@ -24,6 +24,10 @@ export interface Pagination {
       value: string | undefined;
       type: string;
     };
+    title: {
+      value: string | undefined;
+      type: string;
+    };
   };
 }
 
@@ -51,6 +55,10 @@ export default {
     filters: {
       // nick: '',
       nick: {
+        value: '',
+        type: '',
+      },
+      title: {
         value: '',
         type: '',
       },

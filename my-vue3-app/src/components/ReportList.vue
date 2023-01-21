@@ -6,9 +6,7 @@
         mode="indeterminate"
         style="height: .5em"
       />
-      <input v-model="nick" placeholder="edit me">
-      <p>The nick you are looking for is: {{ nick }}</p>
-      <p>Filters: {{ filters }}</p>
+      <h1>Filters: </h1>
       <div
         :filter="filter"
         id="{{filter.name}}"
@@ -55,6 +53,10 @@ type FetchParams = {
   pageSize: number;
   filters: {
     nick: {
+      value: string | undefined;
+      type: string | undefined;
+    };
+    title: {
       value: string | undefined;
       type: string | undefined;
     };
@@ -113,13 +115,10 @@ export default defineComponent({
     pagination() {
       // watch pagination dirty thing
     },
-    nick() {
-      this.onNickInput();
-    },
     filters: {
       handler(newValue, oldValue) {
-        if (newValue.nick.inputValue.length === 0) { // avoid empty nick request
-          this.fetchWith({ });
+        if (newValue.nick.inputValue.length === 0 && newValue.title.inputValue.length === 0) {
+          this.fetchWith({ filters: undefined });
           return;
         }
         this.onFiltersChange();
@@ -138,29 +137,24 @@ export default defineComponent({
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
       this.fetchWith({ page, pageSize });
     },
-    async onNickInput() {
-      this.fetchWith(
-        {
-          filters: {
-            nick: {
-              value: this.nick,
-              type: this.filters.nick.filterType,
-            },
-          },
-        },
-      );
-    },
     async onFiltersChange() {
-      const curFilter = this.filters.nick;
-      const nickFilter = curFilter?.filterType;
-      const nickValue = curFilter?.inputValue;
-
+      const nickFilter = this.filters.nick;
+      const nickFilterType = nickFilter?.filterType;
+      const nickValue = nickFilter?.inputValue;
+      // maybe we should map it somehow
+      const titleFilter = this.filters.title;
+      const titleFilterType = titleFilter?.filterType;
+      const titleValue = titleFilter?.inputValue;
       this.fetchWith(
         {
           filters: {
             nick: {
               value: nickValue,
-              type: nickFilter,
+              type: nickFilterType,
+            },
+            title: {
+              value: titleValue,
+              type: titleFilterType,
             },
           },
         },
@@ -177,7 +171,7 @@ export default defineComponent({
 <style scoped lang="scss">
 h1 {
   margin: 40px 0 0;
-  font-size: 48px;
+  font-size: 28px;
 }
 
 .report-table {
