@@ -15,7 +15,7 @@ export class TitleQueryDto {
     equal = '';
 }
 
-export class PaginationFilter<ReportEntity> {
+export class PaginationFilter {
     @ValidateNested()
     @Type(() => NickQueryDto)
     nick: NickQueryDto
@@ -27,19 +27,19 @@ export class PaginationFilter<ReportEntity> {
 export class FiltersQueryPipe implements PipeTransform {
     transform(value: any, metadata: ArgumentMetadata) {
         let filters = {};
-        if (value.nick) {
-            Object.assign(filters, value.nick.equal ? {
+        if (value.nick && value.nick.equal) {
+            Object.assign(filters, {
                 nick: {
                     equal: value.nick.equal
                 }
-            } : '')
+            })
         }
-        if (value.title) {
-            Object.assign(filters, value.title.equal ? {
+        if (value.title && value.title.equal) {
+            Object.assign(filters, {
                 title: {
                     equal: value.title.equal
                 }
-            } : '')
+            })
         }
         return filters
     }
