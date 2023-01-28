@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  postgres:
+    restart: always
+    image: postgres:14.6
+    environment:
+      POSTGRES_PASSWORD: pass
+      POSTGRES_USER: user
+      POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data/postgres
+    volumes:
+      - ./docker/data/postgres:/var/lib/postgresql/data
+
+  api:
+    restart: always
+    image: tomfun/ero-like-api:${IMAGE_TAG:-latest}
+    depends_on:
+      - postgres
+    environment:
+      POSTGRES_HOST: postgres
+
+  public:
+    restart: always
+    image: tomfun/ero-like-nginx:${IMAGE_TAG:-latest}
+    depends_on:
+      - api
+    environment:
+      VIRTUAL_HOST: ${PUBLIC_HTTP_HOST:-default-demo_ero-like.tomfun.co}
+    labels:
+      co_tomfun_ssl_inner_name: tomfun.co
