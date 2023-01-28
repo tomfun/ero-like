@@ -31,8 +31,6 @@ export default {
     // we need to handle strings with spaces without letters;
     const curNickFilter = (filters !== undefined && filters.nick.value !== undefined && filters.nick.value.length > 0) ? `&nick[${filters.nick.type}]=${filters.nick.value}` : '';
     const curTitleFilter = (filters !== undefined && filters.title.value !== undefined && filters.title.value.length > 0) ? `&title[${filters.title.type}]=${filters.title.value}` : '';
-    // const req = Request;
-    // req.filters =
     const res = await fetch(`/api/report?${curPage}&${curPageSize}${curNickFilter.length > 0 ? curNickFilter : ''}${curTitleFilter.length > 0 ? curTitleFilter : ''}`);
     return res.json(); // why we don't handle an error case?
   },
