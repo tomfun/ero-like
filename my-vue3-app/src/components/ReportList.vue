@@ -1,4 +1,49 @@
 <template>
+  <section class="filters">
+    <h1>Filters: </h1>
+    <div
+      id="{{filter.name}}"
+      v-for="(filter, index) in filters"
+      v-bind:key="index"
+      class="filter-container">
+      <div class="field-checkbox">
+        <Checkbox
+          type="checkbox"
+          :binary="true"
+          v-model="filter.checked"
+          :inputId="'filter_enabler-' + filter.name"
+          @change="onFiltersChange"
+        />
+        &nbsp;
+        <label :for="'filter_enabler-' + filter.name">{{filter.name}}</label>
+      </div>
+      <template v-if="filter.checked">
+        <Dropdown
+          v-model="filter.filterType"
+          :options="filterTypes"
+          optionLabel="name"
+          optionValue="value"
+          @change="onFiltersChange"
+        />
+        <EqualFilterWidget
+          v-if="filter.filterType === 'equal'"
+          v-model="filter.inputValue"
+          v-bind:key="index"
+          v-bind:name="filter.name"
+          @update:modelValue="onFiltersChange"
+        />
+        <StartFilterWidget
+          v-if="filter.filterType === 'start'"
+          v-model="filter.inputValue"
+          v-bind:key="index"
+          v-bind:name="filter.name"
+          :suggestions="filter.suggestions"
+          @complete="onComplete(filter, $event)"
+          @update:modelValue="onFiltersChange"
+        />
+      </template>
+    </div>
+  </section>
   <section class="reports-section">
     <ul class="report-table">
       <ProgressBar
@@ -6,26 +51,6 @@
         mode="indeterminate"
         style="height: .5em"
       />
-      <h1>Filters: </h1>
-      <div
-        :filter="filter"
-        id="{{filter.name}}"
-        v-for="(filter, index) in filters"
-        v-bind:key="index"
-        class="m-2">
-        <input class="mx-1" type="checkbox" :value="filter.name" v-model="filter.checked"/>
-        <label>{{filter.name}}</label>
-        <div v-if="filter.checked">
-          <select v-model="filter.filterType">
-            <option
-              v-for="(filType, index) in filterTypes"
-              v-bind:key="index">
-              {{filType.name}}
-            </option>
-          </select>
-          <input v-model="filter.inputValue" placeholder="edit me"/>
-        </div>
-      </div><br>
       <SingleReport
         v-for="item in reports"
         v-bind:key="item.id"
@@ -45,20 +70,29 @@ import { mapActions } from 'vuex';
 import { defineComponent } from 'vue';
 import { debounce } from 'lodash-es';
 import SingleReport from './SingleReport.vue';
+import EqualFilterWidget from './widgets/filters/Equal.vue';
+import StartFilterWidget from './widgets/filters/Start.vue';
 import { REPORTS_MODULE } from '../store/reports';
 import { FETCH_REPORTS } from '../store/reports/actions';
+
+interface Filter<K extends string, FilterType extends string = 'equal'> {
+  name: K;
+  checked: boolean;
+  filterType: FilterType;
+  inputValue: string;
+}
 
 type FetchParams = {
   page: number;
   pageSize: number;
   filters: {
     nick: {
-      value: string | undefined;
-      type: string | undefined;
+      value: string|undefined;
+      type: string;
     };
     title: {
-      value: string | undefined;
-      type: string | undefined;
+      value: string|undefined;
+      type: string;
     };
   };
 };
@@ -67,11 +101,26 @@ export default defineComponent({
   name: 'ReportList',
   components: {
     SingleReport,
+    EqualFilterWidget,
+    StartFilterWidget,
   },
   data() {
     return {
       nick: '',
-      fetchParams: { page: 0, pageSize: 10 } as FetchParams,
+      fetchParams: {
+        page: 0,
+        pageSize: 10,
+        filters: {
+          nick: {
+            value: undefined,
+            type: 'equal',
+          },
+          title: {
+            value: undefined,
+            type: 'equal',
+          },
+        },
+      } as FetchParams,
       fetchDebounced: debounce(
         () => this.fetchReports(this.fetchParams),
         150, {
@@ -91,11 +140,13 @@ export default defineComponent({
           filterType: 'equal',
           inputValue: '',
         },
-      },
+      } as Record<keyof FetchParams['filters'], Filter<keyof FetchParams['filters']>>,
       filterTypes: [{
-        name: 'equal',
+        name: 'Equal',
+        value: 'equal',
       }, {
-        name: 'contain',
+        name: 'Start',
+        value: 'start',
       }],
     };
   },
@@ -115,16 +166,6 @@ export default defineComponent({
     pagination() {
       // watch pagination dirty thing
     },
-    filters: {
-      handler(newValue, oldValue) {
-        if (newValue.nick.inputValue.length === 0 && newValue.title.inputValue.length === 0) {
-          this.fetchWith({ filters: undefined });
-          return;
-        }
-        this.onFiltersChange();
-      },
-      deep: true,
-    },
   },
   methods: {
     ...mapActions(REPORTS_MODULE, {
@@ -132,31 +173,33 @@ export default defineComponent({
     }),
     async fetchWith(fetchParams: Partial<FetchParams>) {
       this.fetchParams = { ...this.fetchParams, ...fetchParams };
-      this.fetchDebounced();
+      return this.fetchDebounced();
     },
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
-      this.fetchWith({ page, pageSize });
+      return this.fetchWith({ page, pageSize });
     },
-    async onFiltersChange() {
-      const nickFilter = this.filters.nick;
-      const nickFilterType = nickFilter?.filterType;
-      const nickValue = nickFilter?.inputValue;
-      // maybe we should map it somehow
-      const titleFilter = this.filters.title;
-      const titleFilterType = titleFilter?.filterType;
-      const titleValue = titleFilter?.inputValue;
-      this.fetchWith(
+    onComplete(filter: Filter<keyof FetchParams['filters']> & { suggestions: string[] }, { query }: { query: string }) {
+      const { data } = this.$store.state[REPORTS_MODULE];
+      // eslint-disable-next-line no-param-reassign
+      filter.suggestions = Object
+        .values(data)
+        .map((r) => r[filter.name])
+        .filter((f) => f.startsWith(query));
+    },
+    onFiltersChange() {
+      return this.fetchWith(
         {
-          filters: {
-            nick: {
-              value: nickValue,
-              type: nickFilterType,
-            },
-            title: {
-              value: titleValue,
-              type: titleFilterType,
-            },
-          },
+          filters: Object.values(this.filters).reduce((filters, filter) => {
+            if (!(filter.name in filters)) {
+              return filters;
+            }
+            // eslint-disable-next-line no-param-reassign
+            filters[filter.name] = {
+              value: filter.checked ? filter.inputValue : undefined,
+              type: filter.filterType,
+            };
+            return filters;
+          }, this.fetchParams.filters as FetchParams['filters']),
         },
       );
     },
@@ -172,6 +215,19 @@ export default defineComponent({
 h1 {
   margin: 40px 0 0;
   font-size: 28px;
+}
+
+.filters {
+  .filter-container {
+    display: inline-block;
+    vertical-align: top;
+    border-right: 1px solid gray;
+    padding-right: 3px;
+    margin-right: 3px;
+    &:last-of-type {
+      border: none;
+    }
+  }
 }
 
 .report-table {
