@@ -25,13 +25,21 @@ export default {
     itemsTotal: number;
     items: Array<Report>;
   }> {
-    console.log(filters);
-    const curPage = (page === undefined) ? '' : `page=${page}`;
-    const curPageSize = (pageSize === undefined) ? '' : `pageSize=${pageSize}`;
-    // we need to handle strings with spaces without letters;
-    const curNickFilter = (filters !== undefined && filters.nick.value !== undefined && filters.nick.value.length > 0) ? `&nick[${filters.nick.type}]=${filters.nick.value}` : '';
-    const curTitleFilter = (filters !== undefined && filters.title.value !== undefined && filters.title.value.length > 0) ? `&title[${filters.title.type}]=${filters.title.value}` : '';
-    const res = await fetch(`/api/report?${curPage}&${curPageSize}${curNickFilter.length > 0 ? curNickFilter : ''}${curTitleFilter.length > 0 ? curTitleFilter : ''}`);
+    const queryStringParts = [];
+    if (page !== undefined) {
+      queryStringParts.push(`page=${page}`);
+    }
+    if (pageSize !== undefined) {
+      queryStringParts.push(`pageSize=${pageSize}`);
+    }
+    const filtersEncoded = ['nick' as 'nick', 'title' as 'title']
+      .filter((field) => filters[field].value !== undefined)
+      .map((field) => `${field}[${filters[field].type}]=${encodeURIComponent(filters[field].value as string)}`);
+    const uri = `/api/report?${queryStringParts.concat(filtersEncoded).join('&')}`;
+    if (uri.length > 2000) {
+      console.error('uri too long');
+    }
+    const res = await fetch(uri);
     return res.json(); // why we don't handle an error case?
   },
 };

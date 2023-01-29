@@ -53,13 +53,12 @@ export default {
     ids: [],
     viewIds: [],
     filters: {
-      // nick: '',
       nick: {
-        value: '',
+        value: undefined,
         type: '',
       },
       title: {
-        value: '',
+        value: undefined,
         type: '',
       },
     },

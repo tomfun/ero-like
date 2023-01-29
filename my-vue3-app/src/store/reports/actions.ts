@@ -9,16 +9,31 @@ import {
 
 export const FETCH_REPORTS = 'load_reports';
 
+const filterReport = (value: unknown, filter: {value: string; type: string}): boolean => {
+  switch (filter.type) {
+    case 'equal':
+      return value === filter.value;
+    case 'start':
+      return typeof value === 'string' && value.startsWith(filter.value);
+    default:
+      return true;
+  }
+};
+
 const applyFilterSortToReports = (
   pagination: Pick<Pagination, 'order' | 'filters'>,
   reports: Reports,
   desired: Omit<Pagination, 'viewIds'|'ids'>,
 ): Array<string> => {
   const ids = Object.keys(reports);
+  const filterFields = ['nick' as 'nick', 'title' as 'title']
+    .filter((field) => desired.filters[field].value !== undefined);
   const filtered = desired.filters && desired.filters.nick
     ? ids
       .map((id) => reports[id])
-      .filter((report) => report.nick === desired.filters.nick.value)
+      .filter((report) => filterFields.reduce((ok, field) => ok
+          && filterReport(report[field], desired.filters[field] as { value: string; type: string }),
+        true as boolean))
       .map((report) => report.id)
     : ids;
   return filtered.sort((a, b) => a.localeCompare(b) * pagination.order.id);
