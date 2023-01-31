@@ -32,11 +32,12 @@ export default {
     if (pageSize !== undefined) {
       queryStringParts.push(`pageSize=${pageSize}`);
     }
-    const filtersEncoded = ['nick' as 'nick', 'title' as 'title']
+    const filtersEncoded = ['nick' as const, 'title' as const]
       .filter((field) => filters[field].value !== undefined)
       .map((field) => `${field}[${filters[field].type}]=${encodeURIComponent(filters[field].value as string)}`);
     const uri = `/api/report?${queryStringParts.concat(filtersEncoded).join('&')}`;
     if (uri.length > 2000) {
+      // eslint-disable-next-line no-console
       console.error('uri too long');
     }
     const res = await fetch(uri);

@@ -1,7 +1,7 @@
 import { ActionContext } from 'vuex';
 import api from '../../services/api';
 import {
-  PAGINATION, Pagination, Reports, REPORTS, State,
+  PAGINATION, Pagination, Report, Reports, REPORTS, State,
 } from './state';
 import {
   ADD_DATA, SET_PAGINATION, SET_LOADING,
@@ -9,16 +9,35 @@ import {
 
 export const FETCH_REPORTS = 'load_reports';
 
-const filterReport = (value: unknown, filter: {value: string; type: string}): boolean => {
-  switch (filter.type) {
-    case 'equal':
-      return value === filter.value;
-    case 'start':
-      return typeof value === 'string' && value.startsWith(filter.value);
-    default:
-      return true;
+// eslint-disable-next-line max-len
+function buildReportsFilters(this: Pagination['filters']): false|Array<(r: Report) => boolean> {
+  const nothing = () => false;
+  const fieldFilters = ['nick' as const, 'title' as const].reduce((filters, field) => {
+    const { value, type } = this[field];
+    if (typeof value === 'undefined') {
+      return filters;
+    }
+    let newFilter: (r: Report) => boolean;
+    switch (type) {
+      case 'equal':
+        newFilter = (r: Report) => r[field] === value;
+        break;
+      case 'start':
+        newFilter = (r: Report) => r[field].startsWith(value);
+        break;
+      default:
+        newFilter = nothing;
+        break;
+    }
+    filters.push(newFilter);
+    return filters;
+  }, [] as Array<(r: Report) => boolean>);
+
+  if (!fieldFilters.length) {
+    return false;
   }
-};
+  return fieldFilters.includes(nothing) ? [] : fieldFilters;
+}
 
 const applyFilterSortToReports = (
   pagination: Pick<Pagination, 'order' | 'filters'>,
@@ -26,14 +45,11 @@ const applyFilterSortToReports = (
   desired: Omit<Pagination, 'viewIds'|'ids'>,
 ): Array<string> => {
   const ids = Object.keys(reports);
-  const filterFields = ['nick' as 'nick', 'title' as 'title']
-    .filter((field) => desired.filters[field].value !== undefined);
-  const filtered = desired.filters && desired.filters.nick
+  const filters = buildReportsFilters.call(desired.filters);
+  const filtered = filters
     ? ids
       .map((id) => reports[id])
-      .filter((report) => filterFields.reduce((ok, field) => ok
-          && filterReport(report[field], desired.filters[field] as { value: string; type: string }),
-        true as boolean))
+      .filter((report) => filters.every((f) => f(report)))
       .map((report) => report.id)
     : ids;
   return filtered.sort((a, b) => a.localeCompare(b) * pagination.order.id);

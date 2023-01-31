@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { Connection, Repository } from 'typeorm';
+import { Connection, Like, Repository } from 'typeorm';
 import { FindConditions } from 'typeorm/find-options/FindConditions';
-export { ReportForList, ReportBodyPayload, ReportEntity } from './report.entity';
+import { QueryOperator, ReportFilters, StringField } from './filtersQueryPipe';
+export {
+  ReportForList,
+  ReportBodyPayload,
+  ReportEntity,
+} from './report.entity';
 import {
   ReportEntity,
   ReportForList,
@@ -9,15 +14,6 @@ import {
 } from './report.entity';
 import { validate } from 'class-validator';
 import { Paginable, PaginationQueryDto } from './paginationQueryPipe';
-
-export interface ReportFilters {
-  nick?: {
-    equal: string
-  },
-  title?: {
-    equal: string
-  }
-}
 
 @Injectable()
 export class ReportService {
@@ -31,17 +27,27 @@ export class ReportService {
     filters: ReportFilters,
   ): Promise<Paginable<ReportForList>> {
     const where = {} as FindConditions<ReportEntity>;
-    if (filters.nick?.equal.length > 0) {
-      where.nick = filters.nick.equal;
+    if (filters.nick) {
+      const nickFilter = this.buildStringWhere<ReportEntity, 'nick'>(
+        filters.nick,
+      );
+      if (nickFilter !== undefined) {
+        where.nick = nickFilter;
+      }
     }
-    if (filters.title?.equal.length > 0) {
-      where.title = filters.title.equal;
+    if (filters.title) {
+      const titleFilter = this.buildStringWhere<ReportEntity, 'title'>(
+        filters.title,
+      );
+      if (titleFilter !== undefined) {
+        where.title = titleFilter;
+      }
     }
     const [items, itemsTotal] = await this.reportRepo.findAndCount({
       skip: page * pageSize,
       take: pageSize,
       order: { id: 1 },
-      where: where,
+      where,
     });
     return {
       items,
@@ -61,5 +67,28 @@ export class ReportService {
     }
     await this.reportRepo.save(report);
     return report;
+  }
+
+  private buildStringWhere<E, F extends keyof E>(
+    field: StringField,
+  ): FindConditions<E>[F] | undefined {
+    if (QueryOperator.Equal in field.filters) {
+      return field.filters[QueryOperator.Equal];
+    }
+    if (field.filters[QueryOperator.End]) {
+      return Like(
+        '%' +
+          field.filters[QueryOperator.End]
+            .replace(/%/g, '\\%')
+            .replace(/_/g, '\\_'),
+      );
+    }
+    if (field.filters[QueryOperator.Start]) {
+      return Like(
+        field.filters[QueryOperator.Start]
+          .replace(/%/g, '\\%')
+          .replace(/_/g, '\\_') + '%',
+      );
+    }
   }
 }

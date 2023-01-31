@@ -10,21 +10,21 @@ import {
   PaginationQueryDto,
 } from './paginationQueryPipe';
 import { ValidBody } from './validBodyPipe';
-import { PaginationFilters, PaginationFilter } from './filtersQueryPipe';
+import { PaginationFilters, ReportFilters } from './filtersQueryPipe';
 
-@Controller() // maybe we can move '/api/report' here, or only '/api/
+@Controller('/api/report')
 export class ReportController {
   constructor(private readonly appService: ReportService) {}
 
-  @Get('/api/report?')
+  @Get()
   getReports(
     @PaginateQuery query: PaginationQueryDto,
-    @PaginationFilters filters: PaginationFilter,
+    @PaginationFilters filters: ReportFilters,
   ): Promise<Paginable<ReportForList>> {
-    return this.appService.getList(query, filters ? filters : {});
+    return this.appService.getList(query, filters);
   }
 
-  @Post('/api/report')
+  @Post()
   postReport(
     @ValidBody
     createReportDto: ReportBodyPayload,
