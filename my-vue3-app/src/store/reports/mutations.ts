@@ -10,6 +10,7 @@ export default {
   [SET_PAGINATION](state: State, pagination: Pagination) {
     state.pagination = pagination;
     state.pagination.filters.nick = pagination.filters.nick;
+    state.pagination.filters.title = pagination.filters.title;
   },
 
   [ADD_DATA](state: State, data: Array<Report>) {

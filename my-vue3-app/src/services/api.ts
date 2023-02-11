@@ -10,7 +10,14 @@ export interface Report {
 export default {
   async fetchReports(
     { page, pageSize, filters }:
-    {page: number; pageSize: number; filters: {nick: string}},
+    {
+      page: number;
+      pageSize: number;
+      filters: {
+        nick: { value: string | undefined; type: string };
+        title: { value: string | undefined; type: string };
+      };
+    },
   ):
   Promise<{
     page: number;
@@ -18,10 +25,22 @@ export default {
     itemsTotal: number;
     items: Array<Report>;
   }> {
-    const curPage = (page === undefined) ? '' : `page=${page}`;
-    const curPageSize = (pageSize === undefined) ? '' : `pageSize=${pageSize}`;
-    const curFilter = filters ? `nick=${filters.nick}` : '';
-    const res = await fetch(`/api/report?${curPage}&${curPageSize}&${curFilter}`);
-    return res.json();
+    const queryStringParts = [];
+    if (page !== undefined) {
+      queryStringParts.push(`page=${page}`);
+    }
+    if (pageSize !== undefined) {
+      queryStringParts.push(`pageSize=${pageSize}`);
+    }
+    const filtersEncoded = ['nick' as const, 'title' as const]
+      .filter((field) => filters[field].value !== undefined)
+      .map((field) => `${field}[${filters[field].type}]=${encodeURIComponent(filters[field].value as string)}`);
+    const uri = `/api/report?${queryStringParts.concat(filtersEncoded).join('&')}`;
+    if (uri.length > 2000) {
+      // eslint-disable-next-line no-console
+      console.error('uri too long');
+    }
+    const res = await fetch(uri);
+    return res.json(); // why we don't handle an error case?
   },
 };

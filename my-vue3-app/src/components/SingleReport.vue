@@ -4,21 +4,21 @@
       <div class="main-frame__left-column">
         <div class="main-frame__prop-block">
           <h3 class="main-frame__prop-title">Уличное название:</h3>
-          <h4>{{ item.substances }}</h4>
+          <h4>{{ item?.substances }}</h4>
         </div>
         <div class="main-frame__prop-block">
           <h3 class="main-frame__prop-title">Действующее вещество:</h3>
-          <h4>{{ item.substances }}</h4>
+          <h4>{{ item?.substances }}</h4>
         </div>
         <div class="main-frame__prop-block">
           <h3 class="main-frame__prop-title">Уверенность в товаре:</h3>
-          <h4>{{ item.substances  }}</h4>
+          <h4>{{ item?.substances  }}</h4>
         </div>
       </div>
       <div class="main-frame__right-column">
-        <h2>{{ item.title }}</h2>
+        <h2>{{ item?.title }}</h2>
         <p>Здесь будет сам репорт. Можно попросить пользователя озаглавить свой рассказ.</p>
-        <p class="main-frame__author">{{ item.nick }}</p>
+        <p class="main-frame__author">{{ item?.nick }}</p>
       </div>
     </div>
   </li>
@@ -30,7 +30,7 @@ import { defineComponent } from 'vue';
 export default defineComponent({
   name: 'SingleReport',
   props: {
-    item: String,
+    item: Object,
   },
 });
 </script>

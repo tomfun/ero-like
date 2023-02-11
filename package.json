@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "start": "node dev/start.js"
+  },
+  "dependencies": {
+    "node-shell-commandor": "^0.0.2"
+  }
+}
