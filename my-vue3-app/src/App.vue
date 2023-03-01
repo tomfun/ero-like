@@ -1,11 +1,17 @@
 <template>
   <div id="nav">
     <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link> |
     <router-link to ="/reports">Reports </router-link> |
     <router-link to="/submit">Submit Report</router-link>
   </div>
   <router-view/>
+  <div id="nav-footer">
+    <router-link to="/">Home</router-link> |
+    <router-link to ="/reports">Reports </router-link> |
+    <router-link to="/submit">Submit Report</router-link> |
+    <router-link to="/about">About</router-link> |
+    <router-link to="/terms">Terms of Use Agreement</router-link>
+  </div>
 </template>
 
 <style lang="scss">
@@ -17,7 +23,7 @@
   color: #2c3e50;
 }
 
-#nav {
+#nav, #nav-footer {
   padding: 30px;
 
   a {
@@ -28,5 +34,9 @@
       color: #42b983;
     }
   }
+}
+
+#nav-footer {
+  border-top: #2c3e50 2px solid;
 }
 </style>
