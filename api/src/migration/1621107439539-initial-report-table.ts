@@ -15,7 +15,7 @@ create table report
                                  `);
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
+  public async down(): Promise<void> {
     // pashёl nahuy
   }
 }
