@@ -4,7 +4,7 @@ RUN apk --no-cache add gnupg
 
 WORKDIR /app/api
 
-CMD npm run start:prod
+CMD ["node", "--trace-warnings", "--enable-source-maps", "dist/src/main"]
 
 COPY api/package*.json ./
 
