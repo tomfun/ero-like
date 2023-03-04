@@ -24,6 +24,14 @@ export class ReportController {
     return this.appService.getList(query, filters);
   }
 
+  @Post('/validate')
+  validateReport(
+    @ValidBody
+    createReportDto: ReportBodyPayload,
+  ): ReportBodyPayload {
+    return createReportDto;
+  }
+
   @Post()
   postReport(
     @ValidBody

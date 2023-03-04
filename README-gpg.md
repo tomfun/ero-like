@@ -77,7 +77,8 @@ echo -e 'hello\n' | gpg --clear-sign -
 ```shell
 gpg -vab --local-user 0B7B99EB466D3F5D525D7E269645B577DB71D157 1s.txt
 # OR use with specific key
-echo -e 'hello\n' | gpg --local-user 0B7B99EB466D3F5D525D7E269645B577DB71D157 --clear-sign -
+echo -e 'I read and agree with all terms of use of ero-like and confirm my registration on ero-like' | gpg --local-user 0B7B99EB466D3F5D525D7E269645B577DB71D157 --clear-sign -
+# priority: --local-user 16AC27C7C31F6127!
 ```
 ### Export your key
 
@@ -111,5 +112,25 @@ gpg --list-keys
 gpg --list-signatures
 # import key
 echo '--....PGP PUBLIC KEY...--' | gpg --import -
+# not import, maybe not even check
+echo '--....PGP PUBLIC KEY...--' | gpg --show-keys -
 
+```
+
+Sign with faked time, anotation, user, expiration piped to verirify which shows data
+```bash
+echo -e 'I read and agree with all terms of use of ero-like and confirm my registration on ero-like' \
+    | docker run -i -v $(pwd)/docker/data/gpg/.gnupg:/root/.gnupg -e GPG_TTY=/dev/console \
+    vladgh/gpg --clear-sign --local-user 1E11B59089A05C6B --set-notation name@ero-like.online=value --default-sig-expire 1 --faked-system-time 20230304T143648 \
+    | docker run -i  -v $(pwd)/docker/data/gpg/.gnupg:/root/.gnupg \
+    vladgh/gpg --verify --verify-options show-notation
+```
+
+Get primary key
+```bash
+echo -e 'I read and agree with all terms of use of ero-like and confirm my registration on ero-like'     | docker run -i -v $(pwd)/docker/data/gpg/.gnupg:/root/.gnupg -e GPG_TTY=/dev/console     vladgh/gpg --clear-sign --local-user 1E11B59089A05C6B --set-notation name@ero-like.online=value --default-sig-expire 1 --faked-system-time 20230304T143648 > p.1E11B59089A05C6B.txt
+
+cat p.1E11B59089A05C6B.txt | docker run -i vladgh/gpg --list-packets --verbos -
+cat p.1E11B59089A05C6B.txt | docker run -i vladgh/gpg --dearmor | docker run -i vladgh/gpg --list-packets --verbos -
+cat p.1E11B59089A05C6B.txt | tail --lines=8 | docker run -i vladgh/gpg --list-packets --verbos -
 ```
