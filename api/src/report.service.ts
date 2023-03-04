@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Connection, Like, Repository } from 'typeorm';
-import { FindConditions } from 'typeorm/find-options/FindConditions';
+import { Connection, FindOperator, Like, Repository } from 'typeorm';
+import {
+  FindOptionsWhere,
+} from 'typeorm/find-options/FindOptionsWhere';
 import { QueryOperator, ReportFilters, StringField } from './filtersQueryPipe';
 export {
   ReportForList,
@@ -26,9 +28,9 @@ export class ReportService {
     { page, pageSize }: PaginationQueryDto,
     filters: ReportFilters,
   ): Promise<Paginable<ReportForList>> {
-    const where = {} as FindConditions<ReportEntity>;
+    const where = {} as FindOptionsWhere<ReportEntity>;
     if (filters.nick) {
-      const nickFilter = this.buildStringWhere<ReportEntity, 'nick'>(
+      const nickFilter = this.buildStringWhere(
         filters.nick,
       );
       if (nickFilter !== undefined) {
@@ -36,7 +38,7 @@ export class ReportService {
       }
     }
     if (filters.title) {
-      const titleFilter = this.buildStringWhere<ReportEntity, 'title'>(
+      const titleFilter = this.buildStringWhere(
         filters.title,
       );
       if (titleFilter !== undefined) {
@@ -69,9 +71,9 @@ export class ReportService {
     return report;
   }
 
-  private buildStringWhere<E, F extends keyof E>(
+  private buildStringWhere(
     field: StringField,
-  ): FindConditions<E>[F] | undefined {
+  ): FindOperator<string> | string | undefined {
     if (QueryOperator.Equal in field.filters) {
       return field.filters[QueryOperator.Equal];
     }
