@@ -66,13 +66,16 @@
 </template>
 
 <script lang="ts">
-import { mapActions } from 'vuex';
+import { Report } from '@/services/api';
+import { mapActions, mapState } from 'vuex';
 import { defineComponent } from 'vue';
 import { debounce } from 'lodash-es';
 import SingleReport from './SingleReport.vue';
 import EqualFilterWidget from './widgets/filters/Equal.vue';
 import StartFilterWidget from './widgets/filters/Start.vue';
-import { REPORTS_MODULE } from '../store/reports';
+import {
+  IS_LOADING, PAGINATION, REPORTS_MODULE, State as ReportsState,
+} from '../store/reports';
 import { FETCH_REPORTS } from '../store/reports/actions';
 
 interface Filter<K extends string, FilterType extends string = 'equal'> {
@@ -150,21 +153,16 @@ export default defineComponent({
     };
   },
   computed: {
-    pagination() {
-      return this.$store.state[REPORTS_MODULE].pagination;
-    },
-    reports() {
-      const { data } = this.$store.state[REPORTS_MODULE];
-      return this.$store.state[REPORTS_MODULE].pagination.viewIds.map((id) => data[id]);
-    },
-    isLoading() {
-      return this.$store.state[REPORTS_MODULE].isLoading;
-    },
-  },
-  watch: {
-    pagination() {
-      // watch pagination dirty thing
-    },
+    ...mapState(REPORTS_MODULE, {
+      isLoading: IS_LOADING,
+      pagination: PAGINATION,
+    }),
+    ...mapState(REPORTS_MODULE, {
+      reports(state: ReportsState): Report[] {
+        const { data } = state;
+        return state.pagination.viewIds.map((id) => data[id]);
+      },
+    }),
   },
   methods: {
     ...mapActions(REPORTS_MODULE, {
