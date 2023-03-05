@@ -96,10 +96,8 @@ export default defineComponent({
         },
       ),
       filters: {
-        // eslint-disable-next-line quote-props
-        'nick': { value: '', matchMode: 'equals' },
-        // eslint-disable-next-line quote-props
-        'title': { value: '', matchMode: 'equals' },
+        nick: { value: undefined, matchMode: 'equals' },
+        title: { value: undefined, matchMode: 'equals' },
       },
     };
   },
@@ -130,7 +128,6 @@ export default defineComponent({
     }),
   },
   mounted() {
-    // eslint-disable-next-line no-return-assign
     this.fetchWith({});
   },
 });

@@ -106,7 +106,6 @@ export default defineComponent({
   },
   data() {
     return {
-      nick: '',
       fetchParams: {
         page: 0,
         pageSize: 10,
