@@ -1,9 +1,10 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm';
 
-export class initialReportTable1621107439539 implements MigrationInterface {
+export class initialReportTable1621107439539 {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // language=PostgreSQL
     await queryRunner.query(`
-create table report
+CREATE TABLE report
 (
     id             uuid    not null
         constraint report_pk
@@ -12,10 +13,6 @@ create table report
     nick           varchar not null,
     "gpgSignature" varchar not null
 );
-                                 `);
-  }
-
-  public async down(): Promise<void> {
-    // pashёl nahuy
+`);
   }
 }
