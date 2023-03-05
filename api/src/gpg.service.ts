@@ -64,6 +64,7 @@ export class GpgService {
           stdio: 'pipe',
           env: {
             GNUPGHOME: tempDirPath,
+            TZ: 'UTC',
           },
         },
       );
@@ -87,15 +88,16 @@ export class GpgService {
       }
       out += errs.join('');
       const importMatchKey = out.match(
-        /gpg: key ([0-9A-F]+): public key ".+" imported\n/,
+        /gpg: key ([0-9A-F]+): public key "(.+)" imported\n/,
       );
       if (!importMatchKey) {
         throw new InvalidDataError('gpg exited without key fingerprint');
       }
       const importedKeyShort = importMatchKey[1];
-      const importMatchCount = out.match(/gpg:\s+imported: (\d+)/)
+      const importedKeyUser = importMatchKey[2];
+      const importMatchCount = out.match(/gpg:\s+imported: (\d+)/);
       if (!importMatchCount) {
-        throw new InvalidDataError('gpg didn\'t imported keys');
+        throw new InvalidDataError("gpg didn't imported keys");
       }
       if (importMatchCount[1] != '1') {
         throw new InvalidDataError('gpg imported more than one keys');
@@ -120,6 +122,7 @@ export class GpgService {
           stdio: ['pipe', 'pipe', 'pipe'],
           env: {
             GNUPGHOME: tempDirPath,
+            TZ: 'UTC',
           },
         },
       );
@@ -139,8 +142,10 @@ export class GpgService {
       this.logger.debug(`cp gpg --verify finished code: ${code}`);
       out += errs.join('');
       if (code !== 0) {
-        if (out.includes('Can\'t check signature: No public key')) {
-          throw new InvalidDataError('gpg verification failed: signature made by not included key');
+        if (out.includes("Can't check signature: No public key")) {
+          throw new InvalidDataError(
+            'gpg verification failed: signature made by not included key',
+          );
         }
         throw new InvalidDataError('gpg verification failed');
       }
@@ -152,7 +157,7 @@ export class GpgService {
           'verify: there is no signature date, key type, key fingerprint',
         );
       }
-      const signatureDate = verifyMatchKey[1];
+      const signatureDate = this.parseDateString(verifyMatchKey[1]);
       const usedKeyType = verifyMatchKey[2];
       const usedKeyFingerprint = verifyMatchKey[3];
 
@@ -160,15 +165,22 @@ export class GpgService {
         /Primary key fingerprint: ([0-9A-F ]+)/,
       );
       if (!verifyMatchMainKey) {
-        throw new InvalidDataError('verify: there is no primary key fingerprint');
+        throw new InvalidDataError(
+          'verify: there is no primary key fingerprint',
+        );
       }
       const mainKey = verifyMatchMainKey[1].replace(/\s+/g, '');
       if (!mainKey.includes(importedKeyShort)) {
-        throw new InvalidDataError('verify: mainKey is not the same as imported key');
+        throw new InvalidDataError(
+          'verify: mainKey is not the same as imported key',
+        );
       }
 
-      const trimPosition = importAndVerifyPayload.clearSignArmored.indexOf('-----BEGIN PGP SIGNATURE-----');
-      const signatureBlock = importAndVerifyPayload.clearSignArmored.slice(trimPosition);
+      const trimPosition = importAndVerifyPayload.clearSignArmored.indexOf(
+        '-----BEGIN PGP SIGNATURE-----',
+      );
+      const signatureBlock =
+        importAndVerifyPayload.clearSignArmored.slice(trimPosition);
       errs.length = 0;
       out = '';
       const getSignature = spawn(
@@ -185,6 +197,7 @@ export class GpgService {
           stdio: ['pipe', 'pipe', 'pipe'],
           env: {
             GNUPGHOME: tempDirPath,
+            TZ: 'UTC',
           },
         },
       );
@@ -204,12 +217,16 @@ export class GpgService {
       this.logger.debug(`cp gpg --list-packets finished code: ${code}`);
       out += errs.join('');
       if (code !== 0) {
-        if (out.includes('Can\'t check signature: No public key')) {
-          throw new InvalidDataError('gpg verification failed: signature made by not included key');
+        if (out.includes("Can't check signature: No public key")) {
+          throw new InvalidDataError(
+            'gpg verification failed: signature made by not included key',
+          );
         }
         throw new InvalidDataError('gpg verification failed');
       }
-      if (out.indexOf('signature packet') !== out.lastIndexOf('signature packet')) {
+      if (
+        out.indexOf('signature packet') !== out.lastIndexOf('signature packet')
+      ) {
         throw new InvalidDataError('multiple signature is not implemented'); // cause security problems in regex :)
       }
       const getSignatureMatchSignaturePacket = out.match(
@@ -220,13 +237,14 @@ export class GpgService {
       }
       const signatureAlgorithm = getSignatureMatchSignaturePacket[1];
 
-      const getSignatureMatchData = out.match(
-        /(\s+data: ([0-9A-F]+))+\n/m,
-      );
+      const getSignatureMatchData = out.match(/(\s+data: ([0-9A-F]+))+\n/m);
       if (!getSignatureMatchData) {
-        throw new InvalidDataError('signature packet not contains signature data');
+        throw new InvalidDataError(
+          'signature packet not contains signature data',
+        );
       }
-      const data = getSignatureMatchData[0].split(/\s+data: /)
+      const data = getSignatureMatchData[0]
+        .split(/\s+data: /)
         .map((s) => s.trim())
         .filter((s) => s.length);
 
@@ -234,6 +252,7 @@ export class GpgService {
         signatureDate,
         usedKeyType,
         usedKeyFingerprint,
+        importedKeyUser,
         mainKey,
         signatureAlgorithm,
         signature: data.join(''),
@@ -254,5 +273,17 @@ export class GpgService {
     const tempDirPath = await mkdtemp(join(os.tmpdir(), tempDirPrefix));
     this.logger.debug(`Temporary directory created at: ${tempDirPath}`);
     return tempDirPath;
+  }
+
+  private parseDateString(gpgDateString: string): Date {
+    const dateParts = gpgDateString.trim().split(/\s+/);
+    // 'Sat Mar  4 21:05:49 2023 UTC'
+    // 'Aug  19,  1975 23:15:30 UTC'
+    const s = `${dateParts[1]}, ${dateParts[2]} ${dateParts[4]} ${dateParts[3]} ${dateParts[5]}`;
+    const d = new Date(s);
+    if (d.toString().indexOf(dateParts[0])) {
+      throw new Error('Date parse problem, input: ' + gpgDateString);
+    }
+    return d;
   }
 }

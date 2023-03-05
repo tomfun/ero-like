@@ -10,12 +10,29 @@ import {
   PaginateQuery,
   PaginationQueryDto,
 } from './paginationQueryPipe';
+import { UserService } from './user.service';
 import { ValidBody } from './validBodyPipe';
 import { PaginationFilters, ReportFilters } from './filtersQueryPipe';
 
 @Controller('/api/user')
 export class UserController {
-  constructor(private readonly gpgService: GpgService) {}
+  constructor(private readonly userService: UserService) {}
+
+  @Post('/dry-run')
+  async postReportDryRun(
+    @ValidBody
+      importAndVerifyDto: ImportAndVerifyPayload,
+  ) {
+    try {
+      const data = await this.userService.createUserDryRun(importAndVerifyDto);
+      return data.user;
+    } catch (e) {
+      if (e instanceof InvalidDataError) {
+        throw new BadRequestException(e.message);
+      }
+      throw e;
+    }
+  }
 
   @Post()
   async postReport(
@@ -23,11 +40,12 @@ export class UserController {
     importAndVerifyDto: ImportAndVerifyPayload,
   ) {
     try {
-      return await this.gpgService.temporaryImportAndVerify(importAndVerifyDto);
+      return await this.userService.createUser(importAndVerifyDto);
     } catch (e) {
       if (e instanceof InvalidDataError) {
         throw new BadRequestException(e.message);
       }
+      throw e;
     }
   }
 }

@@ -75,6 +75,7 @@ echo -e 'hello\n' | gpg --clear-sign -
 ```
 #### Use user for signing
 ```shell
+# see list keys section below
 # sign into file
 gpg -vab --local-user 0B7B99EB466D3F5D525D7E269645B577DB71D157 1s.txt
 # input and signature in one
@@ -83,10 +84,17 @@ echo -e 'I read and agree with all terms of use of ero-like and confirm my regis
 ```
 ### Export your key
 
-Be careful and export only your public key
+Be careful and export only your public key!
 ```shell
 # DD45FA4DC50F85F1 is key id; see list keys below
 gpg --armor --export DD45FA4DC50F85F1
+# keep only uid with email matching regexp @email
+gpg --export-filter keep-uid="uid=~@gmail" --armor --export 05F9ED8812AA8CD52A716B24AAE6AD94022ABBF1
+# keep only 'user1' and drop subkey if it created at '2022-07-25'
+gpg --export-filter keep-uid='uid=user1' --export-filter drop-subkey='key_created_d=2022-07-25' --armor --export 05F9ED8812AA8CD52A716B24AAE6AD94022ABBF1
+# check what is exported 
+gpg ...options --export ... | docker run --rm -i vladgh/gpg --import -v
+
 ```
 At the beginning and end must be line with *PUBLIC KEY*
 ```text
@@ -104,18 +112,69 @@ nAoFL1Xt5HCELslo4S6vjNMtIHLm6Jw3Hu0sUlfW81lu+q53XhFZcP22HB/MIRhD
 
 ```
 
-### Other
+public block contains public key**s**, date, **emails**, signatures, and may contain other
+information (see other section)
+usually it is something like that:
+```
+sec   rsa4096 2022-07-25 [SC]
+      05F9ED8812AA8CD52A716B24AAE6AD94022ABBF1
+uid           [ultimate] anonymous user@ero-like.online
+uid           [ultimate] user name <example@gmail.com>
+ssb   rsa4096 2022-07-25 [E]
+```
+
+see list keys below.
+
+### Edit names and email
+
+```bash
+# see list keys below
+gpg --edit-key 05F9ED8812AA8CD52A716B24AAE6AD94022ABBF1
+# follow instructions
+## gpg> help
+## save        save and quit
+## uid         select user ID N
+## adduid      add a user ID
+## deluid      delete selected user IDs
+## primary     flag the selected user ID as primary
+# just delete one and add another
+# after that
+# save
+gpg --export-filter ... # to export new data
+```
+
+### List keys
 
 ```shell
+# list secret (private) keys
+gpg --list-secret-keys
 # list keys
 gpg --list-keys
 # list keys and signatures
 gpg --list-signatures
 # list and check
 gpg --check-signatures  --list-options=show-usage,show-unusable-uids,show-sig-subpackets
-# list secret keys
-gpg --list-secret-keys
+```
 
+for example `gpg --list-secret-keys` gives your ~~user id~~ main key (fingerprint) and
+information about name and email, additional private/public key - ssb 
+```txt
+/home/user/.gnupg/pubring.kbx
+-------------------------------
+sec   rsa4096 2022-07-25 [SC]
+      05F9ED8812AA8CD52A716B24AAE6AD94022ABBF1
+uid           [ultimate] anonymous user@ero-like.online
+uid           [ultimate] user name <example@gmail.com>
+ssb   rsa4096 2022-07-25 [E]
+```
+
+So we use *main* key for *all* operation `05F9ED8812AA8CD52A716B24AAE6AD94022ABBF1`
+For public key export, for signing data, for editing
+
+
+### Other
+
+```shell
 # import key
 echo '--....PGP PUBLIC KEY...--' | gpg --import -
 # not import but dry-run. gives different output
