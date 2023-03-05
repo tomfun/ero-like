@@ -75,8 +75,9 @@ echo -e 'hello\n' | gpg --clear-sign -
 ```
 #### Use user for signing
 ```shell
+# sign into file
 gpg -vab --local-user 0B7B99EB466D3F5D525D7E269645B577DB71D157 1s.txt
-# OR use with specific key
+# input and signature in one
 echo -e 'I read and agree with all terms of use of ero-like and confirm my registration on ero-like' | gpg --local-user 0B7B99EB466D3F5D525D7E269645B577DB71D157 --clear-sign -
 # priority: --local-user 16AC27C7C31F6127!
 ```
@@ -84,7 +85,7 @@ echo -e 'I read and agree with all terms of use of ero-like and confirm my regis
 
 Be careful and export only your public key
 ```shell
-# DD45FA4DC50F85F1 is key id
+# DD45FA4DC50F85F1 is key id; see list keys below
 gpg --armor --export DD45FA4DC50F85F1
 ```
 At the beginning and end must be line with *PUBLIC KEY*
@@ -110,12 +111,19 @@ nAoFL1Xt5HCELslo4S6vjNMtIHLm6Jw3Hu0sUlfW81lu+q53XhFZcP22HB/MIRhD
 gpg --list-keys
 # list keys and signatures
 gpg --list-signatures
+# list and check
+gpg --check-signatures  --list-options=show-usage,show-unusable-uids,show-sig-subpackets
+# list secret keys
+gpg --list-secret-keys
+
 # import key
 echo '--....PGP PUBLIC KEY...--' | gpg --import -
-# not import, maybe not even check
+# not import but dry-run. gives different output
 echo '--....PGP PUBLIC KEY...--' | gpg --show-keys -
 
 ```
+
+#### Extended usage
 
 Sign with faked time, anotation, user, expiration piped to verirify which shows data
 ```bash
@@ -126,11 +134,36 @@ echo -e 'I read and agree with all terms of use of ero-like and confirm my regis
     vladgh/gpg --verify --verify-options show-notation
 ```
 
-Get primary key
+#### Read sign packet contents
 ```bash
 echo -e 'I read and agree with all terms of use of ero-like and confirm my registration on ero-like'     | docker run -i -v $(pwd)/docker/data/gpg/.gnupg:/root/.gnupg -e GPG_TTY=/dev/console     vladgh/gpg --clear-sign --local-user 1E11B59089A05C6B --set-notation name@ero-like.online=value --default-sig-expire 1 --faked-system-time 20230304T143648 > p.1E11B59089A05C6B.txt
 
 cat p.1E11B59089A05C6B.txt | docker run -i vladgh/gpg --list-packets --verbos -
 cat p.1E11B59089A05C6B.txt | docker run -i vladgh/gpg --dearmor | docker run -i vladgh/gpg --list-packets --verbos -
 cat p.1E11B59089A05C6B.txt | tail --lines=8 | docker run -i vladgh/gpg --list-packets --verbos -
+```
+
+
+#### Try to forge cert
+fake 1 byte at 11byte offset (0x0B):
+```bash
+# https://stackoverflow.com/questions/41806280/modify-a-byte-in-a-binary-file-using-standard-linux-command-line-tools
+cat p.txt | gpg --dearmor > p.bin
+echo $b_hex
+b_hex=$(xxd -seek $((16#B)) -l 1 -ps p.bin -)
+cp p.bin p_a8.bin
+echo "000b: a8" | xxd -r - p_a8.bin
+cat p_a8.bin | gpg --enarmor > p_a8.txt
+# see result
+cat p_a8.txt | docker run -i -v $(pwd)/docker/data/gpg/.gnupg:/root/.gnupg -e GPG_TTY=/dev/console -e GNUPGHOME=/tmp vladgh/gpg --list-packets --verbos -
+```
+try to import
+`cat p_a8.txt | docker run -i -v $(pwd)/docker/data/gpg/.gnupg:/root/.gnupg -e GPG_TTY=/dev/console -e GNUPGHOME=/tmp vladgh/gpg --import -`
+```text
+gpg: keybox '/tmp/pubring.kbx' created
+gpg: key 08639A81C0D6E671: 3 signatures not checked due to missing keys
+gpg: key 08639A81C0D6E671: no valid user IDs
+gpg: this may be caused by a missing self-signature
+gpg: Total number processed: 1
+gpg:           w/o user IDs: 1
 ```
