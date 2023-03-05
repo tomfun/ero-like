@@ -1,7 +1,7 @@
 <template>
   <p>{{ isLoading }}</p>
   <DataTable :value="reports" :lazy="true"  v-model:filters="filters"
-    :paginator="true" :rows="pagination.pageSize"
+    :paginator="true" :resizableColumns="true" :rows="pagination.pageSize"
     :totalRecords="pagination.itemsTotal" :rowsPerPageOptions="[10,20,50,100]"
     :paginatorTemplate="pag" @page="onPage($event)" filterDisplay="row"
     @filter="onFilter($event)"
@@ -40,7 +40,9 @@
 
 <script lang="ts">
 import DataTable from 'primevue/datatable';
-import { IS_LOADING, PAGINATION, REPORTS_MODULE } from '@/store/reports';
+import {
+  IS_LOADING, PAGINATION, REPORTS_MODULE, State as ReportsState,
+} from '@/store/reports';
 import { FETCH_REPORTS } from '@/store/reports/actions';
 import { defineComponent } from 'vue';
 import { mapActions, mapState } from 'vuex';
@@ -117,14 +119,15 @@ export default defineComponent({
     },
   },
   computed: {
-    reports(): Report[] {
-      const { data } = this.$store.state[REPORTS_MODULE];
-      return this.$store.state[REPORTS_MODULE].pagination.viewIds.map((id) => data[id]);
-    },
     ...mapState(REPORTS_MODULE, {
       isLoading: IS_LOADING,
       pagination: PAGINATION,
-      // reports: REPORTS, //check callback param
+    }),
+    ...mapState(REPORTS_MODULE, {
+      reports(state: ReportsState): Report[] {
+        const { data } = state;
+        return state.pagination.viewIds.map((id) => data[id]);
+      },
     }),
   },
   mounted() {
