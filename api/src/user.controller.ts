@@ -1,5 +1,5 @@
-import { BadRequestException, Controller, Get, Post } from '@nestjs/common';
-import { GpgService, ImportAndVerifyPayload, InvalidDataError } from './gpg.service';
+import { BadRequestException, Controller, Post } from '@nestjs/common';
+import { ImportAndVerifyPayload, InvalidDataError } from './gpg.service';
 import {
   ReportService,
   ReportBodyPayload,
@@ -10,7 +10,11 @@ import {
   PaginateQuery,
   PaginationQueryDto,
 } from './paginationQueryPipe';
-import { UserService } from './user.service';
+import {
+  NotAcceptAgreementError,
+  UserCreateError,
+  UserService,
+} from './user.service';
 import { ValidBody } from './validBodyPipe';
 import { PaginationFilters, ReportFilters } from './filtersQueryPipe';
 
@@ -21,15 +25,13 @@ export class UserController {
   @Post('/dry-run')
   async postReportDryRun(
     @ValidBody
-      importAndVerifyDto: ImportAndVerifyPayload,
+    importAndVerifyDto: ImportAndVerifyPayload,
   ) {
     try {
       const data = await this.userService.createUserDryRun(importAndVerifyDto);
       return data.user;
     } catch (e) {
-      if (e instanceof InvalidDataError) {
-        throw new BadRequestException(e.message);
-      }
+      this.convertUserRegisterError(e);
       throw e;
     }
   }
@@ -42,10 +44,17 @@ export class UserController {
     try {
       return await this.userService.createUser(importAndVerifyDto);
     } catch (e) {
-      if (e instanceof InvalidDataError) {
-        throw new BadRequestException(e.message);
-      }
-      throw e;
+      this.convertUserRegisterError(e);
     }
+  }
+  private convertUserRegisterError(e: Error): never {
+    if (
+      e instanceof InvalidDataError ||
+      e instanceof NotAcceptAgreementError ||
+      e instanceof UserCreateError
+    ) {
+      throw new BadRequestException(e.message);
+    }
+    throw e;
   }
 }

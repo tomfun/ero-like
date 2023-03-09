@@ -16,6 +16,7 @@ export {
 } from './report.entity';
 
 export class NotAcceptAgreementError extends Error {}
+export class UserCreateError extends Error {}
 
 @Injectable()
 export class UserService {
@@ -37,14 +38,14 @@ export class UserService {
       importAndVerifyPayload,
     );
 
-    const publicKey = new DataEntity();
+    let publicKey = new DataEntity();
     publicKey.createdAt = now;
     publicKey.type = 'text/gpg/public-key';
     publicKey.mime = 'text/plain';
     publicKey.clearSignDataPart = importAndVerifyPayload.publicKeyArmored;
     publicKey.sha256 = await this.calculateSha256(publicKey.clearSignDataPart);
 
-    const agreement = new DataEntity();
+    let agreement = new DataEntity();
     agreement.createdAt = now;
     agreement.type = 'text';
     agreement.mime = 'text/plain';
@@ -65,15 +66,57 @@ export class UserService {
     }
     agreement.sha256 = await this.calculateSha256(agreement.clearSignDataPart);
 
+    [publicKey, agreement] = await Promise.all([
+      this.findOrDefaultData(publicKey),
+      this.findOrDefaultData(agreement),
+    ]);
+
     const publicKeySign = new SignatureEntity();
     publicKeySign.createdAt = now;
     publicKeySign.data = publicKey;
     publicKeySign.hash = [];
-    publicKeySign.signature = '';
+    publicKeySign.signature = ''; // :(
     publicKeySign.primaryKeyFingerprint = data.mainKey;
     publicKeySign.signedAt = data.signatureDate;
     publicKeySign.subkeyFingerprint = data.usedKeyFingerprint;
 
+    let u: UserEntity;
+    if (publicKeySign.data.id) {
+      u = await this.userRepo.findOne({
+        where: {
+          firstUpdateSignature: {
+            data: publicKey,
+            primaryKeyFingerprint: publicKeySign.primaryKeyFingerprint,
+            signature: '',
+          },
+        },
+        relations: { firstUpdateSignature: true },
+      });
+      if (u) {
+        u.firstUpdateSignature.data = publicKey;
+        u.lastUpdateSignature = u.firstUpdateSignature;
+      } else {
+        u = await this.userRepo.findOne({
+          where: {
+            firstUpdateSignature: {
+              primaryKeyFingerprint: publicKeySign.primaryKeyFingerprint,
+              signature: '',
+            },
+          },
+          relations: { firstUpdateSignature: true },
+        });
+        if (u) {
+          throw new UserCreateError(
+            'User is already created with different public key',
+          );
+        }
+      }
+    }
+    if (!u) {
+      u = new UserEntity();
+      u.createdAt = now;
+      u.firstUpdateSignature = u.lastUpdateSignature = publicKeySign;
+    }
     const agreementSign = new SignatureEntity();
     agreementSign.createdAt = now;
     agreementSign.data = agreement;
@@ -86,27 +129,23 @@ export class UserService {
     agreementSign.signedAt = data.signatureDate;
     agreementSign.subkeyFingerprint = data.usedKeyFingerprint;
 
-    const u = new UserEntity();
-    u.createdAt = now;
-    u.agreementSignature = agreementSign;
-    u.firstUpdateSignature = u.lastUpdateSignature = publicKeySign;
     u.nick = data.importedKeyUser.replace(/<.+@.+>/, '').trim();
+    u.agreementSignature = agreementSign;
+
     return {
       user: u,
       verifyData: data,
     };
   }
 
-  async createUser(importAndVerifyPayload: ImportAndVerifyPayload): Promise<UserEntity> {
+  async createUser(
+    importAndVerifyPayload: ImportAndVerifyPayload,
+  ): Promise<UserEntity> {
     const { user } = await this.createUserDryRun(importAndVerifyPayload);
-    const data = await this.dataSource.manager.save(
-      await Promise.all([
-        this.findOrCreateData(user.firstUpdateSignature.data),
-        this.findOrCreateData(user.agreementSignature.data),
-      ]),
-    );
-    user.firstUpdateSignature.data = data[0];
-    user.agreementSignature.data = data[0];
+    await this.dataSource.manager.save([
+      user.firstUpdateSignature.data,
+      user.agreementSignature.data,
+    ]);
     return this.dataSource.transaction<UserEntity>(async (m) => {
       const signatures = await m.save([
         user.firstUpdateSignature,
@@ -127,7 +166,7 @@ export class UserService {
     return hash.digest('hex');
   }
 
-  private async findOrCreateData(data: DataEntity) {
+  private async findOrDefaultData(data: DataEntity) {
     const d = await this.dataRepo.findOneBy(
       pick(data, ['clearSignDataPart', 'type', 'sha256']),
     );
