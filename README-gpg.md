@@ -203,7 +203,7 @@ cat p.1E11B59089A05C6B.txt | tail --lines=8 | docker run -i vladgh/gpg --list-pa
 ```
 
 
-#### Try to forge cert
+#### Try to fake cert
 fake 1 byte at 11byte offset (0x0B):
 ```bash
 # https://stackoverflow.com/questions/41806280/modify-a-byte-in-a-binary-file-using-standard-linux-command-line-tools
