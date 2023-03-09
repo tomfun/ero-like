@@ -1,5 +1,6 @@
 <template>
-  <div class="about">
+  <div class="center">
+    <img alt="logo" src="../assets/logo.svg">
     <h1>About page</h1>
     <q>Explore the eroticism of discovering the truth - it's a journey you won't forget.</q>
     <p>Welcome to Ero-Like (ero-like.online)! At Ero-Like, we believe in the power of machine

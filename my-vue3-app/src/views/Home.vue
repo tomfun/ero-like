@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="center">
     <img alt="logo" src="../assets/logo.svg">
     <p>The ero-like website is actually a platform for creating and sharing reports, similar to
       tweets, but with the use of digital signatures and structured data. Our platform allows users

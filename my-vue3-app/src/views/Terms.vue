@@ -1,5 +1,7 @@
 <template>
-  <img alt="logo" src="../assets/logo.svg">
+  <div class="center">
+    <img alt="logo" src="../assets/logo.svg">
+  </div>
   <h1>TERMS OF USE AGREEMENT</h1>
   <p>Welcome to Ero-Like (ero-like.online). By using our site, you agree to the following terms of
     use:</p>

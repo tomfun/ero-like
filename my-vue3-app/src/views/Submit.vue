@@ -1,6 +1,5 @@
 <template>
-  <div class="home">
-    <img alt="logo" src="../assets/logo.svg">
+  <div>
     <SubmitReport />
   </div>
 </template>
