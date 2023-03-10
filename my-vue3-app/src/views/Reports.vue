@@ -1,5 +1,5 @@
 <template>
-  <div class="about">
+  <div>
     <h1>This is report storage</h1>
     <ReportList/>
 

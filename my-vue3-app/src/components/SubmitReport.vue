@@ -1,5 +1,8 @@
 <template>
   <div class="submitReportForm">
+    Only registered users can submit reports
+    <router-link :to="{ name: 'UserRegistration' }">register</router-link>
+    <br>
     <h1 class="submitReportForm__title">Расскажите о ваших впечатлениях в подробностях</h1>
       <input v-model="id" disabled v-if="id">
       <input v-model="title" placeholder="Add title">
