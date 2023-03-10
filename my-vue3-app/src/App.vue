@@ -1,11 +1,18 @@
 <template>
   <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link> |
-    <router-link to ="/reports">Reports </router-link> |
-    <router-link to="/submit">Submit Report</router-link>
+    <router-link :to="{ name: 'Home' }">Home</router-link> |
+    <router-link :to="{ name: 'Reports' }">Reports </router-link> |
+    <router-link :to="{ name: 'Submit' }">Submit Report</router-link>
   </div>
   <router-view/>
+  <div id="nav-footer">
+    <router-link :to="{ name: 'Home' }">Home</router-link> |
+    <router-link :to="{ name: 'Reports' }">Reports </router-link> |
+    <router-link :to="{ name: 'UserRegistration' }">Register</router-link> |
+    <router-link :to="{ name: 'Submit' }">Submit Report</router-link> |
+    <router-link :to="{ name: 'About' }">About</router-link> |
+    <router-link :to="{ name: 'Terms' }">Terms of Use Agreement</router-link>
+  </div>
 </template>
 
 <style lang="scss">
@@ -13,11 +20,14 @@
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
 }
 
-#nav {
+div.center, #nav, #nav-footer  {
+  text-align: center;
+}
+
+#nav, #nav-footer {
   padding: 30px;
 
   a {
@@ -28,5 +38,9 @@
       color: #42b983;
     }
   }
+}
+
+#nav-footer {
+  border-top: #2c3e50 2px solid;
 }
 </style>

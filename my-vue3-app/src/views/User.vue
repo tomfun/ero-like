@@ -1,17 +1,17 @@
 <template>
   <div>
-    <SubmitReport />
+    <UserRegistration />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import SubmitReport from '../components/SubmitReport.vue'; // @ is an alias to /src
+import UserRegistration from '../components/UserRegistration.vue';
 
 export default defineComponent({
-  name: 'Submit',
+  name: 'User',
   components: {
-    SubmitReport,
+    UserRegistration,
   },
 });
 </script>
