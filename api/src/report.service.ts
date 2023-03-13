@@ -1,50 +1,44 @@
 import { Injectable } from '@nestjs/common';
-import { Connection, FindOperator, Like, Repository } from 'typeorm';
-import {
-  FindOptionsWhere,
-} from 'typeorm/find-options/FindOptionsWhere';
-import { QueryOperator, ReportFilters, StringField } from './filtersQueryPipe';
-export {
-  ReportForList,
-  ReportBodyPayload,
-  ReportEntity,
-} from './report.entity';
-import {
-  ReportEntity,
-  ReportForList,
-  ReportBodyPayload,
-} from './report.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 import { validate } from 'class-validator';
+import { Connection, FindOperator, Like, Repository } from 'typeorm';
+import { FindOptionsWhere } from 'typeorm/find-options/FindOptionsWhere';
+import { QueryOperator, ReportFilters, StringField } from './filtersQueryPipe';
 import { Paginable, PaginationQueryDto } from './paginationQueryPipe';
+import { ReportDataBodyPayload, ReportEntity } from './report.entity';
+import { UserEntity } from './user.entity';
+
+export { ReportDataBodyPayload, ReportEntity } from './report.entity';
+
+export type ReportForList = Omit<ReportEntity, 'user' | 'signature'>;
+export type ReportBodyPayload = Omit<ReportEntity, 'user' | 'signature'>;
 
 @Injectable()
 export class ReportService {
+  @InjectRepository(ReportEntity)
   private reportRepo: Repository<ReportEntity>;
-  constructor(connection: Connection) {
-    this.reportRepo = connection.getRepository<ReportEntity>(ReportEntity);
-  }
 
   async getList(
     { page, pageSize }: PaginationQueryDto,
     filters: ReportFilters,
   ): Promise<Paginable<ReportForList>> {
     const where = {} as FindOptionsWhere<ReportEntity>;
-    if (filters.nick) {
-      const nickFilter = this.buildStringWhere(
-        filters.nick,
-      );
-      if (nickFilter !== undefined) {
-        where.nick = nickFilter;
-      }
-    }
-    if (filters.title) {
-      const titleFilter = this.buildStringWhere(
-        filters.title,
-      );
-      if (titleFilter !== undefined) {
-        where.title = titleFilter;
-      }
-    }
+    // todo:
+    // 1. https://typeorm.io/find-options
+    // 2. https://typeorm.io/select-query-builder
+
+    // if (filters.nick) {
+    //   const nickFilter = this.buildStringWhere(filters.nick);
+    //   if (nickFilter !== undefined) {
+    //     where.nick = nickFilter;
+    //   }
+    // }
+    // if (filters.title) {
+    //   const titleFilter = this.buildStringWhere(filters.title);
+    //   if (titleFilter !== undefined) {
+    //     where.title = titleFilter;
+    //   }
+    // }
     const [items, itemsTotal] = await this.reportRepo.findAndCount({
       skip: page * pageSize,
       take: pageSize,

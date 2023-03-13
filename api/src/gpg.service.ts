@@ -1,21 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as process from 'process';
 import rimraf from 'rimraf';
 import { join } from 'path';
 import { spawn } from 'child_process';
 import { mkdtemp } from 'fs/promises';
 import * as os from 'os';
-import { Connection, Repository } from 'typeorm';
-export {
-  ReportForList,
-  ReportBodyPayload,
-  ReportEntity,
-} from './report.entity';
-import {
-  ReportEntity,
-  ReportForList,
-  ReportBodyPayload,
-} from './report.entity';
+import { Repository } from 'typeorm';
+import { ReportEntity } from './report.entity';
 import { Length } from 'class-validator';
 
 const tempDirPrefix = `ero-like-${process.pid}-gpg-`;
@@ -34,10 +26,8 @@ export class InvalidDataError extends Error {}
 export class GpgService {
   private logger = new Logger(GpgService.name);
 
+  @InjectRepository(ReportEntity)
   private reportRepo: Repository<ReportEntity>;
-  constructor(connection: Connection) {
-    this.reportRepo = connection.getRepository<ReportEntity>(ReportEntity);
-  }
 
   async temporaryImportAndVerify(
     importAndVerifyPayload: ImportAndVerifyPayload,

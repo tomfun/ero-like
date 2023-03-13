@@ -9,12 +9,6 @@ import { GpgService, ImportAndVerifyPayload } from './gpg.service';
 import { SignatureEntity } from './signature.entity';
 import { UserEntity } from './user.entity';
 
-export {
-  ReportForList,
-  ReportBodyPayload,
-  ReportEntity,
-} from './report.entity';
-
 export class NotAcceptAgreementError extends Error {}
 export class UserCreateError extends Error {}
 
@@ -153,9 +147,6 @@ export class UserService {
       ]);
       user.firstUpdateSignature = signatures[0];
       user.agreementSignature = signatures[1];
-
-      console.log(user);
-
       return m.save(user);
     });
   }
