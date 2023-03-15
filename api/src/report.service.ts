@@ -29,6 +29,7 @@ export class ReportService {
     filters: ReportFilters,
   ): Promise<Paginable<ReportForList>> {
     const where = {} as FindOptionsWhere<ReportEntity>;
+    // console.log(filters);
     if (filters.nick) {
       const nickFilter = this.buildStringWhere(
         filters.nick,

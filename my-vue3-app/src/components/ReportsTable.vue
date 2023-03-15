@@ -56,14 +56,16 @@ type FetchParams = {
   filters: {
     nick: {
       value: string|undefined;
-      type: string;
+      matchMode: string;
     };
     title: {
       value: string|undefined;
-      type: string;
+      matchMode: string;
     };
   };
 };
+
+// type Filters = Pick<FetchParams, "filters">;
 
 export default defineComponent({
   name: 'ReportsTable',
@@ -76,11 +78,11 @@ export default defineComponent({
         filters: {
           nick: {
             value: undefined,
-            type: 'equal',
+            matchMode: 'equal',
           },
           title: {
             value: undefined,
-            type: 'equal',
+            matchMode: 'equal',
           },
         },
       } as FetchParams,
@@ -100,7 +102,7 @@ export default defineComponent({
       filters: {
         nick: { value: undefined, matchMode: 'equals' },
         title: { value: undefined, matchMode: 'equals' },
-      },
+      } as FetchParams['filters'],
     };
   },
   methods: {
@@ -115,6 +117,10 @@ export default defineComponent({
       return this.fetchWith({ page, pageSize });
     },
     onFilter() {
+      console.log(this.filters);
+      if (this.filters.nick.value !== undefined && this.filters.nick.matchMode === 'equals') {
+        this.fetchWith({ ...this.fetchParams, filters: { ...this.filters } });
+      }
       this.fetchWith({ ...this.fetchParams });
     },
   },
