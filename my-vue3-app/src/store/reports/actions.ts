@@ -22,8 +22,11 @@ function buildReportsFilters(this: Pagination['filters']): false|Array<(r: Repor
       case 'equals':
         newFilter = (r: Report) => r[field] === value;
         break;
-      case 'start':
+      case 'startsWith':
         newFilter = (r: Report) => r[field].startsWith(value);
+        break;
+      case 'endsWith':
+        newFilter = (r: Report) => r[field].endsWith(value);
         break;
       default:
         newFilter = nothing;

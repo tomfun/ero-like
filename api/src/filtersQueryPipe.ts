@@ -18,8 +18,8 @@ export class StringField {
 
 export enum QueryOperator {
   Equal = 'equals',
-  Start = 'start',
-  End = 'end',
+  Start = 'startsWith',
+  End = 'endsWith',
 }
 
 export class ReportFilters {
@@ -31,7 +31,7 @@ export class ReportFilters {
   title?: StringField;
 }
 
-const StringFilters = [QueryOperator.Start, QueryOperator.Equal];
+const StringFilters = [QueryOperator.Start, QueryOperator.Equal, QueryOperator.End];
 
 const reportConfig = {
   nick: { type: String, filters: StringFilters },

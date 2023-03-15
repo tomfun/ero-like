@@ -1,10 +1,9 @@
 <template>
-  <p>{{ isLoading }}</p>
   <DataTable :value="reports" :lazy="true"  v-model:filters="filters"
     :paginator="true" :resizableColumns="true" :rows="pagination.pageSize"
     :totalRecords="pagination.itemsTotal" :rowsPerPageOptions="[10,20,50,100]"
     :paginatorTemplate="pag" @page="onPage($event)" filterDisplay="row"
-    @filter="onFilter($event)"
+    @filter="onFilter($event)" :loading="isLoading"
     :globalFilterFields="['nick', 'title']"
     >
     <Column field="nick" header="Nick" style="min-width: 14rem" ref="nick">
@@ -65,8 +64,6 @@ type FetchParams = {
   };
 };
 
-// type Filters = Pick<FetchParams, "filters">;
-
 export default defineComponent({
   name: 'ReportsTable',
   components: { DataTable, Column },
@@ -117,11 +114,10 @@ export default defineComponent({
       return this.fetchWith({ page, pageSize });
     },
     onFilter() {
-      console.log(this.filters);
-      if (this.filters.nick.value !== undefined && this.filters.nick.matchMode === 'equals') {
-        this.fetchWith({ ...this.fetchParams, filters: { ...this.filters } });
+      if (this.filters.nick.value === null || this.filters.title.value === null) {
+        return;
       }
-      this.fetchWith({ ...this.fetchParams });
+      this.fetchWith({ ...this.fetchParams, filters: { ...this.filters } });
     },
   },
   computed: {
