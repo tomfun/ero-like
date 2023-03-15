@@ -4,7 +4,7 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import * as process from 'process';
-import * as querystring from 'querystring';
+import * as qs from 'qs';
 import { ReportModule } from './report.module';
 import Server from 'fastify';
 
@@ -13,7 +13,7 @@ async function bootstrap() {
     // @see https://www.fastify.io/docs/latest/Reference/Server/#trustproxy
     trustProxy: +process.env.TRUST_PROXY,
     logger: true,
-    querystringParser: (str) => querystring.parse(str),
+    querystringParser: (str) => qs.parse(str),
   });
   const app = await NestFactory.create<NestFastifyApplication>(
     ReportModule,
