@@ -25,11 +25,14 @@ export class SignatureEntity {
   hash: string[];
 
   @Column({ type: 'bytea' })
-  primaryKeyFingerprint: string;
+  primaryKeyFingerprint: string | ArrayBuffer;
 
   @Column({ type: 'bytea' })
-  subkeyFingerprint: string;
+  subkeyFingerprint: string | ArrayBuffer;
 
   @Column({ type: 'bytea' })
-  signature: string;
+  signature: string | ArrayBuffer;
+
+  @Column({ type: 'bytea' })
+  packet: string | ArrayBuffer;
 }

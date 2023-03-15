@@ -87,6 +87,7 @@ export class SignatureDataService {
     );
 
     let packet: Buffer;
+    // eslint-disable-next-line prefer-const
     [packet, dataEntity] = await Promise.all([
       this.gpgService.armor(verifyData.clearSignSignaturePart),
       this.findOrDefaultData(dataEntity),

@@ -4,7 +4,7 @@
 
 1. for local development setup db:
 ```bash
-docker-compose up
+docker-compose up db
 ```
 
 2. Go to *api* and follow instructions

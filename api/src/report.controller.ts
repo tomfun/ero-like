@@ -1,8 +1,8 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import {
   ReportService,
-  ReportBodyPayload,
   ReportForList,
+  ReportDataBodyPayload,
 } from './report.service';
 import {
   Paginable,
@@ -27,16 +27,13 @@ export class ReportController {
   @Post('/validate')
   validateReport(
     @ValidBody
-    createReportDto: ReportBodyPayload,
-  ): ReportBodyPayload {
+    createReportDto: ReportDataBodyPayload,
+  ): ReportDataBodyPayload {
     return createReportDto;
   }
 
   @Post()
-  postReport(
-    @ValidBody
-    createReportDto: ReportBodyPayload,
-  ): Promise<ReportForList> {
-    return this.appService.create(createReportDto);
+  postReport(@Body() data: string): Promise<ReportForList> {
+    return this.appService.create(data);
   }
 }

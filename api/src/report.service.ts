@@ -1,22 +1,37 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, ValidationPipe } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { validate } from 'class-validator';
-import { Connection, FindOperator, Like, Repository } from 'typeorm';
+import { FindOperator, Like, Repository } from 'typeorm';
 import { FindOptionsWhere } from 'typeorm/find-options/FindOptionsWhere';
 import { QueryOperator, ReportFilters, StringField } from './filtersQueryPipe';
 import { Paginable, PaginationQueryDto } from './paginationQueryPipe';
 import { ReportDataBodyPayload, ReportEntity } from './report.entity';
-import { UserEntity } from './user.entity';
+import { SignatureDataService } from './signature-data.service';
+import { UserService } from './user.service';
 
 export { ReportDataBodyPayload, ReportEntity } from './report.entity';
 
 export type ReportForList = Omit<ReportEntity, 'user' | 'signature'>;
 export type ReportBodyPayload = Omit<ReportEntity, 'user' | 'signature'>;
 
+export const TYPE = 'drugs.ero-like.online/report@0.0.1-alpha-1';
+
 @Injectable()
 export class ReportService {
   @InjectRepository(ReportEntity)
   private reportRepo: Repository<ReportEntity>;
+
+  @Inject()
+  private signService: SignatureDataService;
+
+  @Inject()
+  private userService: UserService;
+
+  readonly validationPipe = new ValidationPipe({
+    transform: true,
+    whitelist: true,
+    validateCustomDecorators: true,
+    // exceptionFactory: (e) => new TransformResourceDeserializationError(e),
+  });
 
   async getList(
     { page, pageSize }: PaginationQueryDto,
@@ -53,16 +68,29 @@ export class ReportService {
     };
   }
 
-  async create(createReportDto: ReportBodyPayload): Promise<ReportForList> {
+  async create(clearSignArmored: string): Promise<ReportForList> {
+    const { signature } = await this.signService.createEntity({
+      clearSignArmored,
+      type: TYPE,
+    });
+    // throw http bad request error
+    const createReportDto = await this.validationPipe.transform(
+      JSON.parse(signature.data.clearSignDataPart),
+      {
+        type: 'body',
+        metatype: ReportDataBodyPayload,
+      },
+    );
     const report = new ReportEntity();
-    Object.assign(report, createReportDto);
-    const errors = await validate(report);
-    if (errors.length > 0) {
-      console.log(errors);
-      throw new Error(`Validation failed!`);
-    }
-    await this.reportRepo.save(report);
-    return report;
+    report.d = createReportDto;
+    report.signature = signature;
+    report.user = await this.userService.fidUser(signature);
+    await this.reportRepo.manager.save([
+      report.signature.data,
+      report.signature,
+    ]);
+    report.createdAt = report.signature.createdAt;
+    return this.reportRepo.save(report);
   }
 
   private buildStringWhere(

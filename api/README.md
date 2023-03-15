@@ -21,13 +21,16 @@ npm run migrate
 
 ```bash
 # development
-$ npm run start
+docker-compose up api
+```
+
+see start node scripts
+```bash
+npm run
 
 # watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+# npm run start:dev
+# ...
 ```
 
 ## Create Migration

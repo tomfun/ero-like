@@ -1,17 +1,74 @@
+### 1E11B59089A05C6B
 POST http://localhost:3000/api/report
+Content-Type: text/plain
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+{
+  "substances": [
+    {
+      "timeSecond": 0,
+      "dose": 5,
+      "doseUnit": "mg",
+      "name": "Heroin",
+      "routeOfAdministration": "intravenous",
+      "activeSubstance": "heroin",
+      "surePercent": 99
+    }
+  ],
+  "timeLineReport": [
+    {
+      "timeSecond": 0,
+      "report": "Зачёт так улётно..."
+    },
+    {
+      "timeSecond": 3600,
+      "report": "Ну почти всё. Опять надо повторять"
+    }
+  ],
+  "background": "Ну я короче не первый раз юзал, а ещё я много бухал",
+  "dateTimestamp": 1678021709,
+  "title": "Теперь, я подсел"
+}
+-----BEGIN PGP SIGNATURE-----
+
+iHUEAREIAB0WIQRI9smM6nkaYkWBL24eEbWQiaBcawUCZANXgAAKCRAeEbWQiaBc
+a0tfAPsGcC/YYLe+89Lqi/7G6QWW7M+6hVOX4+zOjIm6vfi6YwD/ULn3n3JvjzRw
+Zl80bV7VFNgQHt7yeBIAyJvh2VRjASY=
+=37Lq
+-----END PGP SIGNATURE-----
+
+
+###
+
+POST http://localhost:3000/api/report/validate
 Content-Type: application/json
 
 {
-  "id": "5424b448-2450-4fd2-9883-8000de6f8343",
-  "gpgSigned": false,
   "substances": [
     {
-      "name": "Хмурый",
+      "timeSecond": 0,
+      "dose": 5,
+      "doseUnit": "mg",
+      "name": "Heroin",
+      "routeOfAdministration": "intravenous",
       "activeSubstance": "heroin",
-      "sure": 70
+      "surePercent": 99
     }
   ],
-  "nick": "tomfun",
+  "timeLineReport": [
+    {
+      "timeSecond": 0,
+      "report": "Зачёт так улётно..."
+    },
+    {
+      "timeSecond": 3600,
+      "report": "Ну почти всё. Опять надо повторять"
+    }
+  ],
+  "background": "Ну я короче не первый раз юзал, а ещё я много бухал",
+  "dateTimestamp": 1678021709,
   "title": "Теперь, я подсел"
 }
 

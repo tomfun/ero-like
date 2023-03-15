@@ -3,9 +3,9 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn, ManyToOne
+  UpdateDateColumn,
+  ManyToOne,
 } from 'typeorm';
-import { DataEntity } from './data.entity';
 import { SignatureEntity } from './signature.entity';
 
 @Entity('user')

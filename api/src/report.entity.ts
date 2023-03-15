@@ -1,10 +1,10 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
-  IsDate,
   IsIn,
   IsInt,
-  IsNumber, IsOptional,
+  IsNumber,
+  IsOptional,
   Length,
   Max,
   Min,
@@ -103,13 +103,7 @@ export class ReportDataBodyPayload {
   @Length(4, 250)
   title: string;
 
-  @Length(4, 48)
-  nick: string;
-
-  @Length(4, 48)
-  substance: string;
   // https://psychonautwiki.org/wiki/Psychoactive_substance_index
-
   @ValidateNested()
   @IsArray()
   @Type(() => ReportDataSubstanceBodyPayload)
@@ -131,8 +125,8 @@ export class ReportDataBodyPayload {
   @Type(() => ReportDataTimeLineReportBodyPayload)
   timeLineReport: Array<ReportDataTimeLineReportBodyPayload>;
 
-  @IsDate()
-  date: Date;
+  @IsInt()
+  dateTimestamp: number;
   // todo: effect, tolerance
   // https://psychonautwiki.org/wiki/Experience_index
 }
