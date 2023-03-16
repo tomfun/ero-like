@@ -39,4 +39,5 @@ services:
       - postgres
     volumes:
       - ./api:/ero-like/api
+#      - ./docker/data/gpg/.gnupg2:/root/.gnupg
       - ./docker/data/gpg:/root

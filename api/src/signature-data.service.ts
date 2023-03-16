@@ -5,8 +5,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { DataEntity } from './data.entity';
-import { GpgService, ImportAndVerifyPayload } from './gpg.service';
+import {
+  GpgService,
+  ImportAndVerifyPayload,
+  NoPublicKeyVerifyError,
+} from './gpg.service';
 import { SignatureEntity } from './signature.entity';
+
+type UnwrapPromise<T> = T extends Promise<infer R> ? R : never;
 
 @Injectable()
 export class SignatureDataService {
@@ -15,6 +21,9 @@ export class SignatureDataService {
 
   @InjectRepository(DataEntity)
   private dataRepo: Repository<DataEntity>;
+
+  @InjectRepository(SignatureEntity)
+  private signRepo: Repository<SignatureEntity>;
 
   @Inject()
   private gpgService: GpgService;
@@ -49,7 +58,7 @@ export class SignatureDataService {
     publicKeySignature.data = publicKey;
     publicKeySignature.hash = [];
     publicKeySignature.signature = ''; // :(
-    publicKeySignature.packet = ''; // :(
+    publicKeySignature.packet = ''; // 1 signature must have only 1 sign  :(
     publicKeySignature.primaryKeyFingerprint = data.mainKey;
     publicKeySignature.signedAt = data.signatureDate;
     publicKeySignature.subkeyFingerprint = data.usedKeyFingerprint;
@@ -75,7 +84,52 @@ export class SignatureDataService {
 
   async createEntity(data: { clearSignArmored: string; type: string }) {
     const now = new Date();
-    const verifyData = await this.gpgService.verify(data);
+    let verifyData: UnwrapPromise<
+      ReturnType<typeof GpgService.prototype.verify>
+    >;
+    let notFoundError;
+    try {
+      verifyData = await this.gpgService.verify(data);
+    } catch (e) {
+      if (!(e instanceof NoPublicKeyVerifyError)) {
+        throw e;
+      }
+      notFoundError = e;
+      const publicKeysSignatures = await this.signRepo.find({
+        where: {
+          signature: '',
+          packet: '',
+          subkeyFingerprint: e.keyFingerprint,
+        },
+        relations: {
+          data: true,
+        },
+      });
+      const dataObj = publicKeysSignatures.reduce((acc, s) => {
+        if (!(s.data.id in acc)) {
+          acc[s.data.id] = s.data;
+        }
+        return acc;
+      }, {} as Record<string, DataEntity>);
+      for (const id in dataObj) {
+        await this.gpgService.loadKey({
+          publicKeyArmored: dataObj[id].clearSignDataPart,
+        });
+        try {
+          verifyData = await this.gpgService.verify(data);
+        } catch (e) {
+          if (!(e instanceof NoPublicKeyVerifyError)) {
+            throw e;
+          }
+        }
+        if (verifyData) {
+          break;
+        }
+      }
+      if (!verifyData) {
+        throw notFoundError;
+      }
+    }
 
     let dataEntity = new DataEntity();
     dataEntity.createdAt = now;
@@ -104,7 +158,7 @@ export class SignatureDataService {
     signature.subkeyFingerprint = verifyData.usedKeyFingerprint;
 
     return {
-      signature,
+      signature: await this.findOrDefaultSignature(signature),
       verifyData,
     };
   }
@@ -120,5 +174,24 @@ export class SignatureDataService {
       pick(data, ['clearSignDataPart', 'type', 'sha256']),
     );
     return d || data;
+  }
+
+  private async findOrDefaultSignature(signature: SignatureEntity) {
+    const s = await this.signRepo.findOneBy(
+      pick(signature, [
+        'data.id', // important
+        // 'hash', // orm bug
+        'signature',
+        'packet', // important
+        'primaryKeyFingerprint',
+        'signedAt',
+        'subkeyFingerprint',
+      ]),
+    );
+    if (s) {
+      s.data = signature.data;
+      return s;
+    }
+    return signature;
   }
 }

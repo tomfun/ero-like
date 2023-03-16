@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put } from '@nestjs/common';
 import {
   ReportService,
   ReportForList,
@@ -32,7 +32,7 @@ export class ReportController {
     return createReportDto;
   }
 
-  @Post()
+  @Put()
   postReport(@Body() data: string): Promise<ReportForList> {
     return this.appService.create(data);
   }

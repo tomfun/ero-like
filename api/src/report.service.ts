@@ -73,6 +73,19 @@ export class ReportService {
       clearSignArmored,
       type: TYPE,
     });
+    let report;
+    if (signature.id) {
+      report = await this.reportRepo.findOne({
+        where: { signature: { id: signature.id } },
+        relations: {
+          user: true,
+        },
+      });
+      if (report) {
+        report.signature = signature;
+        return report;
+      }
+    }
     // throw http bad request error
     const createReportDto = await this.validationPipe.transform(
       JSON.parse(signature.data.clearSignDataPart),
@@ -81,10 +94,11 @@ export class ReportService {
         metatype: ReportDataBodyPayload,
       },
     );
-    const report = new ReportEntity();
+    const user = await this.userService.fidUser(signature);
+    report = new ReportEntity();
     report.d = createReportDto;
     report.signature = signature;
-    report.user = await this.userService.fidUser(signature);
+    report.user = user;
     await this.reportRepo.manager.save([
       report.signature.data,
       report.signature,

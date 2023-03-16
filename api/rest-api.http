@@ -1,5 +1,5 @@
 ### 1E11B59089A05C6B
-POST http://localhost:3000/api/report
+PUT http://localhost:3000/api/report
 Content-Type: text/plain
 
 -----BEGIN PGP SIGNED MESSAGE-----

@@ -31,6 +31,15 @@ export class ImportAndVerifyPayload extends VerifyPayload {
 }
 
 export class InvalidDataError extends Error {}
+export class NoPublicKeyVerifyError extends Error {
+  constructor(
+    message: string,
+    public readonly keyType,
+    public readonly keyFingerprint,
+  ) {
+    super(message);
+  }
+}
 
 @Injectable()
 export class GpgService {
@@ -179,6 +188,9 @@ export class GpgService {
         hash,
       };
     } catch (e) {
+      if (e instanceof NoPublicKeyVerifyError) {
+        e = new InvalidDataError(e.message);
+      }
       const log = `${e.message}: ${errs.join()}`;
       if (e instanceof InvalidDataError) {
         this.logger.debug(log);
@@ -305,12 +317,7 @@ export class GpgService {
     const code = await codePromise;
     this.logger.debug(`cp gpg --verify finished code: ${code}`);
     out += errs.join('');
-    if (code !== 0) {
-      if (out.includes("Can't check signature: No public key")) {
-        throw new InvalidDataError(
-          'gpg verification failed: signature made by not included key',
-        );
-      }
+    if (code !== 0 && !out.includes("Can't check signature: No public key")) {
       throw new InvalidDataError('gpg verification failed');
     }
     const verifyMatchKey = out.match(
@@ -324,6 +331,14 @@ export class GpgService {
     const signatureDate = this.parseDateString(verifyMatchKey[1]);
     const usedKeyType = verifyMatchKey[2];
     const usedKeyFingerprint = verifyMatchKey[3];
+
+    if (code !== 0 && out.includes("Can't check signature: No public key")) {
+      throw new NoPublicKeyVerifyError(
+        'gpg verification failed: signature made by not included key',
+        usedKeyType,
+        usedKeyFingerprint,
+      );
+    }
 
     const verifyMatchMainKey = out.match(
       /Primary key fingerprint: ([0-9A-F ]+)/,
