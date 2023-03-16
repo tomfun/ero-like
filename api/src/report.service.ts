@@ -1,6 +1,6 @@
 import { Inject, Injectable, ValidationPipe } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOperator, Like, Repository } from 'typeorm';
+import { FindOperator, Like, JsonContains, Repository, Raw } from 'typeorm';
 import { FindOptionsWhere } from 'typeorm/find-options/FindOptionsWhere';
 import { QueryOperator, ReportFilters, StringField } from './filtersQueryPipe';
 import { Paginable, PaginationQueryDto } from './paginationQueryPipe';
@@ -48,18 +48,38 @@ export class ReportService {
     //     where.nick = nickFilter;
     //   }
     // }
-    // if (filters.title) {
-    //   const titleFilter = this.buildStringWhere(filters.title);
-    //   if (titleFilter !== undefined) {
-    //     where.title = titleFilter;
-    //   }
-    // }
-    const [items, itemsTotal] = await this.reportRepo.findAndCount({
-      skip: page * pageSize,
-      take: pageSize,
-      order: { id: 1 },
-      where,
-    });
+    if (filters.title || true) {
+      const f = new StringField();
+      f.filters = { start: 'Т' };
+      const titleFilter = this.buildStringWhere(f);
+      if (titleFilter !== undefined) {
+        if (typeof titleFilter === 'string') {
+          where.d = JsonContains({
+            title: titleFilter,
+          });
+        } else {
+          where.d = Raw((alias) => titleFilter.getSql(`${alias} ->> 'title'`));
+        }
+      }
+      // getSql
+      /*JsonContains({
+        title: Like('asdf'),
+      });*/
+    }
+    // const [items, itemsTotal] = await this.reportRepo.findAndCount({
+    //   skip: page * pageSize,
+    //   take: pageSize,
+    //   order: { id: 1 },
+    //   where,
+    // });
+    const query = this.reportRepo
+      .createQueryBuilder('r')
+      .where("r.d->>'title' LIKE :title", { title: 'Т%' });
+    const [items, itemsTotal] = await query
+      .skip(page * pageSize)
+      .take(pageSize)
+      .orderBy({ 'r.id': 'ASC' })
+      .getManyAndCount();
     return {
       items,
       itemsTotal,

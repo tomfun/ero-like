@@ -78,7 +78,9 @@ GET http://localhost:3000/api/report?page=2&pageSize=3&nick=tomfun
 
 ###
 
-GET http://localhost:3000/api/report?page=1&nick[eq]=tomfun
+GET http://localhost:3000/api/report?page=0&title[start]=Т
+# GET http://localhost:3000/api/report?page=0&nick[eq]=tomfun&d[startWith]=Т
+
 
 ### Invalid (3 keys)
 
