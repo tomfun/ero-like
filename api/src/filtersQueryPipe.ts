@@ -5,7 +5,7 @@ import { Type } from 'class-transformer';
 export class StringFieldFilters {
   @IsString()
   @MaxLength(20)
-  equal?: string;
+  equals?: string;
   start?: string; // validation?
   end?: string;
 }
@@ -17,9 +17,9 @@ export class StringField {
 }
 
 export enum QueryOperator {
-  Equal = 'equal',
-  Start = 'start',
-  End = 'end',
+  Equal = 'equals',
+  Start = 'startsWith',
+  End = 'endsWith',
 }
 
 export class ReportFilters {
@@ -31,7 +31,7 @@ export class ReportFilters {
   title?: StringField;
 }
 
-const StringFilters = [QueryOperator.Start, QueryOperator.Equal];
+const StringFilters = [QueryOperator.Start, QueryOperator.Equal, QueryOperator.End];
 
 const reportConfig = {
   nick: { type: String, filters: StringFilters },
@@ -46,9 +46,9 @@ export class FiltersQueryPipe implements PipeTransform {
     }
     (Object.keys(reportConfig) as [keyof typeof reportConfig])
       .filter(
-        (fieldName) =>
-          fieldName in query && typeof query[fieldName] === 'object',
-      )
+        (fieldName) => {
+          return fieldName in query && typeof query[fieldName] === 'object'
+        })
       .forEach((fieldName) => {
         if (typeof query[fieldName] !== 'object') {
           return;

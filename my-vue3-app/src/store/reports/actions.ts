@@ -13,17 +13,20 @@ export const FETCH_REPORTS = 'load_reports';
 function buildReportsFilters(this: Pagination['filters']): false|Array<(r: Report) => boolean> {
   const nothing = () => false;
   const fieldFilters = ['nick' as const, 'title' as const].reduce((filters, field) => {
-    const { value, type } = this[field];
+    const { value, matchMode } = this[field];
     if (typeof value === 'undefined') {
       return filters;
     }
     let newFilter: (r: Report) => boolean;
-    switch (type) {
-      case 'equal':
+    switch (matchMode) {
+      case 'equals':
         newFilter = (r: Report) => r[field] === value;
         break;
-      case 'start':
+      case 'startsWith':
         newFilter = (r: Report) => r[field].startsWith(value);
+        break;
+      case 'endsWith':
+        newFilter = (r: Report) => r[field].endsWith(value);
         break;
       default:
         newFilter = nothing;

@@ -22,11 +22,11 @@ export interface Pagination {
   filters: {
     nick: {
       value: string | undefined;
-      type: string;
+      matchMode: string;
     };
     title: {
       value: string | undefined;
-      type: string;
+      matchMode: string;
     };
   };
 }
@@ -55,11 +55,11 @@ export default {
     filters: {
       nick: {
         value: undefined,
-        type: '',
+        matchMode: '',
       },
       title: {
         value: undefined,
-        type: '',
+        matchMode: '',
       },
     },
   },

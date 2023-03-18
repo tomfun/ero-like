@@ -14,8 +14,8 @@ export default {
       page: number;
       pageSize: number;
       filters: {
-        nick: { value: string | undefined; type: string };
-        title: { value: string | undefined; type: string };
+        nick: { value: string | undefined; matchMode: string };
+        title: { value: string | undefined; matchMode: string };
       };
     },
   ):
@@ -34,7 +34,7 @@ export default {
     }
     const filtersEncoded = ['nick' as const, 'title' as const]
       .filter((field) => filters[field].value !== undefined)
-      .map((field) => `${field}[${filters[field].type}]=${encodeURIComponent(filters[field].value as string)}`);
+      .map((field) => `${field}[${filters[field].matchMode}]=${encodeURIComponent(filters[field].value as string)}`);
     const uri = `/api/report?${queryStringParts.concat(filtersEncoded).join('&')}`;
     if (uri.length > 2000) {
       // eslint-disable-next-line no-console
