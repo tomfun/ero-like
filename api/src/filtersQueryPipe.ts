@@ -41,36 +41,29 @@ const reportConfig = {
 export class FiltersQueryPipe implements PipeTransform {
   transform(query: Record<string, unknown>): ReportFilters {
     const filters = new ReportFilters();
-    console.log(query, typeof query);
     if (typeof query !== 'object') {
       return filters;
     }
-    console.log('ASD');
     (Object.keys(reportConfig) as [keyof typeof reportConfig])
       .filter(
         (fieldName) => {
-          console.log('YYYE', fieldName in query, Object.keys(reportConfig), typeof query[fieldName]);
           return fieldName in query && typeof query[fieldName] === 'object'
         })
       .forEach((fieldName) => {
-        console.log('SDF');
         if (typeof query[fieldName] !== 'object') {
           return;
         }
         const v = query[fieldName] as Record<string, unknown>;
-        console.log('V',v);
         filters[fieldName] = {
           type: reportConfig[fieldName].type,
           filters: {},
         };
         for (const operator of reportConfig[fieldName].filters) {
           if (operator in v && typeof v[operator] === 'string') {
-            console.log('isSt');
             filters[fieldName].filters[operator] = v[operator] as string;
           }
         }
       });
-      console.log(filters.nick);
     return filters;
   }
 }
