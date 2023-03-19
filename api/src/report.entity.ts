@@ -28,6 +28,7 @@ export class ReportDataSubstanceBodyPayload {
   timeSecond: number;
 
   // todo
+  @IsIn(['heroin', '2C-B', '2C-I', 'DOB', 'LSA', 'LSD', 'MDMA'])
   namePsychonautWikiOrg: string;
 
   @IsNumber()
@@ -38,6 +39,7 @@ export class ReportDataSubstanceBodyPayload {
   @IsIn(['mg', 'µg', 'g'])
   doseUnit: string;
 
+  // activeSubstance
   // todo: array
   // doseOf: string;
   // coefficientToGram: number;

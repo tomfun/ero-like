@@ -1,8 +1,14 @@
 import { Inject, Injectable, ValidationPipe } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOperator, Like, JsonContains, Repository, Raw } from 'typeorm';
-import { FindOptionsWhere } from 'typeorm/find-options/FindOptionsWhere';
-import { QueryOperator, ReportFilters, StringField } from './filtersQueryPipe';
+import { Repository } from 'typeorm';
+import {
+  KeyClassSymbol,
+  NumberField,
+  QueryOperator,
+  ReportFilters,
+  StringField,
+  TypeSymbol,
+} from './filtersQueryPipe';
 import { Paginable, PaginationQueryDto } from './paginationQueryPipe';
 import { ReportDataBodyPayload, ReportEntity } from './report.entity';
 import { SignatureDataService } from './signature-data.service';
@@ -37,48 +43,63 @@ export class ReportService {
     { page, pageSize }: PaginationQueryDto,
     filters: ReportFilters,
   ): Promise<Paginable<ReportForList>> {
-    const where = {} as FindOptionsWhere<ReportEntity>;
-    // todo:
-    // 1. https://typeorm.io/find-options
-    // 2. https://typeorm.io/select-query-builder
-
-    // if (filters.nick) {
-    //   const nickFilter = this.buildStringWhere(filters.nick);
-    //   if (nickFilter !== undefined) {
-    //     where.nick = nickFilter;
-    //   }
-    // }
-    if (filters.title || true) {
-      const f = new StringField();
-      f.filters = { start: 'Т' };
-      const titleFilter = this.buildStringWhere(f);
-      if (titleFilter !== undefined) {
-        if (typeof titleFilter === 'string') {
-          where.d = JsonContains({
-            title: titleFilter,
-          });
-        } else {
-          where.d = Raw((alias) => titleFilter.getSql(`${alias} ->> 'title'`));
-        }
-      }
-      // getSql
-      /*JsonContains({
-        title: Like('asdf'),
-      });*/
-    }
-    // const [items, itemsTotal] = await this.reportRepo.findAndCount({
-    //   skip: page * pageSize,
-    //   take: pageSize,
-    //   order: { id: 1 },
-    //   where,
-    // });
-    const query = this.reportRepo
+    let query = this.reportRepo
       .createQueryBuilder('r')
-      .where("r.d->>'title' LIKE :title", { title: 'Т%' });
+      .where(`type = 'ReportEntity'`);
+    if (filters.nick) {
+      const nickWhere = this.buildStringWhere(
+        filters.nick,
+        'u.nick',
+        'userNick',
+      );
+      query = query.innerJoinAndSelect(
+        'r.user',
+        'u',
+        'u.id = r.userId' + (nickWhere ? ` AND ${nickWhere.sql}` : ''),
+        nickWhere?.params,
+      );
+    } else {
+      query = query.innerJoinAndSelect('r.user', 'u', 'u.id = r.userId');
+    }
+    let i = 0;
+    for (const f in filters.d) {
+      let key: string;
+      if (filters.d[f][KeyClassSymbol] === 'jsonb_values_of_key') {
+        // substances.*.namePsychonautWikiOrg
+        //   ->
+        // jsonb_values_of_key(r.d->'substances', 'namePsychonautWikiOrg')
+        const fieldParts = f.split('.*.', 3);
+        if (fieldParts.length !== 2) {
+          throw new Error('jsonb_values_of_key class exception');
+        }
+        key = `jsonb_values_of_key(r.d->'${fieldParts[0]}', '${fieldParts[1]}')`;
+      } else {
+        key =
+          filters.d[f][TypeSymbol] === String ? `r.d->>'${f}'` : `r.d->'${f}'`;
+      }
+      const subWhere =
+        filters.d[f][TypeSymbol] === String
+          ? this.buildStringWhere(
+              filters.d[f],
+              key,
+              `d${f.replace(/\W/g, '')}${i++}`,
+            )
+          : this.buildNumberWhere(
+              filters.d[f],
+              `(${key})::numeric`,
+              `d${f.replace(/\W/g, '')}${i++}`,
+            );
+      if (!subWhere) {
+        continue;
+      }
+      query = query.andWhere(subWhere.sql, subWhere.params);
+    }
+
     const [items, itemsTotal] = await query
       .skip(page * pageSize)
       .take(pageSize)
       .orderBy({ 'r.id': 'ASC' })
+      .cache(60000)
       .getManyAndCount();
     return {
       items,
@@ -129,24 +150,82 @@ export class ReportService {
 
   private buildStringWhere(
     field: StringField,
-  ): FindOperator<string> | string | undefined {
+    key: string,
+    pName: string,
+  ): { sql: string; params: Record<string, string> } {
     if (QueryOperator.Equal in field.filters) {
-      return field.filters[QueryOperator.Equal];
+      return {
+        sql: `${key} = :${pName}`,
+        params: { [pName]: field.filters[QueryOperator.Equal] },
+      };
     }
+    const params = {} as Record<string, string>;
+    const sql = [] as string[];
     if (field.filters[QueryOperator.End]) {
-      return Like(
+      sql.push(`${key} LIKE :${pName}End`);
+      params[`${pName}End`] =
         '%' +
-          field.filters[QueryOperator.End]
-            .replace(/%/g, '\\%')
-            .replace(/_/g, '\\_'),
-      );
+        field.filters[QueryOperator.End]
+          .replace(/%/g, '\\%')
+          .replace(/_/g, '\\_');
     }
     if (field.filters[QueryOperator.Start]) {
-      return Like(
+      sql.push(`${key} LIKE :${pName}Start`);
+      params[`${pName}Start`] =
         field.filters[QueryOperator.Start]
           .replace(/%/g, '\\%')
-          .replace(/_/g, '\\_') + '%',
-      );
+          .replace(/_/g, '\\_') + '%';
     }
+    if (field.filters[QueryOperator.Contains]) {
+      sql.push(`${key} LIKE :${pName}Include`);
+      params[`${pName}Include`] =
+        '%' +
+        field.filters[QueryOperator.Contains]
+          .replace(/%/g, '\\%')
+          .replace(/_/g, '\\_') +
+        '%';
+    }
+    if (sql.length) {
+      return { sql: sql.join(' AND '), params };
+    }
+    return undefined;
+  }
+
+  private buildNumberWhere(
+    field: NumberField,
+    key: string,
+    pName: string,
+  ): { sql: string; params: Record<string, number> } {
+    if (QueryOperator.Equal in field.filters) {
+      return {
+        sql: `${key} = :${pName}`,
+        params: { [pName]: field.filters[QueryOperator.Equal] },
+      };
+    }
+    const params = {} as Record<string, number>;
+    const sql = [] as string[];
+    if (field.filters[QueryOperator.GreaterThan]) {
+      sql.push(`${key} > :${pName}Gt`);
+      params[`${pName}Gt`] = field.filters[QueryOperator.GreaterThan];
+    }
+    if (field.filters[QueryOperator.GreaterThanEqual]) {
+      sql.push(`${key} >= :${pName}Gte`);
+      params[`${pName}Gte`] = field.filters[QueryOperator.GreaterThanEqual];
+    }
+    if (field.filters[QueryOperator.LessThan]) {
+      sql.push(`${key} < :${pName}Lt`);
+      params[`${pName}Lt`] = field.filters[QueryOperator.LessThan];
+    }
+    if (field.filters[QueryOperator.LessThanEqual]) {
+      sql.push(`${key} <= :${pName}Lte`);
+      params[`${pName}Lte`] = field.filters[QueryOperator.LessThanEqual];
+    }
+    if (field.filters[QueryOperator.Between]) {
+      throw new Error('between not implemented');
+    }
+    if (sql.length) {
+      return { sql: sql.join(' AND '), params };
+    }
+    return undefined;
   }
 }

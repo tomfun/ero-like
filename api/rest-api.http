@@ -39,6 +39,30 @@ Zl80bV7VFNgQHt7yeBIAyJvh2VRjASY=
 =37Lq
 -----END PGP SIGNATURE-----
 
+### tomfun
+PUT http://localhost:3000/api/report
+Content-Type: text/plain
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{"substances":[{"timeSecond":0,"dose":10,"doseUnit":"mg","namePsychonautWikiOrg":"2C-I","routeOfAdministration":"insufflated","activeSubstance":"2C-I","surePercent":95},{"timeSecond":360,"dose":10,"doseUnit":"mg","namePsychonautWikiOrg":"2C-I","routeOfAdministration":"insufflated","activeSubstance":"2C-I","surePercent":95}],"timeLineReport":[{"timeSecond":0,"report":"Печёт пиздец"},{"timeSecond":300,"report":"Ну что-то вроде есть"},{"timeSecond":600,"report":"Душевная лёгкость, вкус чая будто тает во рту, свет стал ламповым, атмосфера отдаёт пленящим теплом"}],"background":"А жизнь как масло, а ты как сыр в жопе перепробовав всё говно, остаёшься вонять благородной плесенью","dateTimestamp":1678021709,"title":"Вечерний променад"}
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEBfntiBKqjNUqcWskquatlAIqu/EFAmQW/DoACgkQquatlAIq
+u/Ff1A//VCZm+V/mS4mbc3+5xhfGkDl1G327hphAe20U6BbUO2aCL4tFipyI5zq3
+QURGTgnbGvUkJTj4ZFJtOcYyYAVYAER7MVTV0YW1gGyThZRTKAMxl1iBniH2B0GI
+SyGr0dvD1rCLCh7v5jZkoX2sDKR/nWw0YRWlLGDfwsfBCrV5hqYCyN3fiy7X+WTg
+1uBVMCGIIslneGfJPeM72rJzZxxj6/esdigyeYXDb4oLbHy4Clikiypr416c4w57
+J7Bp7c/heC9xR+rHoONHLlcLhsUIjFCP7VvJe6Ew93gRyq+tRmyt9IfaNYiYuL2O
+3o3esIsKslAG1UGLIms23BrKLfyga55lzMXTSuCMlaN29zZhw5lMmA3Ox7tCknLr
+ui2S7NS7+3l3+Xlbd7T+Ml9aAIdCU8HKMjMKFUkMnu8nV8535CJ/hFOU9cn6ylXH
+ZaVJlJrPUY/aNas4QBj4p6/ooAFXGKb6TSkDNor6agAi+B6MWAaofZC42b93Cln2
+tiwsctTcPiDx5x8sd8QLSdk2ujDpvzQzKzqWREImWEapGqwJt6v6elfWrwz0yvC4
+phlF7KocrdlEaBaesyS4xMRqqeXMcDlq+ZkJBG40pOYKHXl6Qmc7E1QTHzzb0pgx
+b9jYP5YdJfd3R1jEXhhbJw5Rkl30607es9rMaRe8ESAXQcYPpIg=
+=NZWj
+-----END PGP SIGNATURE-----
 
 ###
 
@@ -74,13 +98,60 @@ Content-Type: application/json
 
 ###
 
+POST http://localhost:3000/api/report/validate
+Content-Type: application/json
+
+{
+  "substances": [
+    {
+      "timeSecond": 0,
+      "dose": 10,
+      "doseUnit": "mg",
+      "namePsychonautWikiOrg": "2C-I",
+      "routeOfAdministration": "insufflated",
+      "activeSubstance": "2C-I",
+      "surePercent": 95
+    },
+    {
+      "timeSecond": 360,
+      "dose": 10,
+      "doseUnit": "mg",
+      "namePsychonautWikiOrg": "2C-I",
+      "routeOfAdministration": "insufflated",
+      "activeSubstance": "2C-I",
+      "surePercent": 95
+    }
+  ],
+  "timeLineReport": [
+    {
+      "timeSecond": 0,
+      "report": "Печёт пиздец"
+    },
+    {
+      "timeSecond": 300,
+      "report": "Ну что-то вроде есть"
+    },
+    {
+      "timeSecond": 600,
+      "report": "Душевная лёгкость, вкус чая будто тает во рту, свет стал ламповым, атмосфера отдаёт пленящим теплом"
+    }
+  ],
+  "background": "А жизнь как масло, а ты как сыр в жопе перепробовав всё говно, остаёшься вонять благородной плесенью",
+  "dateTimestamp": 1678021709,
+  "title": "Вечерний променад"
+}
+
+###
+
 GET http://localhost:3000/api/report?page=2&pageSize=3&nick=tomfun
 
 ###
 
-GET http://localhost:3000/api/report?page=0&title[start]=Т
-# GET http://localhost:3000/api/report?page=0&nick[eq]=tomfun&d[startWith]=Т
+GET http://localhost:3000/api/report?page=0&nick[endsWith]=fun&nick[startsWith]=tom&d[title][startsWith]=Вечерний&d[substances.*.namePsychonautWikiOrg][include]=2C-I
 
+###
+
+GET http://localhost:3000/api/report?d[dateTimestamp][lte]=1678021709
 
 ### Invalid (3 keys)
 
