@@ -1,4 +1,5 @@
 import { ActionContext } from 'vuex';
+import { get } from 'lodash';
 import api from '../../services/api';
 import {
   PAGINATION, Pagination, Report, Reports, REPORTS, State,
@@ -12,7 +13,7 @@ export const FETCH_REPORTS = 'load_reports';
 // eslint-disable-next-line max-len
 function buildReportsFilters(this: Pagination['filters']): false|Array<(r: Report) => boolean> {
   const nothing = () => false;
-  const fieldFilters = ['nick' as const, 'title' as const].reduce((filters, field) => {
+  const fieldFilters = ['d.title' as const].reduce((filters, field) => {
     const { value, matchMode } = this[field];
     if (typeof value === 'undefined') {
       return filters;
@@ -20,13 +21,13 @@ function buildReportsFilters(this: Pagination['filters']): false|Array<(r: Repor
     let newFilter: (r: Report) => boolean;
     switch (matchMode) {
       case 'equals':
-        newFilter = (r: Report) => r[field] === value;
+        newFilter = (r: Report) => get(r, field) === value;
         break;
       case 'startsWith':
-        newFilter = (r: Report) => r[field].startsWith(value);
+        newFilter = (r: Report) => get(r, field).startsWith(value);
         break;
       case 'endsWith':
-        newFilter = (r: Report) => r[field].endsWith(value);
+        newFilter = (r: Report) => get(r, field).endsWith(value);
         break;
       default:
         newFilter = nothing;
@@ -100,7 +101,17 @@ export default {
     fetchReportsConsistentlyPromiseCallCount += 1;
     const dataPromiseCallCount = fetchReportsConsistentlyPromiseCallCount;
     try {
-      const data = await api.fetchReports(desired);
+      const data = await api.fetchReports({
+        ...desired,
+        filters: {
+          user: { nick: desired.filters['user.nick'] },
+          d: {
+            dateTimestamp: desired.filters['d.dateTimestamp'],
+            title: desired.filters['d.title'],
+            'substances.*.namePsychonautWikiOrg': desired.filters['d.substances.*.namePsychonautWikiOrg'],
+          },
+        },
+      });
       commit(ADD_DATA, data.items);
       if (dataPromiseCallCount !== fetchReportsConsistentlyPromiseCallCount) {
         return;

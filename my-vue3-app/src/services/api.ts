@@ -1,11 +1,28 @@
 // should be imported from API or somewhere else
 
-export interface Report {
+interface ReportAlpha1 {
   id: string;
-  title: string;
-  nick: string;
+  user: {
+    id: string;
+    nick: string;
+  };
+  d: {
+    dateTimestamp: number;
+    title: string;
+    background: string;
+    substances: Array<{
+      namePsychonautWikiOrg: string;
+      routeOfAdministration: string;
+      doseUnit: string;
+      dose: number;
+    }>;
+    timeLineReport: Array<{timeSecond: number; report: string}>;
+  };
   gpgSignature: string;
+  createdAt: string;
 }
+
+export type Report = ReportAlpha1
 
 export default {
   async fetchReports(
@@ -14,8 +31,14 @@ export default {
       page: number;
       pageSize: number;
       filters: {
-        nick: { value: string | undefined; matchMode: string };
-        title: { value: string | undefined; matchMode: string };
+        user: {
+          nick: { value: string | undefined; matchMode: string };
+        };
+        d: {
+          dateTimestamp: { value: number | undefined; matchMode: string };
+          title: { value: string | undefined; matchMode: string };
+          'substances.*.namePsychonautWikiOrg': { value: string | undefined; matchMode: string };
+        };
       };
     },
   ):
@@ -32,9 +55,9 @@ export default {
     if (pageSize !== undefined) {
       queryStringParts.push(`pageSize=${pageSize}`);
     }
-    const filtersEncoded = ['nick' as const, 'title' as const]
-      .filter((field) => filters[field].value !== undefined)
-      .map((field) => `${field}[${filters[field].matchMode}]=${encodeURIComponent(filters[field].value as string)}`);
+    const filtersEncoded = ['title' as const] // todo
+      .filter((field) => filters.d[field].value !== undefined)
+      .map((field) => `${field}[${filters.d[field].matchMode}]=${encodeURIComponent(filters.d[field].value as string)}`);
     const uri = `/api/report?${queryStringParts.concat(filtersEncoded).join('&')}`;
     if (uri.length > 2000) {
       // eslint-disable-next-line no-console

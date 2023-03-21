@@ -180,7 +180,7 @@ export default defineComponent({
       // eslint-disable-next-line no-param-reassign
       filter.suggestions = Object
         .values(data)
-        .map((r) => r[filter.name])
+        .map((r) => (filter.name === 'title' ? r.d.title : r.user.nick))
         .filter((f) => f.startsWith(query));
     },
     onFiltersChange() {

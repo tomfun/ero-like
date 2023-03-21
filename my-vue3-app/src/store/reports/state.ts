@@ -20,11 +20,19 @@ export interface Pagination {
   ids: Array<string>;
   viewIds: Array<string>;
   filters: {
-    nick: {
+    'user.nick': {
       value: string | undefined;
       matchMode: string;
     };
-    title: {
+    'd.dateTimestamp': {
+      value: number | undefined;
+      matchMode: string;
+    };
+    'd.title': {
+      value: string | undefined;
+      matchMode: string;
+    };
+    'd.substances.*.namePsychonautWikiOrg': {
       value: string | undefined;
       matchMode: string;
     };
@@ -53,11 +61,19 @@ export default {
     ids: [],
     viewIds: [],
     filters: {
-      nick: {
+      'user.nick': {
         value: undefined,
         matchMode: '',
       },
-      title: {
+      'd.dateTimestamp': {
+        value: undefined,
+        matchMode: '',
+      },
+      'd.title': {
+        value: undefined,
+        matchMode: '',
+      },
+      'd.substances.*.namePsychonautWikiOrg': {
         value: undefined,
         matchMode: '',
       },

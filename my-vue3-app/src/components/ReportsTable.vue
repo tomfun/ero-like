@@ -4,34 +4,48 @@
     :totalRecords="pagination.itemsTotal" :rowsPerPageOptions="[10,20,50,100]"
     :paginatorTemplate="pag" @page="onPage($event)" filterDisplay="row"
     @filter="onFilter($event)" :loading="isLoading"
-    :globalFilterFields="['nick', 'title']"
+    :globalFilterFields="[
+      'user.nick', 'd.title', 'd.substances.*.namePsychonautWikiOrg', 'd.dateTimestamp']"
     >
-    <Column field="nick" header="Nick" style="min-width: 14rem" ref="nick">
+    <Column field="user.nick" filter-field="user.nick" header="Nick" style="min-width: 14rem"
+            ref="nick">
       <template #filter="{filterModel,filterCallback}">
         <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()"
-        class="p-column-filter" placeholder="Search by nick"/>
-      </template>
-      <template #body="{data}">
-        {{data.nick}}
+                   class="p-column-filter" placeholder="Search by nick"/>
       </template>
     </Column>
-    <Column field="title" header="Title" style="min-width: 14rem" ref="title">
+    <Column field="d.title" filter-field="d.title" header="Title" style="min-width: 14rem"
+            ref="title">
       <template #filter="{filterModel,filterCallback}">
         <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()"
         class="p-column-filter" placeholder="Search by title"/>
       </template>
+    </Column>
+    <Column field="d.substances.*.namePsychonautWikiOrg"
+            filter-field="d.substances_namePsychonautWikiOrg"
+            header="Substances"
+            style="min-width: 14rem"
+            ref="substances">
+      <template #filter="{filterModel,filterCallback}">
+        <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()"
+                   class="p-column-filter" placeholder="Search by title"/>
+      </template>
       <template #body="{data}">
-        {{data.title}}
+        {{ data
+        .d.substances.map((s) => `${s.namePsychonautWikiOrg} ${s.dose}${s.doseUnit}`).join(', ') }}
       </template>
     </Column>
-    <Column field="id" header="ID" style="min-width: 14rem">
-      <template #body="{data}">
-        {{data.id}}
+    <Column field="d.dateTimestamp" filter-field="d.dateTimestamp"
+            dataType="date"
+            header="Date"
+            style="min-width: 14rem"
+            ref="date">
+      <template #filter="{filterModel,filterCallback}">
+        <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()"
+                   class="p-column-filter" placeholder="Search by title"/>
       </template>
-    </Column>
-    <Column field="gpgSignature" header="GPG Signature" style="min-width: 14rem">
       <template #body="{data}">
-        {{data.gpgSignature}}
+        {{(new Date(data.d.dateTimestamp * 1000)).toLocaleDateString()}}
       </template>
     </Column>
   </DataTable>
@@ -52,43 +66,47 @@ import { debounce } from 'lodash-es';
 type FetchParams = {
   page: number;
   pageSize: number;
-  filters: {
-    nick: {
+  filters: Record<'user.nick' | 'd.title' | 'd.substances.*.namePsychonautWikiOrg' | 'd.substances_namePsychonautWikiOrg', {
       value: string|undefined;
       matchMode: string;
-    };
-    title: {
-      value: string|undefined;
-      matchMode: string;
-    };
-  };
+    }> | Record<'d.dateTimestamp', {
+    value: number|undefined;
+    matchMode: string;
+  }>;
 };
 
 export default defineComponent({
   name: 'ReportsTable',
   components: { DataTable, Column },
   data() {
+    const filters: FetchParams['filters'] = {
+      'user.nick': {
+        value: undefined,
+        matchMode: 'equals',
+      },
+      'd.dateTimestamp': {
+        value: undefined,
+        matchMode: 'equals',
+      },
+      'd.title': {
+        value: undefined,
+        matchMode: 'equals',
+      },
+      'd.substances.*.namePsychonautWikiOrg': {
+        value: undefined,
+        matchMode: 'equals',
+      },
+      'd.substances_namePsychonautWikiOrg': {
+        value: undefined,
+        matchMode: 'equals',
+      },
+    };
     return {
       fetchParams: {
         page: 0,
         pageSize: 10,
-        filters: {
-          nick: {
-            value: undefined,
-            matchMode: 'equal',
-          },
-          title: {
-            value: undefined,
-            matchMode: 'equal',
-          },
-        },
+        filters,
       } as FetchParams,
-      singleReport: {
-        id: '',
-        title: '',
-        nick: '',
-        gpgSignature: 'string',
-      } as Report,
       pag: 'FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown',
       fetchDebounced: debounce(
         () => this.fetchReports(this.fetchParams),
@@ -96,10 +114,7 @@ export default defineComponent({
           maxWait: 5000,
         },
       ),
-      filters: {
-        nick: { value: undefined, matchMode: 'equals' },
-        title: { value: undefined, matchMode: 'equals' },
-      } as FetchParams['filters'],
+      filters,
     };
   },
   methods: {
@@ -114,9 +129,6 @@ export default defineComponent({
       return this.fetchWith({ page, pageSize });
     },
     onFilter() {
-      if (this.filters.nick.value === null || this.filters.title.value === null) {
-        return;
-      }
       this.fetchWith({ ...this.fetchParams, filters: { ...this.filters } });
     },
   },
