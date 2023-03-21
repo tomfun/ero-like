@@ -147,7 +147,7 @@ GET http://localhost:3000/api/report?page=2&pageSize=3&nick=tomfun
 
 ###
 
-GET http://localhost:3000/api/report?page=0&user[nick][endsWith]=fun&nick[startsWith]=tom&d[title][startsWith]=Вечерний&d[substances.*.namePsychonautWikiOrg][include]=2C-I
+GET http://localhost:3000/api/report?page=0&user[nick][endsWith]=fun&user[nick][startsWith]=tom&d[title][startsWith]=Вечерний&d[substances.*.namePsychonautWikiOrg][include]=2C-I
 
 ###
 

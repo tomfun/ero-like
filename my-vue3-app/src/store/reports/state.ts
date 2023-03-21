@@ -1,4 +1,4 @@
-import { Report as ApiFetchReport } from '@/services/api';
+import { ReportFilters, Report as ApiFetchReport } from '@/services/api';
 
 export const REPORTS = 'data';
 export const PAGINATION = 'pagination';
@@ -19,24 +19,7 @@ export interface Pagination {
   };
   ids: Array<string>;
   viewIds: Array<string>;
-  filters: {
-    'user.nick': {
-      value: string | undefined;
-      matchMode: string;
-    };
-    'd.dateTimestamp': {
-      value: number | undefined;
-      matchMode: string;
-    };
-    'd.title': {
-      value: string | undefined;
-      matchMode: string;
-    };
-    'd.substances.*.namePsychonautWikiOrg': {
-      value: string | undefined;
-      matchMode: string;
-    };
-  };
+  filters: ReportFilters;
 }
 
 export interface IsLoading {
@@ -62,19 +45,19 @@ export default {
     viewIds: [],
     filters: {
       'user.nick': {
-        value: undefined,
+        value: null,
         matchMode: '',
       },
       'd.dateTimestamp': {
-        value: undefined,
+        value: null,
         matchMode: '',
       },
       'd.title': {
-        value: undefined,
+        value: null,
         matchMode: '',
       },
       'd.substances.*.namePsychonautWikiOrg': {
-        value: undefined,
+        value: null,
         matchMode: '',
       },
     },

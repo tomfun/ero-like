@@ -11,6 +11,7 @@ interface ReportAlpha1 {
     title: string;
     background: string;
     substances: Array<{
+      timeSecond: number;
       namePsychonautWikiOrg: string;
       routeOfAdministration: string;
       doseUnit: string;
@@ -23,6 +24,16 @@ interface ReportAlpha1 {
 }
 
 export type Report = ReportAlpha1
+export type FilterRecordPair<T> = {
+  value: T|null;
+  matchMode: string;
+}
+export interface ReportFilters {
+  'user.nick': FilterRecordPair<string>;
+  'd.title': FilterRecordPair<string>;
+  'd.substances.*.namePsychonautWikiOrg': FilterRecordPair<string>;
+  'd.dateTimestamp': FilterRecordPair<number>;
+}
 
 export default {
   async fetchReports(
@@ -30,16 +41,7 @@ export default {
     {
       page: number;
       pageSize: number;
-      filters: {
-        user: {
-          nick: { value: string | undefined; matchMode: string };
-        };
-        d: {
-          dateTimestamp: { value: number | undefined; matchMode: string };
-          title: { value: string | undefined; matchMode: string };
-          'substances.*.namePsychonautWikiOrg': { value: string | undefined; matchMode: string };
-        };
-      };
+      filters: ReportFilters;
     },
   ):
   Promise<{
@@ -55,9 +57,17 @@ export default {
     if (pageSize !== undefined) {
       queryStringParts.push(`pageSize=${pageSize}`);
     }
-    const filtersEncoded = ['title' as const] // todo
-      .filter((field) => filters.d[field].value !== undefined)
-      .map((field) => `${field}[${filters.d[field].matchMode}]=${encodeURIComponent(filters.d[field].value as string)}`);
+    const filtersEncoded = (Object.keys(filters) as Array<keyof ReportFilters>)
+      .filter((field) => filters[field].value !== null)
+      .map((field) => {
+        let fieldPath: string;
+        if (field === 'd.substances.*.namePsychonautWikiOrg') {
+          fieldPath = '[d][substances.*.namePsychonautWikiOrg]';
+        } else {
+          fieldPath = field.split('.').map((f, i) => (i ? `[${f}]` : f)).join('');
+        }
+        return `${fieldPath}[${filters[field].matchMode}]=${encodeURIComponent(filters[field].value as string)}`;
+      });
     const uri = `/api/report?${queryStringParts.concat(filtersEncoded).join('&')}`;
     if (uri.length > 2000) {
       // eslint-disable-next-line no-console

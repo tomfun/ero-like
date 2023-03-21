@@ -83,16 +83,19 @@ export enum QueryOperator {
 
 export interface ReportDFilters
   extends ReportFilterType<typeof reportConfig.d> {
-  // [TypeSymbol]: typeof Object;
+  [TypeSymbol]: typeof Object;
   'substances.*.namePsychonautWikiOrg'?: StringField;
   dateTimestamp?: NumberField;
   title?: StringField;
 }
 
 export interface ReportFilters extends ReportFilterType<typeof reportConfig> {
-  // [TypeSymbol]: typeof Object;
+  [TypeSymbol]: typeof Object;
 
-  nick?: StringField;
+  user?: {
+    [TypeSymbol]: typeof Object;
+    nick?: StringField;
+  };
 
   d?: ReportDFilters;
 }
@@ -118,28 +121,37 @@ interface ConfigSimple {
   [KeyClassSymbol]?: 'jsonb_values_of_key';
   [field: string]: ConfigSimple;
 }
-
-type ReportConfig<K extends string> = {
-  [field in K]:
+type ReportConfigType = {
+  [TypeSymbol]: typeof Object;
+  [field: string]:
     | {
         [TypeSymbol]: typeof String;
         [FiltersSymbol]: Array<QueryOperator>;
         [KeyClassSymbol]?: 'jsonb_values_of_key';
       }
-    | ({ [TypeSymbol]: typeof Object } & ReportConfig<string>);
+    | {
+        [TypeSymbol]: typeof Number;
+        [FiltersSymbol]: Array<QueryOperator>;
+      }
+    | ReportConfigType;
 };
 
-type ReportFilterType<C extends ConfigSimple> = {
-  [F in keyof C]?: C[F] extends { [TypeSymbol]: typeof String }
-    ? StringField
-    : C[F] extends { [TypeSymbol]: typeof Object }
+type ReportFilterType<C extends ReportConfigType> = {
+  [F in keyof C]?: F extends typeof TypeSymbol
+    ? C[F]
+    : C[F] extends ReportConfigType
     ? ReportFilterType<C[F]>
+    : C[F] extends { [TypeSymbol]: typeof String }
+    ? StringField
     : NumberField;
-} & { [TypeSymbol]: typeof Object };
+} & { [TypeSymbol]: any };
 
 const reportConfig = {
   [TypeSymbol]: Object,
-  nick: { [TypeSymbol]: String, [FiltersSymbol]: HurtStringFilters },
+  user: {
+    [TypeSymbol]: Object,
+    nick: { [TypeSymbol]: String, [FiltersSymbol]: HurtStringFilters },
+  },
   d: {
     [TypeSymbol]: Object,
     title: { [TypeSymbol]: String, [FiltersSymbol]: HurtStringFilters },
@@ -151,12 +163,13 @@ const reportConfig = {
     },
   },
 };
+
 export class FiltersQueryPipe implements PipeTransform {
   transform(query: Record<string, unknown>): ReportFilters {
     return this.deeper(query, reportConfig);
   }
 
-  private deeper<C extends ConfigSimple>(
+  private deeper<C extends ReportConfigType>(
     queryUnk: unknown,
     config: C,
   ): ReportFilterType<C> {
@@ -164,32 +177,43 @@ export class FiltersQueryPipe implements PipeTransform {
     if (typeof queryUnk !== 'object') {
       return filters;
     }
-    const query = queryUnk as Record<string, unknown>;
-    Object.keys(config).forEach((fieldName) => {
-      if (typeof query[fieldName] !== 'object' || !(fieldName in config)) {
+    const query = queryUnk as Record<keyof C, unknown>;
+    Object.keys(config).forEach((fieldNameString) => {
+      if (
+        typeof query[fieldNameString] !== 'object' ||
+        !(fieldNameString in config)
+      ) {
         return;
       }
+      const fieldName = fieldNameString as keyof C;
       const v = query[fieldName] as Record<string, unknown>;
-      if (config[fieldName][TypeSymbol] === Object) {
+      const fieldConfig = config[fieldName];
+      if (fieldConfig[TypeSymbol] === Object) {
         Object.assign(filters, {
-          [fieldName]: this.deeper(v, config[fieldName]),
+          [fieldName]: this.deeper(v, fieldConfig as ReportConfigType),
         });
         return;
       }
-      if (![String, Number, Object].includes(config[fieldName][TypeSymbol])) {
+      if (![String, Number, Object].includes(fieldConfig[TypeSymbol])) {
         throw new TypeError('New query config type not implemented');
       }
       Object.assign(filters, {
-        [fieldName]: {
-          [TypeSymbol]: config[fieldName][TypeSymbol],
-          [KeyClassSymbol]: config[fieldName][KeyClassSymbol],
-          filters: {},
-        },
+        [fieldName]:
+          fieldConfig[TypeSymbol] === String
+            ? {
+                [TypeSymbol]: fieldConfig[TypeSymbol],
+                [KeyClassSymbol]: fieldConfig[KeyClassSymbol],
+                filters: {},
+              }
+            : {
+                [TypeSymbol]: fieldConfig[TypeSymbol],
+                filters: {},
+              },
       });
-      for (const operator of config[fieldName][FiltersSymbol]) {
+      for (const operator of fieldConfig[FiltersSymbol]) {
         if (operator in v && typeof v[operator] === 'string') {
           filters[fieldName].filters[operator] =
-            config[fieldName][TypeSymbol] === String
+            fieldConfig[TypeSymbol] === String
               ? (v[operator] as string)
               : +v[operator];
         }

@@ -46,9 +46,9 @@ export class ReportService {
     let query = this.reportRepo
       .createQueryBuilder('r')
       .where(`type = 'ReportEntity'`);
-    if (filters.nick) {
+    if (filters?.user?.nick) {
       const nickWhere = this.buildStringWhere(
-        filters.nick,
+        filters.user.nick,
         'u.nick',
         'userNick',
       );
