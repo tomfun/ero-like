@@ -4,7 +4,7 @@ import {
   PAGINATION, Pagination, Report, Reports, REPORTS, State,
 } from './state';
 import {
-  ADD_DATA, SET_PAGINATION, SET_LOADING,
+  ADD_DATA, SET_PAGINATION, SET_LOADING, SET_URL,
 } from './mutations';
 
 export const FETCH_REPORTS = 'load_reports';
@@ -117,6 +117,8 @@ export default {
         ids,
         viewIds: ids,
       });
+
+      commit(SET_URL, data.url);
     } finally {
       if (dataPromiseCallCount === fetchReportsConsistentlyPromiseCallCount) {
         commit(SET_LOADING, false);

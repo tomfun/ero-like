@@ -40,7 +40,7 @@
 <script lang="ts">
 import DataTable from 'primevue/datatable';
 import {
-  IS_LOADING, PAGINATION, REPORTS_MODULE, State as ReportsState,
+  IS_LOADING, PAGINATION, REPORTS_MODULE, URL, State as ReportsState,
 } from '@/store/reports';
 import { FETCH_REPORTS } from '@/store/reports/actions';
 import { defineComponent } from 'vue';
@@ -65,21 +65,22 @@ type FetchParams = {
 };
 
 export default defineComponent({
-  name: 'ReportsTable',
+  name: 'reportsTab',
   components: { DataTable, Column },
   data() {
     return {
+      urlTab: '/reportsTab',
       fetchParams: {
         page: 0,
         pageSize: 10,
         filters: {
           nick: {
             value: undefined,
-            matchMode: 'equal',
+            matchMode: 'equals',
           },
           title: {
             value: undefined,
-            matchMode: 'equal',
+            matchMode: 'equals',
           },
         },
       } as FetchParams,
@@ -111,11 +112,16 @@ export default defineComponent({
       return this.fetchDebounced();
     },
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
-      return this.fetchWith({ page, pageSize });
+      return this.fetchWith({ page, pageSize }); // check if works with filters
     },
     onFilter() {
-      if (this.filters.nick.value === null || this.filters.title.value === null) {
-        return;
+      if (this.filters.nick.value === null) {
+        this.fetchParams.filters.nick.value = undefined;
+        this.filters.nick.value = undefined;
+      }
+      if (this.filters.title.value === null) {
+        this.fetchParams.filters.title.value = undefined;
+        this.filters.title.value = undefined;
       }
       this.fetchWith({ ...this.fetchParams, filters: { ...this.filters } });
     },
@@ -124,6 +130,7 @@ export default defineComponent({
     ...mapState(REPORTS_MODULE, {
       isLoading: IS_LOADING,
       pagination: PAGINATION,
+      url: URL,
     }),
     ...mapState(REPORTS_MODULE, {
       reports(state: ReportsState): Report[] {
@@ -132,8 +139,50 @@ export default defineComponent({
       },
     }),
   },
+  watch: {
+    url() {
+      const template = `${this.urlTab}?${this.url}`;
+      this.$router.addRoute({ path: template, component: this, name: this.urlTab });
+      this.$router.replace(`${template}`);
+    },
+  },
+  beforeMount() {
+    Object.keys(this.$route.query).forEach((key) => {
+      if (key.includes('[') && key.includes(']')) {
+        // eslint-disable-next-line no-useless-escape
+        const filterTypeRegEx = /\[\w+\]/;
+        const filterTypeMatchArr = key.match(filterTypeRegEx);
+        const filtersTypesArray = filterTypeMatchArr?.map((filter) => filter.replace('[', '').replace(']', ''));
+        let filterName = '';
+        if (filterTypeMatchArr !== null) {
+          filterName = key.replace(filterTypeMatchArr[0], '');
+        }
+        if (filtersTypesArray !== undefined) {
+          if (filterName === 'nick' || filterName === 'title') {
+            const val = this.$route.query[key];
+            // eslint-disable-next-line prefer-destructuring
+            this.fetchParams.filters[filterName].matchMode = filtersTypesArray[0];
+            // eslint-disable-next-line prefer-destructuring
+            this.filters[filterName].matchMode = filtersTypesArray[0];
+            if (typeof val === 'string') {
+              this.fetchParams.filters[filterName].value = val;
+              this.filters[filterName].value = val;
+            }
+          }
+        }
+      }
+    });
+  },
   mounted() {
-    this.fetchWith({});
+    if (this.url.length > 0 && this.$router.hasRoute(this.urlTab)) {
+      this.$router.replace(`${this.urlTab}?${this.url}`);
+      this.filters.nick.value = this.pagination.filters.nick.value;
+      this.filters.nick.matchMode = this.pagination.filters.nick.matchMode;
+      this.filters.title.value = this.pagination.filters.title.value;
+      this.filters.title.matchMode = this.pagination.filters.title.matchMode;
+    } else {
+      this.fetchWith({});
+    }
   },
 });
 
