@@ -1,5 +1,5 @@
 import { ActionContext } from 'vuex';
-import { get } from 'lodash';
+import { get } from 'lodash-es';
 import api, { FilterRecordPair } from '../../services/api';
 import {
   PAGINATION, Pagination, Report, Reports, REPORTS, State,
@@ -108,7 +108,6 @@ function buildReportsFiltersScopedNumeric<ScopedReport, K extends keyof ScopedRe
   }, [] as Array<(r: ScopedReport) => boolean>);
 }
 
-// eslint-disable-next-line max-len
 function buildReportsFilters(this: Pagination['filters']): false|Array<(r: Report) => boolean> {
   const userFieldFilters = (buildReportsFiltersScopedString as BuildReportsFiltersScopedString<Report['user'], 'nick', string>).call(
     this as Record<'user.nick', FilterRecordPair<string>>,

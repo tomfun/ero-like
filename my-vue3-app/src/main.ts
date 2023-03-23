@@ -1,5 +1,6 @@
 import AutoComplete from 'primevue/autocomplete';
 import Button from 'primevue/button';
+import Calendar from 'primevue/calendar';
 import Checkbox from 'primevue/checkbox';
 import PrimeVue from 'primevue/config';
 import Dropdown from 'primevue/dropdown';
@@ -25,6 +26,7 @@ createApp(App)
   .use(PrimeVue)
   .component('AutoComplete', AutoComplete)
   .component('Button', Button)
+  .component('Calendar', Calendar)
   .component('Checkbox', Checkbox)
   .component('Dropdown', Dropdown)
   .component('Fieldset', Fieldset)
