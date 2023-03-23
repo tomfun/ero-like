@@ -3,6 +3,7 @@ import { Report as ApiFetchReport } from '@/services/api';
 export const REPORTS = 'data';
 export const PAGINATION = 'pagination';
 export const IS_LOADING = 'isLoading';
+export const URL = 'url';
 
 export type Report = ApiFetchReport;
 
@@ -35,10 +36,15 @@ export interface IsLoading {
   isLoading: boolean;
 }
 
+export interface URL {
+  url: string;
+}
+
 export interface State {
   [REPORTS]: Reports;
   [PAGINATION]: Pagination;
   [IS_LOADING]: IsLoading;
+  [URL]: URL;
 }
 
 export default {
@@ -65,5 +71,8 @@ export default {
   },
   [IS_LOADING]: {
     isLoading: false,
+  },
+  [URL]: {
+    url: '',
   },
 } as State;

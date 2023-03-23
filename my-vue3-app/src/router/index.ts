@@ -1,9 +1,19 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import {
+  createRouter, createWebHistory, RouteRecordRaw,
+} from 'vue-router';
 import Home from '../views/Home.vue';
 import Submit from '../views/Submit.vue';
 import Reports from '../views/Reports.vue';
 import ReportsTab from '../views/ReportsTab.vue';
 import User from '../views/User.vue';
+
+// const reportTab: RouteRecordRaw = {
+//   template: ReportsTab,
+//   async beforeRouteUpdate(to: RouteComponent, from: RouteComponent) {
+//     // react to route changes...
+//     console.log(to, from);
+//   },
+// };
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -30,6 +40,9 @@ const routes: Array<RouteRecordRaw> = [
     path: '/reportsTab',
     name: 'ReportsTab',
     component: ReportsTab,
+    beforeEnter: (to, from) => {
+      console.log('TO:', to, 'From:', from);
+    },
   },
   {
     path: '/about',
