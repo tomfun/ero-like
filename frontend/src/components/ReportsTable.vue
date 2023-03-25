@@ -1,0 +1,275 @@
+<template>
+  <ProgressBar
+    v-if="isLoading"
+    mode="indeterminate"
+    style="height: .5em"
+  />
+  <DataTable :value="reports" :lazy="true"  v-model:filters="filters"
+    :paginator="true" :resizableColumns="true" :rows="pagination.pageSize"
+    :totalRecords="pagination.itemsTotal" :rowsPerPageOptions="[10,20,50,100]"
+    :paginatorTemplate="pag" @page="onPage($event)" filterDisplay="row"
+    @filter="onFilter($event)"
+    :globalFilterFields="[
+      'user.nick', 'd.title', 'd.substances.*.namePsychonautWikiOrg', 'd.dateTimestamp']"
+    >
+    <Column field="user.nick" filter-field="user.nick" header="Nick" style="min-width: 14rem"
+            filterMatchMode="startsWith"
+            :filterMatchModeOptions="configFilterMatchModeOptions.text.slice(0, 2)"
+            ref="nick">
+      <template #filter="{filterModel,filterCallback}">
+        <AutoComplete
+          placeholder="Search by nick"
+          v-model="filterModel.value"
+          :suggestions="filterModel.suggestions"
+          @update:modelValue="filterCallback()"
+          @keydown.enter="filterCallback()"
+          @complete="onComplete('user.nick', filterModel, $event)"
+        />
+      </template>
+      <template #body="{data}">
+        <span :title="formatDate(new Date(data.user.createdAt))">
+          {{ data.user.nick }}
+        </span>
+      </template>
+    </Column>
+    <Column field="d.title" filterField="d.title" header="Title" style="min-width: 16rem"
+            :filterMatchModeOptions="configFilterMatchModeOptions.text"
+            ref="title">
+      <template #filter="{filterModel,filterCallback}">
+        <InputText type="text"
+                   v-model="filterModel.value"
+                   @keydown.enter="filterCallback()"
+                   @update:modelValue="filterCallback()"
+                   class="p-column-filter" placeholder="Search by title"/>
+      </template>
+    </Column>
+    <Column field="d.substances.*.namePsychonautWikiOrg"
+            filterField="d.substances.*.namePsychonautWikiOrg"
+            header="Substances"
+            filterMatchMode="contains"
+            :showFilterMenu="false"
+            ref="substances">
+      <template #filter="{filterModel,filterCallback}">
+        <InputText type="text" v-model="filterModel.value"
+                   @update:modelValue="filterCallback()"
+                   @keydown.enter="filterCallback()"
+                   class="p-column-filter"
+                   placeholder="Search by canonical name"/>
+      </template>
+      <template #body="{data}">
+        <ul class="substance-list" :title="maxSubstanceTimeSecond">
+          <template v-for="(s, i) in data.d.substances" :key="i">
+            <li class="arrow" :title="Math.round(s.timeSecond / 60) + ' minutes'">
+            <div>
+              <hr
+                :style="`width: ${Math.round(100 * s.timeSecond / maxSubstanceTimeSecond)}%`"
+              />
+            </div>
+            </li>
+            <li :title="Math.round(s.timeSecond / 60) + ' minutes'">
+            +<span>{{s.namePsychonautWikiOrg}}</span> {{s.dose}}<small>{{s.doseUnit}}</small>
+            </li>
+          </template>
+        </ul>
+      </template>
+    </Column>
+    <Column filterField="date"
+            header="Date"
+            :filterMatchModeOptions="configFilterMatchModeOptions.date"
+            ref="date">
+      <template #filter="{filterModel,filterCallback}">
+        <Calendar v-model="filterModel.value"
+                  @update:modelValue="filterCallback()"
+                  dateFormat="mm/dd/yy" placeholder="mm/dd/yyyy" mask="99/99/9999" />
+      </template>
+      <template #body="{data}">
+        {{ formatDate(data.d.dateTimestamp) }}
+      </template>
+    </Column>
+  </DataTable>
+</template>
+
+<script lang="ts">
+import DataTable from 'primevue/datatable';
+import {
+  IS_LOADING, PAGINATION, REPORTS_MODULE, State as ReportsState,
+} from '../store/reports';
+import { FETCH_REPORTS } from '../store/reports/actions';
+import { defineComponent } from 'vue';
+import { mapActions, mapState } from 'vuex';
+import Column from 'primevue/column';
+import { ReportFilters, Report } from '../services/api';
+import { debounce, get } from 'lodash-es';
+
+type FetchParams = {
+  page: number;
+  pageSize: number;
+  filters: ReportFilters;
+};
+
+export default defineComponent({
+  name: 'ReportsTable',
+  components: { DataTable, Column },
+  data() {
+    const filters: ReportFilters & {
+      'date': {
+        value: null | Date;
+        matchMode: 'dateIs' | 'dateIsNot' | 'dateBefore' | 'dateAfter';
+      };
+      'user.nick': {
+        suggestions: string[];
+      };
+    } = {
+      'user.nick': {
+        value: null,
+        suggestions: [],
+        matchMode: 'startsWith',
+      },
+      'd.dateTimestamp': {
+        value: null,
+        matchMode: 'equals',
+      },
+      date: {
+        value: null,
+        matchMode: 'dateAfter',
+      },
+      'd.title': {
+        value: null,
+        matchMode: 'contains',
+      },
+      'd.substances.*.namePsychonautWikiOrg': {
+        value: null,
+        matchMode: 'contains',
+      },
+    };
+    return {
+      fetchParams: {
+        page: 0,
+        pageSize: 10,
+        filters,
+      } as FetchParams,
+      pag: 'FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown',
+      fetchDebounced: debounce(
+        () => this.fetchReports(this.fetchParams),
+        150, {
+          maxWait: 5000,
+        },
+      ),
+      filters,
+      configFilterMatchModeOptions: {
+        text: [
+          { value: 'equals', label: 'Equals' },
+          { value: 'startsWith', label: 'Starts With' },
+          { value: 'contains', label: 'Contains' },
+          { value: 'endsWith', label: 'Ends With' },
+        ],
+        date: [
+          { value: 'dateBefore', label: 'Date Before' },
+          { value: 'dateAfter', label: 'Date After' },
+        ],
+      },
+    };
+  },
+  methods: {
+    ...mapActions(REPORTS_MODULE, {
+      fetchReports: FETCH_REPORTS,
+    }),
+    async fetchWith(fetchParams: Partial<FetchParams>) {
+      this.fetchParams = { ...this.fetchParams, ...fetchParams };
+      return this.fetchDebounced();
+    },
+    async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
+      return this.fetchWith({ page, pageSize });
+    },
+    onFilter() {
+      const { date } = this.filters;
+      const filters = { ...this.filters };
+      delete filters.date;
+      if (date.value) {
+        filters['d.dateTimestamp'].value = +date.value / 1000;
+        filters['d.dateTimestamp'].matchMode = date.matchMode === 'dateBefore' ? 'lt' : 'gt';
+      } else {
+        filters['d.dateTimestamp'].value = null;
+      }
+      this.fetchWith({ ...this.fetchParams, filters });
+    },
+    onComplete(
+      path: string,
+      filter: ReportFilters['user.nick'] & { suggestions: string[] },
+      { query }: { query: string },
+    ) {
+      const { data } = this.$store.state[REPORTS_MODULE];
+      // eslint-disable-next-line no-param-reassign
+      filter.suggestions = Object
+        .values(data)
+        .map((r) => get(r, path))
+        .filter((f) => f.startsWith(query));
+    },
+    formatDate(value: number | Date) {
+      const date = (typeof value === 'number' ? new Date(value * 1000) : value);
+      return date.toLocaleDateString('en-US', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+    },
+  },
+  computed: {
+    ...mapState(REPORTS_MODULE, {
+      isLoading: IS_LOADING,
+      pagination: PAGINATION,
+    }),
+    ...mapState(REPORTS_MODULE, {
+      reports(state: ReportsState): Report[] {
+        const { data } = state;
+        return state.pagination.viewIds.map((id) => data[id]);
+      },
+      maxSubstanceTimeSecond() {
+        const { reports } = (this as unknown as { reports: Report[] });
+        return reports.reduce((max, r) => {
+          const times = r.d.substances
+            .map((s) => s.timeSecond)
+            .filter((t) => !Number.isNaN(t) && Number.isFinite(t));
+            //  because tslib update
+            // eslint-disable-next-line prefer-spread
+          const localMax = Math.max.apply(Math, times);
+          return Math.max(
+            max,
+            localMax,
+          );
+        },
+        1);
+      },
+    }),
+  },
+  mounted() {
+    this.fetchWith({});
+  },
+});
+
+</script>
+<style scoped lang="scss">
+.substance-list {
+  li.arrow {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    div {
+      hr {
+        margin: 0 0;
+        padding: 1px 0;
+        box-sizing: border-box;
+        border-top: 2px solid grey;
+        color: #e8e8e8;
+        background-color: #e8e8e8;
+        border-bottom: 2px solid #fff;
+      }
+    }
+  }
+  border-left: 2px solid grey;
+  background-color: #f1f1f1;
+  list-style-type: none;
+  padding: 4px 12px;
+}
+</style>

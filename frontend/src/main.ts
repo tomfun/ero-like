@@ -13,21 +13,17 @@ import ProgressBar from 'primevue/progressbar';
 import Textarea from 'primevue/textarea';
 import { createApp } from 'vue';
 
-// eslint-disable-next-line import/no-absolute-path
-import '/node_modules/primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
 import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primevue/resources/primevue.min.css';
+
+import './primeflex.scss';
 
 import App from './App.vue';
 import router from './router';
 import store from './store';
 
-import './assets/main.css';
-
-const app = createApp(App);
-
-app
+createApp(App)
   .use(PrimeVue)
   .component('AutoComplete', AutoComplete)
   .component('Button', Button)
@@ -41,6 +37,6 @@ app
   .component('Panel', Panel)
   .component('ProgressBar', ProgressBar)
   .component('Textarea', Textarea)
-  .use(router);
-
-app.mount('#app');
+  .use(store)
+  .use(router)
+  .mount('#app');
