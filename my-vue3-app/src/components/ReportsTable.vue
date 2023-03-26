@@ -91,8 +91,11 @@
 
 <script lang="ts">
 import DataTable from 'primevue/datatable';
+import type {
+  State as ReportsState,
+} from '@/store/reports';
 import {
-  IS_LOADING, PAGINATION, REPORTS_MODULE, State as ReportsState,
+  IS_LOADING, PAGINATION, REPORTS_MODULE,
 } from '@/store/reports';
 import { FETCH_REPORTS } from '@/store/reports/actions';
 import { defineComponent } from 'vue';
@@ -240,11 +243,52 @@ export default defineComponent({
         },
         1);
       },
+      encodedQuery(state: ReportsState): string {
+        return state.pagination.encodedQuery;
+      },
     }),
   },
-  mounted() {
-    this.fetchWith({});
+  watch: {
+    url() {
+      const template = `${this.$router.currentRoute.value.path}?${(this as unknown as {encodedQuery: string}).encodedQuery}`;
+      this.$router.push(template);
+    },
   },
+  beforeMount() {
+    Object.keys(this.$route.query).forEach((key) => {
+      if (key.includes('[') && key.includes(']')) {
+        const filterTypeRegEx = /\[\w+]/;
+        const filterTypeMatchArr = key.match(filterTypeRegEx);
+        const filtersTypesArray = filterTypeMatchArr?.map((filter) => filter.replace('[', '').replace(']', ''));
+        let filterName = '';
+        if (filterTypeMatchArr !== null) {
+          filterName = key.replace(filterTypeMatchArr[0], '');
+        }
+        if (filtersTypesArray !== undefined) {
+          if (filterName === 'nick' || filterName === 'title') {
+            const val = this.$route.query[key];
+            this.fetchParams.filters[filterName].matchMode = filtersTypesArray[0];
+            this.filters[filterName].matchMode = filtersTypesArray[0];
+            if (typeof val === 'string') {
+              this.fetchParams.filters[filterName].value = val;
+              this.filters[filterName].value = val;
+            }
+          }
+        }
+      }
+    });
+  },
+  // mounted() {
+  //   if (this.url.length > 0 && this.$router.hasRoute(this.urlTab)) {
+  //     this.$router.replace(`${this.urlTab}?${this.url}`);
+  //     this.filters.nick.value = this.pagination.filters.nick.value;
+  //     this.filters.nick.matchMode = this.pagination.filters.nick.matchMode;
+  //     this.filters.title.value = this.pagination.filters.title.value;
+  //     this.filters.title.matchMode = this.pagination.filters.title.matchMode;
+  //   } else {
+  //     this.fetchWith({});
+  //   }
+  // },
 });
 
 </script>

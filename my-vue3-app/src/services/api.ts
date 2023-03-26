@@ -49,6 +49,7 @@ export default {
     pageSize: number;
     itemsTotal: number;
     items: Array<Report>;
+    encodedQuery: string;
   }> {
     const queryStringParts = [];
     if (page !== undefined) {
@@ -68,12 +69,20 @@ export default {
         }
         return `${fieldPath}[${filters[field].matchMode}]=${encodeURIComponent(filters[field].value as string)}`;
       });
-    const uri = `/api/report?${queryStringParts.concat(filtersEncoded).join('&')}`;
+    const encodedQuery = queryStringParts.concat(filtersEncoded).join('&');
+    const uri = `/api/report?${encodedQuery}`;
     if (uri.length > 2000) {
       // eslint-disable-next-line no-console
       console.error('uri too long');
     }
     const res = await fetch(uri);
-    return res.json(); // why we don't handle an error case?
+    const body = await res.json();
+    if (res.status > 400) {
+      throw new Error(`API error: ${body.message || 'unknown'}`);
+    }
+    return {
+      ...body,
+      encodedQuery,
+    };
   },
 };

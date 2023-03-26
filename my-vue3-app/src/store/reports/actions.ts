@@ -1,8 +1,11 @@
 import { ActionContext } from 'vuex';
 import { get } from 'lodash-es';
 import api, { FilterRecordPair } from '../../services/api';
+import type {
+  Pagination, Report, Reports, State,
+} from './state';
 import {
-  PAGINATION, Pagination, Report, Reports, REPORTS, State,
+  PAGINATION, REPORTS,
 } from './state';
 import {
   ADD_DATA, SET_PAGINATION, SET_LOADING,
@@ -206,6 +209,7 @@ export default {
         page: data.page,
         pageSize: data.pageSize,
         itemsTotal: data.itemsTotal,
+        encodedQuery: data.encodedQuery,
         // sort: '',
         ids,
         viewIds: ids,

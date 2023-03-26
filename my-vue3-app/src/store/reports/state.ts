@@ -20,6 +20,7 @@ export interface Pagination {
   ids: Array<string>;
   viewIds: Array<string>;
   filters: ReportFilters;
+  encodedQuery: string;
 }
 
 export interface IsLoading {
@@ -61,6 +62,7 @@ export default {
         matchMode: '',
       },
     },
+    encodedQuery: '',
   },
   [IS_LOADING]: {
     isLoading: false,

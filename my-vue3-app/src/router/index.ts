@@ -1,4 +1,6 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import {
+  createRouter, createWebHistory, RouteRecordRaw,
+} from 'vue-router';
 import Home from '../views/Home.vue';
 import Submit from '../views/Submit.vue';
 import Reports from '../views/Reports.vue';

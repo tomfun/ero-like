@@ -66,10 +66,10 @@
 </template>
 
 <script lang="ts">
-import { Report } from '@/services/api';
 import { mapActions, mapState } from 'vuex';
 import { defineComponent } from 'vue';
 import { debounce } from 'lodash-es';
+import { Report } from '../services/api';
 import SingleReport from './SingleReport.vue';
 import EqualFilterWidget from './widgets/filters/Equal.vue';
 import StartFilterWidget from './widgets/filters/Start.vue';
