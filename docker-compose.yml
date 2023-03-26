@@ -43,3 +43,16 @@ services:
       - ./client-config:/ero-like/client-config
 #      - ./docker/data/gpg/.gnupg2:/root/.gnupg
       - ./docker/data/gpg:/root
+
+  frontend:
+    image: node:18
+    ports:
+      - 3001:3001
+    command: npm run dev
+    working_dir: /ero-like/frontend
+    environment:
+      IS_DOCKER_COMPOSE: 1
+    depends_on:
+      - api
+    volumes:
+      - ./frontend:/ero-like/frontend
