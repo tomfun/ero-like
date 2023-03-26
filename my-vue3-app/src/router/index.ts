@@ -7,14 +7,6 @@ import Reports from '../views/Reports.vue';
 import ReportsTab from '../views/ReportsTab.vue';
 import User from '../views/User.vue';
 
-// const reportTab: RouteRecordRaw = {
-//   template: ReportsTab,
-//   async beforeRouteUpdate(to: RouteComponent, from: RouteComponent) {
-//     // react to route changes...
-//     console.log(to, from);
-//   },
-// };
-
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
@@ -40,9 +32,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/reportsTab',
     name: 'ReportsTab',
     component: ReportsTab,
-    beforeEnter: (to, from) => {
-      console.log('TO:', to, 'From:', from);
-    },
   },
   {
     path: '/about',

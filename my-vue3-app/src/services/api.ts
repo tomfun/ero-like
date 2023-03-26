@@ -24,7 +24,7 @@ export default {
     pageSize: number;
     itemsTotal: number;
     items: Array<Report>;
-    url: string;
+    encodedQuery: string;
   }> {
     const queryStringParts = [];
     if (page !== undefined) {
@@ -44,10 +44,12 @@ export default {
     }
     const res = await fetch(uri);
     const body = await res.json();
-    const resp = {
+    if (res.status > 400) {
+      throw new Error(`API error: ${body.message || 'unknown'}`);
+    }
+    return {
       ...body,
-      url: uriState,
+      encodedQuery: uriState,
     };
-    return resp; // why we don't handle an error case?
   },
 };

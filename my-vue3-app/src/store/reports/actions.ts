@@ -1,10 +1,13 @@
 import { ActionContext } from 'vuex';
 import api from '../../services/api';
-import {
-  PAGINATION, Pagination, Report, Reports, REPORTS, State,
+import type {
+  Pagination, Report, Reports, State,
 } from './state';
 import {
-  ADD_DATA, SET_PAGINATION, SET_LOADING, SET_URL,
+  PAGINATION, REPORTS,
+} from './state';
+import {
+  ADD_DATA, SET_PAGINATION, SET_LOADING,
 } from './mutations';
 
 export const FETCH_REPORTS = 'load_reports';
@@ -113,12 +116,11 @@ export default {
         page: data.page,
         pageSize: data.pageSize,
         itemsTotal: data.itemsTotal,
+        encodedQuery: data.encodedQuery,
         // sort: '',
         ids,
         viewIds: ids,
       });
-
-      commit(SET_URL, data.url);
     } finally {
       if (dataPromiseCallCount === fetchReportsConsistentlyPromiseCallCount) {
         commit(SET_LOADING, false);
