@@ -1,0 +1,180 @@
+stages:
+  - sdk
+  - config
+  - test
+  - registry
+  - deploy
+
+.cache-api-npm: &cache-api-npm
+  cache:
+    - paths:
+        - .npm
+    - key:
+        files:
+          - api/package-lock.json
+      paths:
+        - api/node_modules/
+
+.cache-front-npm: &cache-front-npm
+  cache:
+    - paths:
+        - .npm
+    - key:
+        files:
+          - my-vue3-app/package-lock.json
+      paths:
+        - my-vue3-app/node_modules/
+
+.cache-config-npm: &cache-config-npm
+  cache:
+    - paths:
+        - .npm
+    - key:
+        files:
+          - client-config/package-lock.json
+      paths:
+        - client-config/node_modules/
+
+.cache-sdk-npm: &cache-sdk-npm
+  cache:
+    - paths:
+        - .npm
+    - key:
+        files:
+          - client-sdk/package-lock.json
+      paths:
+        - client-sdk/node_modules/
+
+
+job-deploy:
+  stage: deploy
+  environment:
+    name: $CI_BUILD_REF_NAME
+    url: https://$CI_ENVIRONMENT_SLUG-demo_blog.tomfun.co
+    on_stop: job-deploy-stop
+  except:
+    - master
+  variables:
+    GIT_STRATEGY: none
+  dependencies: []
+  image: curlimages/curl:latest
+  script:
+    - export PUBLIC_HTTP_HOST=${CI_ENVIRONMENT_SLUG}-demo_ero-like.tomfun.co
+    - export PUBLIC_HTTP_URL=https://$PUBLIC_HTTP_HOST
+    - export URI_TO_TEST=${PUBLIC_HTTP_URL}/.wtf/D_I_TAG_UNIQ
+    - echo "$PUBLIC_HTTP_URL"
+    - curl --fail -XPOST "https://jenkins.tomfun.co/buildByToken/buildWithParameters?job=ero-like.tomfun.co%2Fdeploy&token=$JENKINS_DEMO_DEPLOY_TOKEN&IMAGE_TAG=$CI_BUILD_REF&PUBLIC_HTTP_HOST=$PUBLIC_HTTP_HOST"
+    - sleep 20
+    - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_BUILD_REF" || sleep 20
+    - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_BUILD_REF" || sleep 10
+    - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_BUILD_REF"
+
+job-deploy-stop:
+  stage: deploy
+  when: manual
+  environment:
+    name: $CI_BUILD_REF_NAME
+    action: stop
+  except:
+    - master
+  variables:
+    GIT_STRATEGY: none
+  dependencies: []
+  image: curlimages/curl:latest
+  script:
+    - export PUBLIC_HTTP_HOST=${CI_ENVIRONMENT_SLUG}-demo_ero-like.tomfun.co
+    - curl --fail -XPOST "https://jenkins.tomfun.co/buildByToken/buildWithParameters?job=ero-like.tomfun.co%2FstopDeploy&token=$JENKINS_DEMO_DEPLOY_TOKEN&IMAGE_TAG=$CI_BUILD_REF&PUBLIC_HTTP_HOST=$PUBLIC_HTTP_HOST"
+
+
+docker-registry:
+  stage: registry
+  tags:
+    - dind
+#  only:
+#    - master
+  dependencies:
+    - build_sdk
+    - build_config
+  image: docker:dind
+  script:
+    - docker build --build-arg CI_SERVER_HOST=$CI_SERVER_HOST --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN --pull -t registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF -f docker/nginx/Dockerfile .
+    - docker tag registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF_NAME
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+    - docker push registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF
+    - docker push registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF_NAME
+    - export VERSION=$(echo "process.stdout.write(require('./package.json').version)" | docker run -v $PWD/api:/app -w /app --rm -i node:18 -)-$CI_COMMIT_SHORT_SHA
+    - docker build --pull --build-arg VERSION=$VERSION -t registry.gitlab.com/tommyinc/ero-like/api:$CI_BUILD_REF -f docker/api/Dockerfile .
+    - docker tag registry.gitlab.com/tommyinc/ero-like/api:$CI_BUILD_REF registry.gitlab.com/tommyinc/ero-like/api:$CI_BUILD_REF_NAME
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+    - docker push registry.gitlab.com/tommyinc/ero-like/api:$CI_BUILD_REF
+    - docker push registry.gitlab.com/tommyinc/ero-like/api:$CI_BUILD_REF_NAME
+    - docker login -u $HUB_DOCKER_USER -p $HUB_DOCKER_TOKEN
+    - docker tag registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF
+    - docker tag registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF_NAME
+    - docker push $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF
+    - docker push $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF_NAME
+    - docker tag registry.gitlab.com/tommyinc/ero-like/api:$CI_BUILD_REF $HUB_DOCKER_USER/ero-like-api:$CI_BUILD_REF
+    - docker tag registry.gitlab.com/tommyinc/ero-like/api:$CI_BUILD_REF $HUB_DOCKER_USER/ero-like-api:$CI_BUILD_REF_NAME
+    - docker push $HUB_DOCKER_USER/ero-like-api:$CI_BUILD_REF
+    - docker push $HUB_DOCKER_USER/ero-like-api:$CI_BUILD_REF_NAME
+
+build_sdk:
+  stage: sdk
+  extends:
+    - .cache-sdk-npm
+  artifacts:
+    paths:
+      - client-sdk/dist
+    expire_in: 30 days
+  image: node:18
+  script:
+    - cd client-sdk
+    - npm install
+    - npm run build
+    - echo npm run lint ':('
+
+build_config:
+  stage: config
+  extends:
+    - .cache-config-npm
+  artifacts:
+    paths:
+      - client-config/dist
+    expire_in: 30 days
+  dependencies:
+    - build_sdk
+  image: node:18
+  script:
+    - cd client-config
+    - npm install
+    - npm run build
+    - npm run lint
+
+
+build_api:
+  extends:
+    - .cache-api-npm
+  dependencies:
+    - build_sdk
+    - build_config
+  image: node:18.15
+  script:
+    - cd api
+    - npm install --force
+#    - npm run build
+    - npm run lint
+
+build_front:
+  extends:
+    - .cache-front-npm
+  dependencies:
+    - build_sdk
+    - build_config
+  image: node:16.18
+  script:
+    - cd my-vue3-app
+    - rm ../client-config/.eslintrc.cjs
+    - rm ../client-sdk/.eslintrc.cjs
+    - npm install
+#    - npm run build
+    - npm run lint
