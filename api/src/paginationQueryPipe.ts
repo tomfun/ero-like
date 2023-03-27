@@ -1,23 +1,23 @@
+import {
+  PaginationQueryPipe,
+  PaginationQueryDto as PaginationQueryInnerDto,
+} from 'ero-like-sdk/dist/pagination-query.pipe';
 import { ArgumentMetadata, Query, ValidationPipe } from '@nestjs/common';
 import { IsIn, IsInt, Min } from 'class-validator';
 
-export class PaginationQueryPipe extends ValidationPipe {
-  transform(
+export type { Paginable } from 'ero-like-sdk/dist/pagination-query.pipe';
+
+export class PaginationQueryWrapperPipe extends ValidationPipe {
+  pipe = new PaginationQueryPipe();
+  async transform(
     query: any,
     metadata: ArgumentMetadata,
   ): Promise<PaginationQueryDto> {
-    const result = new PaginationQueryDto();
-    if (query.page) {
-      result.page = query.page.match(/\d+/) ? +query.page : null;
-    }
-    if (query.pageSize) {
-      result.pageSize = query.pageSize.match(/\d+/) ? +query.pageSize : null;
-    }
-    return super.transform(result, metadata);
+    return super.transform(await this.pipe.transform(query), metadata);
   }
 }
 
-export class PaginationQueryDto {
+export class PaginationQueryDto extends PaginationQueryInnerDto {
   @IsInt()
   @Min(0)
   page = 0;
@@ -27,12 +27,5 @@ export class PaginationQueryDto {
 }
 
 export const PaginateQuery = Query(
-  new PaginationQueryPipe({ whitelist: true, transform: true }),
+  new PaginationQueryWrapperPipe({ whitelist: true, transform: true }),
 );
-
-export interface Paginable<Entity> {
-  items: Entity[];
-  page: number;
-  pageSize: number;
-  itemsTotal: number;
-}

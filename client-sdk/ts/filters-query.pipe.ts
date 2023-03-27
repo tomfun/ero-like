@@ -122,57 +122,55 @@ export const NumberFilters = [
   QueryOperator.LessThanEqual,
 ];
 
-export class FiltersQueryPipe {
-  protected deeper<C extends ReportConfigType>(
-    queryUnk: unknown,
-    config: C,
-  ): ReportFilterType<C> {
-    const filters = { [TypeSymbol]: Object } as unknown as ReportFilterType<C>;
-    if (typeof queryUnk !== 'object') {
-      return filters;
-    }
-    const query = queryUnk as Record<keyof C, unknown>;
-    Object.keys(config).forEach((fieldNameString) => {
-      if (
-        typeof query[fieldNameString] !== 'object' ||
-        !(fieldNameString in config)
-      ) {
-        return;
-      }
-      const fieldName = fieldNameString as keyof C;
-      const v = query[fieldName] as Record<string, unknown>;
-      const fieldConfig = config[fieldName];
-      if (fieldConfig[TypeSymbol] === Object) {
-        Object.assign(filters, {
-          [fieldName]: this.deeper(v, fieldConfig as ReportConfigType),
-        });
-        return;
-      }
-      if (![String, Number, Object].includes(fieldConfig[TypeSymbol])) {
-        throw new TypeError('New query config type not implemented');
-      }
-      Object.assign(filters, {
-        [fieldName]:
-          fieldConfig[TypeSymbol] === String
-            ? {
-                [TypeSymbol]: fieldConfig[TypeSymbol],
-                [KeyClassSymbol]: fieldConfig[KeyClassSymbol],
-                filters: {},
-              }
-            : {
-                [TypeSymbol]: fieldConfig[TypeSymbol],
-                filters: {},
-              },
-      });
-      for (const operator of fieldConfig[FiltersSymbol]) {
-        if (operator in v && typeof v[operator] === 'string') {
-          filters[fieldName].filters[operator] =
-            fieldConfig[TypeSymbol] === String
-              ? (v[operator] as string)
-              : +v[operator];
-        }
-      }
-    });
+export function lastParse<C extends ReportConfigType>(
+  queryUnk: unknown,
+  config: C,
+): ReportFilterType<C> {
+  const filters = { [TypeSymbol]: Object } as unknown as ReportFilterType<C>;
+  if (typeof queryUnk !== 'object') {
     return filters;
   }
+  const query = queryUnk as Record<keyof C, unknown>;
+  Object.keys(config).forEach((fieldNameString) => {
+    if (
+      typeof query[fieldNameString] !== 'object' ||
+      !(fieldNameString in config)
+    ) {
+      return;
+    }
+    const fieldName = fieldNameString as keyof C;
+    const v = query[fieldName] as Record<string, unknown>;
+    const fieldConfig = config[fieldName];
+    if (fieldConfig[TypeSymbol] === Object) {
+      Object.assign(filters, {
+        [fieldName]: lastParse(v, fieldConfig as ReportConfigType),
+      });
+      return;
+    }
+    if (![String, Number, Object].includes(fieldConfig[TypeSymbol])) {
+      throw new TypeError('New query config type not implemented');
+    }
+    Object.assign(filters, {
+      [fieldName]:
+        fieldConfig[TypeSymbol] === String
+          ? {
+            [TypeSymbol]: fieldConfig[TypeSymbol],
+            [KeyClassSymbol]: fieldConfig[KeyClassSymbol],
+            filters: {},
+          }
+          : {
+            [TypeSymbol]: fieldConfig[TypeSymbol],
+            filters: {},
+          },
+    });
+    for (const operator of fieldConfig[FiltersSymbol]) {
+      if (operator in v && typeof v[operator] === 'string') {
+        filters[fieldName].filters[operator] =
+          fieldConfig[TypeSymbol] === String
+            ? (v[operator] as string)
+            : +v[operator];
+      }
+    }
+  });
+  return filters;
 }

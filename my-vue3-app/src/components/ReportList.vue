@@ -60,7 +60,7 @@
     <Paginator
       :rows="pagination.pageSize"
       :totalRecords="pagination.itemsTotal"
-      :rowsPerPageOptions="[10,20,50,100]"
+      :rowsPerPageOptions="[2,10,20,50,100]"
       @page="onPage($event)" />
   </section>
 </template>
@@ -111,7 +111,7 @@ export default defineComponent({
     return {
       fetchParams: {
         page: 0,
-        pageSize: 10,
+        pageSize: 2,
         filters: {
           nick: {
             value: undefined,
