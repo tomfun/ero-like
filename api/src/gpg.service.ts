@@ -25,9 +25,6 @@ export class VerifyPayload {
 export class ImportAndVerifyPayload extends VerifyPayload {
   @Length(70, 65536)
   publicKeyArmored: string;
-
-  @Length(90)
-  clearSignArmored: string;
 }
 
 export class InvalidDataError extends Error {}
