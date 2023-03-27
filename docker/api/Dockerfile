@@ -7,8 +7,10 @@ WORKDIR /app/api
 CMD ["node", "--trace-warnings", "--enable-source-maps", "dist/main"]
 
 COPY api/package*.json ./
+COPY client-sdk /app/client-sdk
+COPY client-config /app/client-config
 
-RUN npm --loglevel warn --color=always install
+RUN npm --loglevel warn --color=always install --force
 
 COPY api .
 
