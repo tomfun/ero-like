@@ -1,4 +1,4 @@
-FROM node:18-alpine3.17
+FROM node:18.15-alpine3.17
 
 RUN apk --no-cache add gnupg
 
