@@ -10,7 +10,10 @@ COPY api/package*.json ./
 COPY client-sdk /app/client-sdk
 COPY client-config /app/client-config
 
-RUN npm --loglevel warn --color=always install --force
+RUN npm --loglevel warn --color=always install --legacy-peer-deps && \
+    mkdir /app/client-config/node_modules && \
+    cd /app/client-config/ && \
+    ln -sv ../../client-sdk /app/client-config/node_modules/ero-like-sdk
 
 COPY api .
 
