@@ -159,9 +159,10 @@ build_api:
     - build_config
   image: node:18.15
   script:
+    - cd client-config && npm install && cd ..
     - cd api
     - npm install --force
-#    - npm run build
+    - npm run build
     - npm run lint
 
 build_front:
@@ -172,9 +173,10 @@ build_front:
     - build_config
   image: node:16.18
   script:
+    - cd client-config && npm install && cd ..
     - cd my-vue3-app
     - rm ../client-config/.eslintrc.cjs
     - rm ../client-sdk/.eslintrc.cjs
     - npm install
-#    - npm run build
+    - npm run build
     - npm run lint
