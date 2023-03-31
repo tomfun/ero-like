@@ -96,10 +96,11 @@ import { defineComponent } from 'vue';
 import { mapActions, mapState } from 'vuex';
 import Column from 'primevue/column';
 import DataTable from 'primevue/datatable';
-import { debounce, get } from 'lodash-es';
+import { debounce, DebouncedFunc, get } from 'lodash-es';
 import type {
   State as ReportsState,
-} from '@/store/reports';
+  Pagination,
+} from '../store/reports';
 import {
   IS_LOADING, PAGINATION, REPORTS_MODULE,
 } from '../store/reports';
@@ -189,7 +190,7 @@ export default defineComponent({
     async fetchWith(fetchParams: Partial<FetchParams>) {
       this.fetchParams = { ...this.fetchParams, ...fetchParams };
       this.isDebouncedFetch = true;
-      return this.fetchDebounced();
+      this.fetchDebounced();
     },
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
       return this.fetchWith({ page, pageSize });
@@ -207,6 +208,9 @@ export default defineComponent({
       this.fetchWith({ ...this.fetchParams, filters });
     },
     onRouteUpdate(from: string) {
+      if (this.getCurrentDesiredRoute() === this.$route.fullPath) {
+        return;
+      }
       const convert = (operator: string, values: Record<string, number | string>) => ({
         value: values[operator],
         matchMode: operator,
@@ -252,6 +256,7 @@ export default defineComponent({
           field = get(filters, key);
         }
         if (!field) {
+          this.filters[key].value = null;
           return;
         }
         const { filters: values } = (field as { filters: Record<string, number | string> });
@@ -264,15 +269,20 @@ export default defineComponent({
           return true;
         });
       });
-      this.onFilter(); // todo: fetched twice because of router (onApiFinalResponse triggers)
+      this.onFilter();
+      this.fetchDebounced.flush();
     },
     onApiFinalResponse() {
       if (this.isLoading || this.isDebouncedFetch) {
+        console.log('onApiFinalResponse prolonged');
         setTimeout(this.onApiFinalResponse, 500, this);
         return;
       }
-      const template = `${this.$router.currentRoute.value.path}?${this.encodedQuery}`;
-      this.$router.push(template);
+      console.log('onApiFinalResponse push');
+      this.$router.push(this.getCurrentDesiredRoute());
+    },
+    getCurrentDesiredRoute() {
+      return `${this.$router.currentRoute.value.path}?${this.encodedQuery}`;
     },
     onComplete(
       path: string,

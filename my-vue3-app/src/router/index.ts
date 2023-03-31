@@ -3,7 +3,7 @@ import {
 } from 'vue-router';
 import Home from '../views/Home.vue';
 import Submit from '../views/Submit.vue';
-import ReportsTab from '../views/ReportsTab.vue';
+import ReportsView from '../views/ReportsView.vue';
 import User from '../views/User.vue';
 
 const routes: Array<RouteRecordRaw> = [
@@ -25,7 +25,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/reports',
     name: 'Reports',
-    component: ReportsTab,
+    component: ReportsView,
   },
   {
     path: '/about',

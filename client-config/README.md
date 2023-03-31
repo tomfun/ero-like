@@ -4,6 +4,10 @@
 
 # Build
 
+## Before build
+You need to build [../client-sdk]
+to do so follow build section in [../client-sdk/README.md]
+
 ```bash
 npm i
 npm run build

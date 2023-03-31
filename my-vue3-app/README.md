@@ -1,6 +1,12 @@
 # my-vue3-app
 
 ## Project setup
+
+### Before npm install
+You need to build [../client-config]
+to do so follow build section in [../client-config/README.md]
+
+### npm install
 ```
 nvm install
 nvm use

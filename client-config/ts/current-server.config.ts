@@ -1,11 +1,8 @@
 import {
-  // FiltersSymbol as FiltersSymbolInner,
   HurtStringFilters,
-  // KeyClassSymbol as KeyClassSymbolInner,
   NumberField,
   NumberFilters,
   StringField,
-  // TypeSymbol as TypeSymbolInner,
   ReportFilterType, TypeSymbol, FiltersSymbol, KeyClassSymbol,
 } from 'ero-like-sdk/dist/filters-query.pipe';
 
@@ -14,10 +11,6 @@ export {
   NumberField,
   StringField,
 } from 'ero-like-sdk/dist/filters-query.pipe';
-
-// export const FiltersSymbol = FiltersSymbolInner;
-// export const KeyClassSymbol = KeyClassSymbolInner;
-// export const TypeSymbol = TypeSymbolInner;
 
 export interface ReportDFilters
   extends ReportFilterType<typeof reportConfig.d> {

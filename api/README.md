@@ -4,6 +4,11 @@
 
 ## Installation
 
+### Before npm install
+You need to build [../client-config]
+to do so follow build section in [../client-config/README.md]
+
+### npm install
 ```bash
 npm install
 ```
