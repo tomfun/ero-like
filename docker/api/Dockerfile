@@ -2,6 +2,8 @@ FROM node:18.15-alpine3.17
 
 RUN apk --no-cache add gnupg
 
+ADD --chmod=0711 https://github.com/maxcnunes/waitforit/releases/download/v2.4.1/waitforit-linux_amd64 /usr/local/bin/waitforit
+
 WORKDIR /app/api
 
 CMD ["node", "--trace-warnings", "--enable-source-maps", "dist/main"]
