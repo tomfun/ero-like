@@ -96,10 +96,9 @@ import { defineComponent } from 'vue';
 import { mapActions, mapState } from 'vuex';
 import Column from 'primevue/column';
 import DataTable from 'primevue/datatable';
-import { debounce, DebouncedFunc, get } from 'lodash-es';
+import { debounce, get } from 'lodash-es';
 import type {
   State as ReportsState,
-  Pagination,
 } from '../store/reports';
 import {
   IS_LOADING, PAGINATION, REPORTS_MODULE,
