@@ -1,14 +1,23 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Put,
+} from '@nestjs/common';
+import { InvalidDataError } from './gpg.service';
 import {
   ReportService,
-  ReportBodyPayload,
   ReportForList,
+  ReportDataBodyPayload,
 } from './report.service';
 import {
   Paginable,
   PaginateQuery,
   PaginationQueryDto,
 } from './paginationQueryPipe';
+import { UserNotFoundError } from './user.service';
 import { ValidBody } from './validBodyPipe';
 import { PaginationFilters, ReportFilters } from './filtersQueryPipe';
 
@@ -27,16 +36,20 @@ export class ReportController {
   @Post('/validate')
   validateReport(
     @ValidBody
-    createReportDto: ReportBodyPayload,
-  ): ReportBodyPayload {
+    createReportDto: ReportDataBodyPayload,
+  ): ReportDataBodyPayload {
     return createReportDto;
   }
 
-  @Post()
-  postReport(
-    @ValidBody
-    createReportDto: ReportBodyPayload,
-  ): Promise<ReportForList> {
-    return this.appService.create(createReportDto);
+  @Put()
+  async postReport(@Body() data: string): Promise<ReportForList> {
+    try {
+      return await this.appService.create(data);
+    } catch (e) {
+      if (e instanceof InvalidDataError || e instanceof UserNotFoundError) {
+        throw new BadRequestException(e.message);
+      }
+      throw e;
+    }
   }
 }

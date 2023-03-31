@@ -4,6 +4,11 @@
 
 ## Installation
 
+### Before npm install
+You need to build [../client-config]
+to do so follow build section in [../client-config/README.md]
+
+### npm install
 ```bash
 npm install
 ```
@@ -14,28 +19,30 @@ npm install
 ```bash
 # development
 npm run build
-# ts-node ./node_modules/typeorm/cli.js migration:run
-npx typeorm migration:run
+npm run migrate
 ```
 
 ### After
 
 ```bash
 # development
-$ npm run start
+docker-compose up api
+```
+
+see start node scripts
+```bash
+npm run
 
 # watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+# npm run start:dev
+# ...
 ```
 
 ## Create Migration
 ```bash
-# ts-node ./node_modules/typeorm/cli.js migration:create -n some-name-here
+# ts-node ./node_modules/typeorm/cli.js migration:create api/src/migration/some-name-here
 # or
-npx typeorm migration:create -n some-name-here
+npx typeorm migration:create api/src/migration/some-name-here
 ```
 
 ## Test

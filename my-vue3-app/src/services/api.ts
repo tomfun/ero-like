@@ -1,10 +1,38 @@
 // should be imported from API or somewhere else
 
-export interface Report {
+interface ReportAlpha1 {
   id: string;
-  title: string;
-  nick: string;
+  user: {
+    id: string;
+    nick: string;
+  };
+  d: {
+    dateTimestamp: number;
+    title: string;
+    background: string;
+    substances: Array<{
+      timeSecond: number;
+      namePsychonautWikiOrg: string;
+      routeOfAdministration: string;
+      doseUnit: string;
+      dose: number;
+    }>;
+    timeLineReport: Array<{timeSecond: number; report: string}>;
+  };
   gpgSignature: string;
+  createdAt: string;
+}
+
+export type Report = ReportAlpha1
+export type FilterRecordPair<T> = {
+  value: T|null;
+  matchMode: string;
+}
+export interface ReportFilters {
+  'user.nick': FilterRecordPair<string>;
+  'd.title': FilterRecordPair<string>;
+  'd.substances.*.namePsychonautWikiOrg': FilterRecordPair<string>;
+  'd.dateTimestamp': FilterRecordPair<number>;
 }
 
 export default {
@@ -13,10 +41,7 @@ export default {
     {
       page: number;
       pageSize: number;
-      filters: {
-        nick: { value: string | undefined; matchMode: string };
-        title: { value: string | undefined; matchMode: string };
-      };
+      filters: ReportFilters;
     },
   ):
   Promise<{
@@ -24,7 +49,7 @@ export default {
     pageSize: number;
     itemsTotal: number;
     items: Array<Report>;
-    url: string;
+    encodedQuery: string;
   }> {
     const queryStringParts = [];
     if (page !== undefined) {
@@ -33,21 +58,31 @@ export default {
     if (pageSize !== undefined) {
       queryStringParts.push(`pageSize=${pageSize}`);
     }
-    const filtersEncoded = ['nick' as const, 'title' as const]
-      .filter((field) => filters[field].value !== undefined)
-      .map((field) => `${field}[${filters[field].matchMode}]=${encodeURIComponent(filters[field].value as string)}`);
-    const uriState = queryStringParts.concat(filtersEncoded).join('&');
-    const uri = `/api/report?${uriState}`;
+    const filtersEncoded = (Object.keys(filters) as Array<keyof ReportFilters>)
+      .filter((field) => filters[field].value !== null)
+      .map((field) => {
+        let fieldPath: string;
+        if (field === 'd.substances.*.namePsychonautWikiOrg') {
+          fieldPath = '[d][substances.*.namePsychonautWikiOrg]';
+        } else {
+          fieldPath = field.split('.').map((f, i) => (i ? `[${f}]` : f)).join('');
+        }
+        return `${fieldPath}[${filters[field].matchMode}]=${encodeURIComponent(filters[field].value as string)}`;
+      });
+    const encodedQuery = queryStringParts.concat(filtersEncoded).join('&');
+    const uri = `/api/report?${encodedQuery}`;
     if (uri.length > 2000) {
       // eslint-disable-next-line no-console
       console.error('uri too long');
     }
     const res = await fetch(uri);
     const body = await res.json();
-    const resp = {
+    if (res.status > 400) {
+      throw new Error(`API error: ${body.message || 'unknown'}`);
+    }
+    return {
       ...body,
-      url: uriState,
+      encodedQuery,
     };
-    return resp; // why we don't handle an error case?
   },
 };

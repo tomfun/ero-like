@@ -1,32 +1,69 @@
 import { ActionContext } from 'vuex';
-import api from '../../services/api';
-import {
-  PAGINATION, Pagination, Report, Reports, REPORTS, State,
+import { get } from 'lodash-es';
+import api, { FilterRecordPair } from '../../services/api';
+import type {
+  Pagination, Report, Reports, State,
 } from './state';
 import {
-  ADD_DATA, SET_PAGINATION, SET_LOADING, SET_URL,
+  PAGINATION, REPORTS,
+} from './state';
+import {
+  ADD_DATA, SET_PAGINATION, SET_LOADING,
 } from './mutations';
 
 export const FETCH_REPORTS = 'load_reports';
 
-// eslint-disable-next-line max-len
-function buildReportsFilters(this: Pagination['filters']): false|Array<(r: Report) => boolean> {
-  const nothing = () => false;
-  const fieldFilters = ['nick' as const, 'title' as const].reduce((filters, field) => {
-    const { value, matchMode } = this[field];
-    if (typeof value === 'undefined') {
+// type UnscopedPlainFilters<Type, K, FieldType, Prefix extends string> = {
+//   // [`${Prefix}${K}`]: FilterRecordPair<FieldType>;
+//   // Extract<Property, K>
+//   [Property in keyof Type as `${Prefix}${Property}`]: FilterRecordPair<FieldType>
+// };
+const nothing = () => false;
+type BuildReportsFiltersScopedString<ScopedReport, K extends keyof ScopedReport, FieldType> = (
+  this: Record<string, FilterRecordPair<FieldType>>,
+  prefix: string,
+  fields: Array<K & string>,
+) => Array<(r: ScopedReport) => boolean>;
+
+function buildReportsFiltersScopedString<ScopedReport, K extends keyof ScopedReport>(
+  this: Record<string, FilterRecordPair<string>>,
+  prefix: string,
+  fields: Array<K & string>,
+): Array<(r: ScopedReport) => boolean> {
+  return fields.reduce((
+    filters: Array<(r: ScopedReport) => boolean>,
+    field: K & string,
+  ) => {
+    const { value, matchMode } = this[prefix + field];
+    if (value === null) {
       return filters;
     }
-    let newFilter: (r: Report) => boolean;
+    let g: (r: ScopedReport) => ScopedReport[typeof field] | string;
+    // 'd.substances.*.namePsychonautWikiOrg'
+    if (field.includes('.*')) {
+      const [array, endWithDot] = field.split('.*');
+      if (endWithDot) {
+        const end = endWithDot.replace(/^\./, '');
+        g = (r: ScopedReport) => get(r, array).map((e: Record<string, string|number>) => e[end]).join(' ');
+      } else {
+        g = (r: ScopedReport) => get(r, array).join(' ');
+      }
+    } else {
+      g = (r: ScopedReport) => get(r, field);
+    }
+    let newFilter: (r: ScopedReport) => boolean;
     switch (matchMode) {
       case 'equals':
-        newFilter = (r: Report) => r[field] === value;
+        newFilter = (r: ScopedReport) => g(r) === value;
         break;
       case 'startsWith':
-        newFilter = (r: Report) => r[field].startsWith(value);
+        newFilter = (r: ScopedReport) => (g(r) as string).startsWith(value);
         break;
       case 'endsWith':
-        newFilter = (r: Report) => r[field].endsWith(value);
+        newFilter = (r: ScopedReport) => (g(r) as string).endsWith(value);
+        break;
+      case 'contains':
+        newFilter = (r: ScopedReport) => (g(r) as string).includes(value);
         break;
       default:
         newFilter = nothing;
@@ -34,7 +71,66 @@ function buildReportsFilters(this: Pagination['filters']): false|Array<(r: Repor
     }
     filters.push(newFilter);
     return filters;
-  }, [] as Array<(r: Report) => boolean>);
+  }, [] as Array<(r: ScopedReport) => boolean>);
+}
+
+function buildReportsFiltersScopedNumeric<ScopedReport, K extends keyof ScopedReport>(
+  this: Record<string, FilterRecordPair<number>>,
+  prefix: string,
+  fields: Array<K & string>,
+): Array<(r: ScopedReport) => boolean> {
+  return fields.reduce((filters, field) => {
+    const { value, matchMode } = this[prefix + field];
+    if (value === null) {
+      return filters;
+    }
+    const g = (r: ScopedReport) => get(r, field);
+    let newFilter: (r: ScopedReport) => boolean;
+    switch (matchMode) {
+      case 'equals':
+        newFilter = (r: ScopedReport) => g(r) === value;
+        break;
+      case 'lt':
+        newFilter = (r: ScopedReport) => (+g(r)) < (value);
+        break;
+      case 'lte':
+        newFilter = (r: ScopedReport) => (+g(r)) <= (value);
+        break;
+      case 'gt':
+        newFilter = (r: ScopedReport) => (+g(r)) > (value);
+        break;
+      case 'gte':
+        newFilter = (r: ScopedReport) => (+g(r)) >= (value);
+        break;
+      default:
+        newFilter = nothing;
+        break;
+    }
+    filters.push(newFilter);
+    return filters;
+  }, [] as Array<(r: ScopedReport) => boolean>);
+}
+
+function buildReportsFilters(this: Pagination['filters']): false|Array<(r: Report) => boolean> {
+  const userFieldFilters = (buildReportsFiltersScopedString as BuildReportsFiltersScopedString<Report['user'], 'nick', string>).call(
+    this as Record<'user.nick', FilterRecordPair<string>>,
+    'user.',
+    ['nick'],
+  );
+  const dFieldFilters = (buildReportsFiltersScopedString as BuildReportsFiltersScopedString<Report['d'], 'title' | 'substances', string>).call(
+    this as Record<'d.title'|'d.substances.*.namePsychonautWikiOrg', FilterRecordPair<string>>,
+    'd.',
+    ['title', 'substances.*.namePsychonautWikiOrg' as any],
+  ).concat(
+    (buildReportsFiltersScopedNumeric as BuildReportsFiltersScopedString<Report['d'], 'dateTimestamp', number>).call(
+      this as Record<'d.dateTimestamp', FilterRecordPair<number>>,
+      'd.',
+      ['dateTimestamp'],
+    ),
+  );
+  const fieldFilters = ([] as Array<(r: Report) => boolean>)
+    .concat(userFieldFilters.map((cb) => (r: Report) => cb(r.user)))
+    .concat(dFieldFilters.map((cb) => (r: Report) => cb(r.d)));
 
   if (!fieldFilters.length) {
     return false;
@@ -113,12 +209,11 @@ export default {
         page: data.page,
         pageSize: data.pageSize,
         itemsTotal: data.itemsTotal,
+        encodedQuery: data.encodedQuery,
         // sort: '',
         ids,
         viewIds: ids,
       });
-
-      commit(SET_URL, data.url);
     } finally {
       if (dataPromiseCallCount === fetchReportsConsistentlyPromiseCallCount) {
         commit(SET_LOADING, false);

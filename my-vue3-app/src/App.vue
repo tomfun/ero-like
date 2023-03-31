@@ -1,8 +1,7 @@
 <template>
   <div id="nav">
-    <router-link to="/reportsTab">Report Tab</router-link> |
     <router-link :to="{ name: 'Home' }">Home</router-link> |
-    <router-link :to="{ name: 'Reports' }">Reports </router-link> |
+    <router-link :to="{ name: 'Reports' }">Reports</router-link> |
     <router-link :to="{ name: 'Submit' }">Submit Report</router-link>
   </div>
   <router-view/>

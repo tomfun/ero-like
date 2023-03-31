@@ -1,9 +1,8 @@
-import { Report as ApiFetchReport } from '@/services/api';
+import { ReportFilters, Report as ApiFetchReport } from '@/services/api';
 
 export const REPORTS = 'data';
 export const PAGINATION = 'pagination';
 export const IS_LOADING = 'isLoading';
-export const URL = 'url';
 
 export type Report = ApiFetchReport;
 
@@ -20,31 +19,18 @@ export interface Pagination {
   };
   ids: Array<string>;
   viewIds: Array<string>;
-  filters: {
-    nick: {
-      value: string | undefined;
-      matchMode: string;
-    };
-    title: {
-      value: string | undefined;
-      matchMode: string;
-    };
-  };
+  filters: ReportFilters;
+  encodedQuery: string;
 }
 
 export interface IsLoading {
   isLoading: boolean;
 }
 
-export interface URL {
-  url: string;
-}
-
 export interface State {
   [REPORTS]: Reports;
   [PAGINATION]: Pagination;
   [IS_LOADING]: IsLoading;
-  [URL]: URL;
 }
 
 export default {
@@ -59,20 +45,26 @@ export default {
     ids: [],
     viewIds: [],
     filters: {
-      nick: {
-        value: undefined,
+      'user.nick': {
+        value: null,
         matchMode: '',
       },
-      title: {
-        value: undefined,
+      'd.dateTimestamp': {
+        value: null,
+        matchMode: '',
+      },
+      'd.title': {
+        value: null,
+        matchMode: '',
+      },
+      'd.substances.*.namePsychonautWikiOrg': {
+        value: null,
         matchMode: '',
       },
     },
+    encodedQuery: '',
   },
   [IS_LOADING]: {
     isLoading: false,
-  },
-  [URL]: {
-    url: '',
   },
 } as State;

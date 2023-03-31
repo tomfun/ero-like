@@ -19,6 +19,6 @@ async function bootstrap() {
     ReportModule,
     new FastifyAdapter(server),
   );
-  await app.listen(3000, '0.0.0.0');
+  await app.listen(+process.env.PORT, process.env.ADDRESS);
 }
 bootstrap();

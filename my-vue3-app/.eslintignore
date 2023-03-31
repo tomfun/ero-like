@@ -1,0 +1,5 @@
+node_modules/
+node_modules/client-config/
+node_modules/ero-like-config
+../client-config/
+../client-sdk/
