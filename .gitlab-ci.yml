@@ -86,7 +86,7 @@ job-deploy-stop:
     - curl --fail -XPOST "https://jenkins.tomfun.co/buildByToken/buildWithParameters?job=ero-like.tomfun.co%2FstopDeploy&token=$JENKINS_DEMO_DEPLOY_TOKEN&IMAGE_TAG=$CI_BUILD_REF&PUBLIC_HTTP_HOST=$PUBLIC_HTTP_HOST"
 
 
-docker-registry:
+docker-registry-nginx:
   stage: registry
   tags:
     - dind
@@ -102,19 +102,32 @@ docker-registry:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
     - docker push registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF
     - docker push registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF_NAME
-    - export VERSION=$(echo "process.stdout.write(require('./package.json').version)" | docker run -v $PWD/api:/app -w /app --rm -i node:18 -)-$CI_COMMIT_SHORT_SHA
+    - docker tag registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF
+    - docker tag registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF_NAME
+    - docker login -u $HUB_DOCKER_USER -p $HUB_DOCKER_TOKEN
+    - docker push $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF
+    - docker push $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF_NAME
+
+docker-registry-api:
+  stage: registry
+  tags:
+    - dind
+#  only:
+#    - master
+  dependencies:
+    - build_sdk
+    - build_config
+  image: docker:dind
+  script:
+    - export VERSION=$(echo "process.stdout.write(require('./package.json').version)" | docker run -v $PWD/api:/app -w /app --rm -i node:18.15-alpine3.17 -)-$CI_COMMIT_SHORT_SHA
     - docker build --pull --build-arg VERSION=$VERSION -t registry.gitlab.com/tommyinc/ero-like/api:$CI_BUILD_REF -f docker/api/Dockerfile .
     - docker tag registry.gitlab.com/tommyinc/ero-like/api:$CI_BUILD_REF registry.gitlab.com/tommyinc/ero-like/api:$CI_BUILD_REF_NAME
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
     - docker push registry.gitlab.com/tommyinc/ero-like/api:$CI_BUILD_REF
     - docker push registry.gitlab.com/tommyinc/ero-like/api:$CI_BUILD_REF_NAME
-    - docker login -u $HUB_DOCKER_USER -p $HUB_DOCKER_TOKEN
-    - docker tag registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF
-    - docker tag registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF_NAME
-    - docker push $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF
-    - docker push $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF_NAME
     - docker tag registry.gitlab.com/tommyinc/ero-like/api:$CI_BUILD_REF $HUB_DOCKER_USER/ero-like-api:$CI_BUILD_REF
     - docker tag registry.gitlab.com/tommyinc/ero-like/api:$CI_BUILD_REF $HUB_DOCKER_USER/ero-like-api:$CI_BUILD_REF_NAME
+    - docker login -u $HUB_DOCKER_USER -p $HUB_DOCKER_TOKEN
     - docker push $HUB_DOCKER_USER/ero-like-api:$CI_BUILD_REF
     - docker push $HUB_DOCKER_USER/ero-like-api:$CI_BUILD_REF_NAME
 
