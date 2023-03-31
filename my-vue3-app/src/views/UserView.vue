@@ -9,7 +9,7 @@ import { defineComponent } from 'vue';
 import UserRegistration from '../components/UserRegistration.vue';
 
 export default defineComponent({
-  name: 'User',
+  name: 'UserView',
   components: {
     UserRegistration,
   },

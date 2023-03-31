@@ -274,11 +274,9 @@ export default defineComponent({
     },
     onApiFinalResponse() {
       if (this.isLoading || this.isDebouncedFetch) {
-        console.log('onApiFinalResponse prolonged');
         setTimeout(this.onApiFinalResponse, 500, this);
         return;
       }
-      console.log('onApiFinalResponse push');
       this.$router.push(this.getCurrentDesiredRoute());
     },
     getCurrentDesiredRoute() {
