@@ -50,7 +50,7 @@ function buildReportsFiltersScopedString<ScopedReport, K extends keyof ScopedRep
         g = (r: ScopedReport) => get(r, array).join(' ');
       }
     } else {
-      g = (r: ScopedReport) => get(r, field);
+      g = (r: ScopedReport) => get(r, field) as ScopedReport[K & string];
     }
     let newFilter: (r: ScopedReport) => boolean;
     switch (matchMode) {

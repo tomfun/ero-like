@@ -6,7 +6,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import SubmitReport from '../components/SubmitReport.vue'; // @ is an alias to /src
+import SubmitReport from '../components/SubmitReport.vue';
 
 export default defineComponent({
   name: 'SubmitView',

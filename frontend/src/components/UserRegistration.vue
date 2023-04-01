@@ -9,7 +9,7 @@
         <label for="publicKeyArmored">gpg public key</label>
         <Textarea v-model="publicKeyArmored"
                   cols="66"
-                  auto-resize="auto-resize"
+                  :autoResize="true"
                   id="publicKeyArmored"
                   name="publicKeyArmored"
                   placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----
@@ -26,7 +26,7 @@ nAoFL1Xt5HCELslo4S6vjNMtIHLm6Jw3Hu0sUlfW81lu+q53XhFZcP22HB/MIRhD
         <p>
           ! This information is public! When you upload your public key it's irreversible
         </p>
-        <Panel header="How to get keys" toggleable collapsed="collapsed">
+        <Panel header="How to get keys" toggleable :collapsed="true">
           <p class="m-0">
             You need to know id of key or user:<br/>
             <code>gpg --list-keys</code><br/>
@@ -47,7 +47,7 @@ nAoFL1Xt5HCELslo4S6vjNMtIHLm6Jw3Hu0sUlfW81lu+q53XhFZcP22HB/MIRhD
             <br/>
           </p>
         </Panel>
-        <Panel header="How to set public user" toggleable collapsed="collapsed">
+        <Panel header="How to set public user" toggleable :collapsed="true">
           <p class="m-0">
             gpg and ero-like needs username. However we don't need email and there is no
             verification for a moment. You may add new name for your secret key and hide other names
@@ -78,7 +78,7 @@ nAoFL1Xt5HCELslo4S6vjNMtIHLm6Jw3Hu0sUlfW81lu+q53XhFZcP22HB/MIRhD
                   name="clearSignArmored"
                   id="clearSignArmored"
                   cols="66"
-                  auto-resize="auto-resize"
+                  :auto-resize="true"
                   placeholder="-----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA256
 
@@ -93,7 +93,7 @@ iQIzBAABCgAdFiEEVUcfD9jeufsD1JVP3UX6TcUPhfEFAmC7Q2gACgkQ3UX6TcUP
 TaVHnbJ8jErfklgnRTPibX8AdmEFJasONNMJ/7euoBoH+aAYG/k=
 =B0/L
 -----END PGP SIGNATURE-----"/>
-        <Panel header="How do clear sign" toggleable collapsed="collapsed">
+        <Panel header="How do clear sign" toggleable :collapsed="true">
           <p class="m-0">
             You need to know public key id or your local user which was used to export public key.
             Follow for instructions for the another field [gpg public key]<br/>

@@ -8,6 +8,7 @@
     "preserveValueImports": true,
     "ignoreDeprecations": "5.0",
     "verbatimModuleSyntax": false,
+    "lib": ["es2017", "DOM"]
   },
   "references": [
     {

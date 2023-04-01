@@ -10,7 +10,7 @@
     :paginator="true" :resizableColumns="true" :rows="pagination.pageSize"
     :totalRecords="pagination.itemsTotal" :rowsPerPageOptions="[10,20,50,100]"
     :paginatorTemplate="pag" @page="onPage($event)" filterDisplay="row"
-    @filter="onFilter($event)"
+    @filter="onFilter()"
     :globalFilterFields="[
       'user.nick', 'd.title', 'd.substances.*.namePsychonautWikiOrg', 'd.dateTimestamp']"
     >
@@ -22,10 +22,10 @@
         <AutoComplete
           placeholder="Search by nick"
           v-model="filterModel.value"
-          :suggestions="filterModel.suggestions"
+          :suggestions="(filterModel as ModelReportFilters['user.nick']).suggestions"
           @update:modelValue="filterCallback()"
           @keydown.enter="filterCallback()"
-          @complete="onComplete('user.nick', filterModel, $event)"
+          @complete="onComplete('user.nick', (filterModel as ModelReportFilters['user.nick']), $event)"
         />
       </template>
       <template #body="{data}">
@@ -82,7 +82,7 @@
       <template #filter="{filterModel,filterCallback}">
         <Calendar v-model="filterModel.value"
                   @update:modelValue="filterCallback()"
-                  dateFormat="mm/dd/yy" placeholder="mm/dd/yyyy" mask="99/99/9999" />
+                  dateFormat="mm/dd/yy" placeholder="mm/dd/yyyy" />
       </template>
       <template #body="{data}">
         {{ formatDate(data.d.dateTimestamp) }}
@@ -95,16 +95,17 @@
 import { defineComponent } from 'vue';
 import { mapActions, mapState } from 'vuex';
 import Column from 'primevue/column';
-import DataTable, { DataTableFilterMetaData } from 'primevue/datatable';
+import DataTable from 'primevue/datatable';
 import { debounce, get } from 'lodash-es';
 import type {
   State as ReportsState,
 } from '../store/reports';
+import type { Pagination } from '../store/reports';
 import {
-  IS_LOADING, Pagination, PAGINATION, REPORTS_MODULE,
+  IS_LOADING, PAGINATION, REPORTS, REPORTS_MODULE,
 } from '../store/reports';
 import { FETCH_REPORTS } from '../store/reports/actions';
-import { ReportFilters, Report } from '../services/api';
+import type { ReportFilters, Report } from '../services/api';
 import pipe from '../services/api.converter';
 
 type FetchParams = {
@@ -211,7 +212,7 @@ export default defineComponent({
       }
       this.fetchWith({ ...this.fetchParams, filters });
     },
-    onRouteUpdate(from: string) {
+    onRouteUpdate() {
       if (this.getCurrentDesiredRoute() === this.$route.fullPath) {
         return;
       }
@@ -291,10 +292,8 @@ export default defineComponent({
       filter: ReportFilters['user.nick'] & { suggestions: string[] },
       { query }: { query: string },
     ) {
-      const { data } = this.$store.state[REPORTS_MODULE];
-      // eslint-disable-next-line no-param-reassign
       filter.suggestions = Object
-        .values(data)
+        .values(this.data)
         .map((r) => get(r, path))
         .filter((f) => f.startsWith(query));
     },
@@ -311,6 +310,7 @@ export default defineComponent({
     ...mapState(REPORTS_MODULE, {
       isLoading: IS_LOADING,
       pagination: PAGINATION,
+      data: REPORTS,
     }),
     ...mapState(REPORTS_MODULE, {
       reports(state: unknown): Report[] {
@@ -345,11 +345,11 @@ export default defineComponent({
     },
   },
   beforeMount() {
-    this.onRouteUpdate('');
+    this.onRouteUpdate();
     this.$watch(
       () => this.$route.fullPath,
-      (to: string, from: string) => {
-        this.onRouteUpdate(from);
+      () => {
+        this.onRouteUpdate();
       },
     );
   },
