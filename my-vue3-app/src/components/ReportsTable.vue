@@ -101,7 +101,7 @@ import type {
   State as ReportsState,
 } from '../store/reports';
 import {
-  IS_LOADING, PAGINATION, REPORTS_MODULE,
+  IS_LOADING, Pagination, PAGINATION, REPORTS_MODULE,
 } from '../store/reports';
 import { FETCH_REPORTS } from '../store/reports/actions';
 import { ReportFilters, Report } from '../services/api';
@@ -121,6 +121,11 @@ type ModelReportFilters = ReportFilters & {
   'user.nick': {
     suggestions: string[];
   };
+};
+
+type ReportsTableThis = {
+  pagination: Pagination;
+  reports: Report[];
 };
 
 export default defineComponent({
@@ -189,14 +194,14 @@ export default defineComponent({
     async fetchWith(fetchParams: Partial<FetchParams>) {
       this.fetchParams = { ...this.fetchParams, ...fetchParams };
       this.isDebouncedFetch = true;
-      this.fetchDebounced();
+      return this.fetchDebounced();
     },
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
       return this.fetchWith({ page, pageSize });
     },
     onFilter() {
       const { date } = this.filters;
-      const filters = { ...this.filters };
+      const filters = { ...this.filters } as Omit<ModelReportFilters, 'date'> & Partial<ModelReportFilters>;
       delete filters.date;
       if (date.value) {
         filters['d.dateTimestamp'].value = +date.value / 1000;
@@ -279,7 +284,7 @@ export default defineComponent({
       this.$router.push(this.getCurrentDesiredRoute());
     },
     getCurrentDesiredRoute() {
-      return `${this.$router.currentRoute.value.path}?${this.encodedQuery}`;
+      return `${this.$router.currentRoute.value.path}?${this.pagination.encodedQuery}`;
     },
     onComplete(
       path: string,
@@ -308,12 +313,13 @@ export default defineComponent({
       pagination: PAGINATION,
     }),
     ...mapState(REPORTS_MODULE, {
-      reports(state: ReportsState): Report[] {
-        const { data } = state;
-        return state.pagination.viewIds.map((id) => data[id]);
+      reports(state: unknown): Report[] {
+        const { data } = state as ReportsState;
+        return (this as unknown as ReportsTableThis).pagination.viewIds.map((id) => data[id]);
       },
       maxSubstanceTimeSecond() {
-        const { reports } = (this as unknown as { reports: Report[] });
+        const { reports } = (this as unknown as ReportsTableThis);
+        // const { reports } = (this as unknown as { reports: Report[] });
         return reports.reduce((max, r) => {
           const times = r.d.substances
             .map((s) => s.timeSecond)
@@ -328,8 +334,8 @@ export default defineComponent({
         },
         1);
       },
-      encodedQuery(state: ReportsState): string {
-        return state.pagination.encodedQuery;
+      encodedQuery(): string {
+        return (this as unknown as ReportsTableThis).pagination.encodedQuery;
       },
     }),
   },
