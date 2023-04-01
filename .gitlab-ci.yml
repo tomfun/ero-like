@@ -21,9 +21,9 @@ stages:
         - .npm
     - key:
         files:
-          - my-vue3-app/package-lock.json
+          - frontend/package-lock.json
       paths:
-        - my-vue3-app/node_modules/
+        - frontend/node_modules/
 
 .cache-config-npm: &cache-config-npm
   cache:
@@ -113,18 +113,18 @@ docker-registry-nginx:
   image: docker:dind
   script:
     - |
-      mkdir my-vue3-app/public/.wtf
-      echo $CI_BUILD_REF_NAME > my-vue3-app/public/.wtf/D_I_TAG_UNIQ
-      echo $CI_BUILD_REF >> my-vue3-app/public/.wtf/D_I_TAG_UNIQ
-      date >> my-vue3-app/public/.wtf/D_I_TAG_UNIQ
-      cat my-vue3-app/public/.wtf/D_I_TAG_UNIQ
-    - docker build --build-arg CI_SERVER_HOST=$CI_SERVER_HOST --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN --pull -t registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF -f docker/nginx/Dockerfile .
-    - docker tag registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF_NAME
+      mkdir frontend/public/.wtf
+      echo $CI_BUILD_REF_NAME > frontend/public/.wtf/D_I_TAG_UNIQ
+      echo $CI_BUILD_REF >> frontend/public/.wtf/D_I_TAG_UNIQ
+      date >> frontend/public/.wtf/D_I_TAG_UNIQ
+      cat frontend/public/.wtf/D_I_TAG_UNIQ
+    - docker build --build-arg CI_SERVER_HOST=$CI_SERVER_HOST --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN --pull -t registry.gitlab.com/tommyinc/ero-like/frontend:$CI_BUILD_REF -f docker/nginx/Dockerfile .
+    - docker tag registry.gitlab.com/tommyinc/ero-like/frontend:$CI_BUILD_REF registry.gitlab.com/tommyinc/ero-like/frontend:$CI_BUILD_REF_NAME
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
-    - docker push registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF
-    - docker push registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF_NAME
-    - docker tag registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF
-    - docker tag registry.gitlab.com/tommyinc/ero-like/my-vue3-app:$CI_BUILD_REF $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF_NAME
+    - docker push registry.gitlab.com/tommyinc/ero-like/frontend:$CI_BUILD_REF
+    - docker push registry.gitlab.com/tommyinc/ero-like/frontend:$CI_BUILD_REF_NAME
+    - docker tag registry.gitlab.com/tommyinc/ero-like/frontend:$CI_BUILD_REF $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF
+    - docker tag registry.gitlab.com/tommyinc/ero-like/frontend:$CI_BUILD_REF $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF_NAME
     - docker login -u $HUB_DOCKER_USER -p $HUB_DOCKER_TOKEN
     - docker push $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF
     - docker push $HUB_DOCKER_USER/ero-like-nginx:$CI_BUILD_REF_NAME
@@ -160,7 +160,7 @@ build_sdk:
     paths:
       - client-sdk/dist
     expire_in: 30 days
-  image: node:18
+  image: node:18.15-alpine3.17
   script:
     - cd client-sdk
     - npm install
@@ -177,7 +177,7 @@ build_config:
     expire_in: 30 days
   dependencies:
     - build_sdk
-  image: node:18
+  image: node:18.15-alpine3.17
   script:
     - cd client-config
     - npm install
@@ -191,7 +191,7 @@ build_api:
   dependencies:
     - build_sdk
     - build_config
-  image: node:18.15
+  image: node:18.15-alpine3.17
   script:
     - cd client-config && npm install && cd ..
     - cd api
@@ -205,12 +205,10 @@ build_front:
   dependencies:
     - build_sdk
     - build_config
-  image: node:16.18
+  image: node:18.15-alpine3.17
   script:
     - cd client-config && npm install && cd ..
-    - cd my-vue3-app
-    - rm ../client-config/.eslintrc.cjs
-    - rm ../client-sdk/.eslintrc.cjs
+    - cd frontend
     - npm install
     - npm run build
     - npm run lint
