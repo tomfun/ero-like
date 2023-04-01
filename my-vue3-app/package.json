@@ -20,7 +20,7 @@
     "primeicons": "^4.1.0",
     "primevue": "^3.8.0",
     "qs": "^6.11.1",
-    "vue": "^3.0.0",
+    "vue": "^3.0.11",
     "vue-router": "^4.0.0-0",
     "vuex": "^4.0.0-0"
   },
@@ -31,10 +31,10 @@
     "@typescript-eslint/parser": "^2.33.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-plugin-router": "~4.5.0",
-    "@vue/cli-plugin-typescript": "~4.5.0",
+    "@vue/cli-plugin-typescript": "^4.5.19",
     "@vue/cli-plugin-vuex": "~4.5.0",
-    "@vue/cli-service": "~4.5.19",
-    "@vue/compiler-sfc": "^3.0.0",
+    "@vue/cli-service": "^4.5.19",
+    "@vue/compiler-sfc": "^3.0.11",
     "@vue/eslint-config-airbnb": "^5.0.2",
     "@vue/eslint-config-typescript": "^5.0.2",
     "eslint": "^6.7.2",
@@ -42,6 +42,6 @@
     "eslint-plugin-vue": "^7.0.0-0",
     "sass": "^1.60.0",
     "sass-loader": "^10.4.1",
-    "typescript": "~3.9.10"
+    "typescript": "^5.0.3"
   }
 }
