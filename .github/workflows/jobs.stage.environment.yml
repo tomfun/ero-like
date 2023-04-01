@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: stage
-      url: default-demo_ero-like.tomfun.co
+      url: main-demo-ero-like.tomfun.co
       # url
       # https://stackoverflow.com/questions/67385568/github-actions-how-to-dynamically-set-environment-url-based-on-deployment-step
       # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-using-environment-name-and-url
@@ -25,7 +25,7 @@ jobs:
       JENKINS_DEMO_DEPLOY_TOKEN: ${{ secrets.JENKINS_DEMO_DEPLOY_TOKEN }}
       CI_BUILD_REF: ${{ github.sha }}
       #          PUBLIC_HTTP_HOST: ${{ jobs.deployment.environment.url }}
-      PUBLIC_HTTP_HOST: default-demo_ero-like.tomfun.co
+      PUBLIC_HTTP_HOST: main-demo-ero-like.tomfun.co
     steps:
       - name: deploy
         run: |

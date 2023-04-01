@@ -68,7 +68,7 @@ job-deploy-demo:
     - master
   variables:
     GIT_STRATEGY: none
-    PUBLIC_HTTP_HOST: ${CI_ENVIRONMENT_SLUG}-demo_ero-like.tomfun.co
+    PUBLIC_HTTP_HOST: ${CI_ENVIRONMENT_SLUG}-demo-ero-like.tomfun.co
     PUBLIC_HTTP_URL: https://$PUBLIC_HTTP_HOST
     URI_TO_TEST: ${PUBLIC_HTTP_URL}/.wtf/D_I_TAG_UNIQ
     JENKINS_JOB: ero-like.tomfun.co%2Fdeploy
@@ -100,7 +100,7 @@ job-deploy-stop:
   dependencies: []
   image: curlimages/curl:latest
   script:
-    - export PUBLIC_HTTP_HOST=${CI_ENVIRONMENT_SLUG}-demo_ero-like.tomfun.co
+    - export PUBLIC_HTTP_HOST=${CI_ENVIRONMENT_SLUG}-demo-ero-like.tomfun.co
     - curl --fail -XPOST "https://jenkins.tomfun.co/buildByToken/buildWithParameters?job=ero-like.tomfun.co%2FstopDeploy&token=$JENKINS_DEMO_DEPLOY_TOKEN&IMAGE_TAG=$CI_BUILD_REF&PUBLIC_HTTP_HOST=$PUBLIC_HTTP_HOST"
 
 
