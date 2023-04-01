@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 const binDirVueTsc = join('node_modules', process.platform === 'win32' ? 'bin' : '.bin', 'vue-tsc');
 
 function runVueTSC(tsconfigPath: string) {
-  exec(`node ${binDirVueTsc} --noEmit -p ${tsconfigPath} --pretty`, (error, stdout, stderr) => {
+  exec(`node ${binDirVueTsc} --noEmit -p ${tsconfigPath} --pretty --composite false`, (error, stdout, stderr) => {
     console.log('\x1b[32m%s\x1b[0m', 'vue-tsc');
     console.log(stdout);
     if (stderr) {
@@ -14,6 +14,14 @@ function runVueTSC(tsconfigPath: string) {
     }
   });
 }
+
+exec(`node ${binDirVueTsc} --version`, (error, stdout, stderr) => {
+  console.log('vue-tsc version\x1b[32m%s\x1b[0m', stdout);
+  if (stderr) {
+    console.error('\x1b[31m%s\x1b[0m', 'vue-tsc --version error:');
+    console.error(stderr);
+  }
+});
 
 export function vitePluginVueTSC({ tsconfigPath }: { tsconfigPath: string }) {
   return {

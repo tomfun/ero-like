@@ -20,6 +20,7 @@ export interface Pagination {
   ids: Array<string>;
   viewIds: Array<string>;
   filters: ReportFilters;
+  encodedQuery: string;
 }
 
 export interface IsLoading {
@@ -46,21 +47,22 @@ export default {
     filters: {
       'user.nick': {
         value: null,
-        matchMode: '',
+        matchMode: 'equals',
       },
       'd.dateTimestamp': {
         value: null,
-        matchMode: '',
+        matchMode: 'equals',
       },
       'd.title': {
         value: null,
-        matchMode: '',
+        matchMode: 'equals',
       },
       'd.substances.*.namePsychonautWikiOrg': {
         value: null,
-        matchMode: '',
+        matchMode: 'equals',
       },
     },
+    encodedQuery: '',
   },
   [IS_LOADING]: {
     isLoading: false,

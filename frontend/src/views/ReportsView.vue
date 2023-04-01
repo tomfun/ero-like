@@ -1,17 +1,19 @@
 <template>
   <div>
-    <SubmitReport />
+    <h1>This is report storage</h1>
+    <ReportsTable/>
+
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import SubmitReport from '../components/SubmitReport.vue'; // @ is an alias to /src
+import ReportsTable from '../components/ReportsTable.vue';
 
 export default defineComponent({
-  name: 'Submit',
+  name: 'ReportsView',
   components: {
-    SubmitReport,
+    ReportsTable,
   },
 });
 </script>

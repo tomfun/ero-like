@@ -37,7 +37,7 @@
 import { defineComponent } from 'vue';
 
 export default defineComponent({
-  name: 'Terms',
+  name: 'PageTerms',
   props: {
     msg: String,
   },

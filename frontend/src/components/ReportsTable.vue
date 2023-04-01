@@ -1,9 +1,11 @@
 <template>
+  <div style="height: .5em">
   <ProgressBar
     v-if="isLoading"
     mode="indeterminate"
     style="height: .5em"
   />
+  </div>
   <DataTable :value="reports" :lazy="true"  v-model:filters="filters"
     :paginator="true" :resizableColumns="true" :rows="pagination.pageSize"
     :totalRecords="pagination.itemsTotal" :rowsPerPageOptions="[10,20,50,100]"
@@ -90,16 +92,20 @@
 </template>
 
 <script lang="ts">
-import DataTable from 'primevue/datatable';
-import {
-  IS_LOADING, PAGINATION, REPORTS_MODULE, State as ReportsState,
-} from '../store/reports';
-import { FETCH_REPORTS } from '../store/reports/actions';
 import { defineComponent } from 'vue';
 import { mapActions, mapState } from 'vuex';
 import Column from 'primevue/column';
-import { ReportFilters, Report } from '../services/api';
+import DataTable, { DataTableFilterMetaData } from 'primevue/datatable';
 import { debounce, get } from 'lodash-es';
+import type {
+  State as ReportsState,
+} from '../store/reports';
+import {
+  IS_LOADING, Pagination, PAGINATION, REPORTS_MODULE,
+} from '../store/reports';
+import { FETCH_REPORTS } from '../store/reports/actions';
+import { ReportFilters, Report } from '../services/api';
+import pipe from '../services/api.converter';
 
 type FetchParams = {
   page: number;
@@ -107,19 +113,26 @@ type FetchParams = {
   filters: ReportFilters;
 };
 
+type ModelReportFilters = ReportFilters & {
+  'date': {
+    value: null | Date;
+    matchMode: 'dateIs' | 'dateIsNot' | 'dateBefore' | 'dateAfter';
+  };
+  'user.nick': {
+    suggestions: string[];
+  };
+};
+
+type ReportsTableThis = {
+  pagination: Pagination;
+  reports: Report[];
+};
+
 export default defineComponent({
   name: 'ReportsTable',
   components: { DataTable, Column },
   data() {
-    const filters: ReportFilters & {
-      'date': {
-        value: null | Date;
-        matchMode: 'dateIs' | 'dateIsNot' | 'dateBefore' | 'dateAfter';
-      };
-      'user.nick': {
-        suggestions: string[];
-      };
-    } = {
+    const filters: ModelReportFilters = {
       'user.nick': {
         value: null,
         suggestions: [],
@@ -143,6 +156,7 @@ export default defineComponent({
       },
     };
     return {
+      isDebouncedFetch: false,
       fetchParams: {
         page: 0,
         pageSize: 10,
@@ -150,7 +164,10 @@ export default defineComponent({
       } as FetchParams,
       pag: 'FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown',
       fetchDebounced: debounce(
-        () => this.fetchReports(this.fetchParams),
+        () => {
+          (this as any).isDebouncedFetch = false;
+          return this.fetchReports(this.fetchParams);
+        },
         150, {
           maxWait: 5000,
         },
@@ -176,6 +193,7 @@ export default defineComponent({
     }),
     async fetchWith(fetchParams: Partial<FetchParams>) {
       this.fetchParams = { ...this.fetchParams, ...fetchParams };
+      this.isDebouncedFetch = true;
       return this.fetchDebounced();
     },
     async onPage({ page, rows: pageSize }: {page: number; rows: number}) {
@@ -183,7 +201,7 @@ export default defineComponent({
     },
     onFilter() {
       const { date } = this.filters;
-      const filters = { ...this.filters };
+      const filters = { ...this.filters } as Omit<ModelReportFilters, 'date'> & Partial<ModelReportFilters>;
       delete filters.date;
       if (date.value) {
         filters['d.dateTimestamp'].value = +date.value / 1000;
@@ -192,6 +210,81 @@ export default defineComponent({
         filters['d.dateTimestamp'].value = null;
       }
       this.fetchWith({ ...this.fetchParams, filters });
+    },
+    onRouteUpdate(from: string) {
+      if (this.getCurrentDesiredRoute() === this.$route.fullPath) {
+        return;
+      }
+      const convert = (operator: string, values: Record<string, number | string>) => ({
+        value: values[operator],
+        matchMode: operator,
+      });
+      const routerToComponentMap = {
+        'd.substances.*.namePsychonautWikiOrg': {
+          key: ['d', 'substances.*.namePsychonautWikiOrg'],
+          convert,
+        },
+        date: {
+          key: ['d', 'dateTimestamp'],
+          convert(operator: string, values: Record<string, number | string>) {
+            const value = new Date(1000 * +values[operator]);
+            if (operator === 'lt') {
+              return {
+                value,
+                matchMode: 'dateBefore',
+              };
+            } if (operator === 'gt') {
+              return {
+                value,
+                matchMode: 'dateAfter',
+              };
+            }
+            return undefined;
+          },
+        },
+      };
+
+      const query = (this.$route.fullPath.match(/\?(.+)$/) || ['', ''])[1];
+      const filters = pipe.parse(query);
+      (Object.keys(this.filters) as Array<keyof ModelReportFilters>).forEach((key) => {
+        let field;
+        let convertToPair: (operator: string, values: Record<string, number | string>) => ({
+          value: number | string | Date | null;
+          matchMode: string;
+        } | undefined) = convert;
+        if (key in routerToComponentMap) {
+          const transform = routerToComponentMap[key as keyof typeof routerToComponentMap];
+          field = get(filters, transform.key);
+          convertToPair = transform.convert;
+        } else {
+          field = get(filters, key);
+        }
+        if (!field) {
+          this.filters[key].value = null;
+          return;
+        }
+        const { filters: values } = (field as { filters: Record<string, number | string> });
+        Object.keys(values).find((operator) => {
+          const pair = convertToPair(operator, values);
+          if (!pair) {
+            return false;
+          }
+          Object.assign(this.filters[key], pair);
+          return true;
+        });
+      });
+      this.onFilter();
+      this.fetchDebounced.flush();
+    },
+    onApiFinalResponse() {
+      if (this.isLoading || this.isDebouncedFetch) {
+        setTimeout(this.onApiFinalResponse, 500, this);
+        return;
+      }
+      this.$router.push(this.getCurrentDesiredRoute());
+    },
+    getCurrentDesiredRoute() {
+      return `${this.$router.currentRoute.value.path}?${this.pagination.encodedQuery}`;
     },
     onComplete(
       path: string,
@@ -220,12 +313,13 @@ export default defineComponent({
       pagination: PAGINATION,
     }),
     ...mapState(REPORTS_MODULE, {
-      reports(state: ReportsState): Report[] {
-        const { data } = state;
-        return state.pagination.viewIds.map((id) => data[id]);
+      reports(state: unknown): Report[] {
+        const { data } = state as ReportsState;
+        return (this as unknown as ReportsTableThis).pagination.viewIds.map((id) => data[id]);
       },
       maxSubstanceTimeSecond() {
-        const { reports } = (this as unknown as { reports: Report[] });
+        const { reports } = (this as unknown as ReportsTableThis);
+        // const { reports } = (this as unknown as { reports: Report[] });
         return reports.reduce((max, r) => {
           const times = r.d.substances
             .map((s) => s.timeSecond)
@@ -240,10 +334,24 @@ export default defineComponent({
         },
         1);
       },
+      encodedQuery(): string {
+        return (this as unknown as ReportsTableThis).pagination.encodedQuery;
+      },
     }),
   },
-  mounted() {
-    this.fetchWith({});
+  watch: {
+    encodedQuery() {
+      this.onApiFinalResponse();
+    },
+  },
+  beforeMount() {
+    this.onRouteUpdate('');
+    this.$watch(
+      () => this.$route.fullPath,
+      (to: string, from: string) => {
+        this.onRouteUpdate(from);
+      },
+    );
   },
 });
 

@@ -1,7 +1,9 @@
 import type {
   IsLoading, Pagination, Report, State,
 } from './state';
-import { REPORTS } from './state';
+import {
+  REPORTS,
+} from './state';
 
 export const SET_PAGINATION = 'set_pagination';
 export const ADD_DATA = 'add_data';
@@ -12,6 +14,7 @@ export default {
     state.pagination = pagination;
     state.pagination.filters['user.nick'] = pagination.filters['user.nick'];
     state.pagination.filters['d.title'] = pagination.filters['d.title'];
+    state.pagination.encodedQuery = pagination.encodedQuery;
   },
 
   [ADD_DATA](state: State, data: Array<Report>) {

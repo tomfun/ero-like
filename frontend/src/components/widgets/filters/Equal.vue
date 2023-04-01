@@ -2,7 +2,7 @@
   <InputText
     placeholder="filter by"
     :value="modelValue"
-    @input="$emit('update:modelValue', ($event.target as any)?.value)"
+    @input="$emit('update:modelValue', $event.target.value)"
   />
 </template>
 
@@ -12,7 +12,7 @@ import { defineComponent } from 'vue';
 export default defineComponent({
   name: 'EqualFilterWidget',
   props: {
-    modelValue: { type: String, default: '' },
+    modelValue: String,
   },
   emits: ['update:modelValue'],
 });

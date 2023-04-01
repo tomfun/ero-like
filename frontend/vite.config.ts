@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import checker from 'vite-plugin-checker';
-import { vitePluginVueTSC } from './vite-plugin-vue-tsc';
+// import { vitePluginVueTSC } from './vite-plugin-vue-tsc';
 
 const isDocker = process.env.IS_DOCKER_COMPOSE === '1';
 
@@ -10,11 +10,11 @@ export default defineConfig({
   plugins: [
     vue(),
     checker({
-      // typescript: { tsconfigPath: './tsconfig.app.json' },
-      vueTsc: { root: '.', tsconfigPath: './tsconfig.app.json' }, // doesn't work :(
-      eslint: { lintCommand: 'eslint' },
+      // typescript: { tsconfigPath: './tsconfig.json' },
+      // vueTsc: { root: '.', tsconfigPath: './tsconfig.json' }, // doesn't work :(
+      eslint: { lintCommand: 'eslint src --ext .vue,.js,.cjs,.mjs,.ts,.cts,.mts --ignore-path .gitignore' },
     }),
-    vitePluginVueTSC({ tsconfigPath: './tsconfig.app.json' }),
+    // vitePluginVueTSC({ tsconfigPath: './tsconfig.json' }),
   ],
   resolve: {
   },

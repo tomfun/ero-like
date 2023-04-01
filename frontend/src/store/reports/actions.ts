@@ -5,7 +5,9 @@ import api from '../../services/api';
 import type {
   Pagination, Report, Reports, State,
 } from './state';
-import { PAGINATION, REPORTS } from './state';
+import {
+  PAGINATION, REPORTS,
+} from './state';
 import {
   ADD_DATA, SET_PAGINATION, SET_LOADING,
 } from './mutations';
@@ -37,7 +39,7 @@ function buildReportsFiltersScopedString<ScopedReport, K extends keyof ScopedRep
     if (value === null) {
       return filters;
     }
-    let g: ((r: ScopedReport) => ScopedReport[K]) | ((r: ScopedReport) => string);
+    let g: (r: ScopedReport) => ScopedReport[typeof field] | string;
     // 'd.substances.*.namePsychonautWikiOrg'
     if (field.includes('.*')) {
       const [array, endWithDot] = field.split('.*');
@@ -48,7 +50,7 @@ function buildReportsFiltersScopedString<ScopedReport, K extends keyof ScopedRep
         g = (r: ScopedReport) => get(r, array).join(' ');
       }
     } else {
-      g = (r: ScopedReport) => get(r, field) as string; // little hack
+      g = (r: ScopedReport) => get(r, field);
     }
     let newFilter: (r: ScopedReport) => boolean;
     switch (matchMode) {
@@ -208,6 +210,7 @@ export default {
         page: data.page,
         pageSize: data.pageSize,
         itemsTotal: data.itemsTotal,
+        encodedQuery: data.encodedQuery,
         // sort: '',
         ids,
         viewIds: ids,
