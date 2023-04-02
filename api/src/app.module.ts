@@ -30,12 +30,7 @@ export class AppModule {
         TypeOrmModule.forRoot(typeOrmConfig(config)),
         TypeOrmModule.forFeature(entities),
       ],
-      providers: [
-        {
-          provide: APP_PIPE,
-          useClass: ValidationPipe,
-        },
-      ],
+      providers: [],
     };
   }
 }

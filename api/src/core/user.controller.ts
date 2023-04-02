@@ -1,5 +1,6 @@
 import { BadRequestException, Controller, Post } from '@nestjs/common';
-import { ImportAndVerifyPayload, InvalidDataError } from './gpg.service';
+import { InvalidDataError } from './gpg.service';
+import { ImportAndVerifyPayload } from './verify.payload';
 import {
   NotAcceptAgreementError,
   UserCreateError,

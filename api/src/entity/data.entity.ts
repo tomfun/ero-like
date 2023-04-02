@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { DataEntity as DataEntityInner } from 'ero-like-sdk/dist/data.entity';
 import {
   Entity,
@@ -9,9 +10,11 @@ import {
 @Entity('data')
 export class DataEntity extends DataEntityInner {
   @PrimaryGeneratedColumn('uuid')
+  @ApiProperty()
   declare id: string;
 
   @CreateDateColumn()
+  @ApiProperty()
   declare createdAt: Date;
 
   @Column()
@@ -23,6 +26,7 @@ export class DataEntity extends DataEntityInner {
   @Column({ type: 'bytea' })
   declare sha256: string;
 
+  @ApiProperty()
   @Column({ type: 'text' })
   declare clearSignDataPart: string;
 }

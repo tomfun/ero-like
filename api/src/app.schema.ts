@@ -98,5 +98,5 @@ export class AppSchema {
   @IsOptional()
   @Length(1)
   @Expose({ name: 'POSTGRES_DB' })
-  dbDatabase: string = 'postgres';
+  dbDatabase = 'postgres';
 }

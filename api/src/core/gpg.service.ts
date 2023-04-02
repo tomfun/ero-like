@@ -8,7 +8,7 @@ import { mkdtemp } from 'fs/promises';
 import * as os from 'os';
 import { Repository } from 'typeorm';
 import { ReportEntity } from '../entity';
-import { Length } from 'class-validator';
+import { ImportAndVerifyPayload, VerifyPayload } from './verify.payload';
 
 const tempDirPrefix = `ero-like-${process.pid}-gpg-`;
 const GNUPGHOME = process.env.GNUPGHOME;
@@ -16,16 +16,6 @@ const GNUPGHOME = process.env.GNUPGHOME;
 const regexSigedMessageHeader =
   /-----BEGIN PGP SIGNED MESSAGE-----\n(Hash: ((\w+,?)*)\n)?\n/m;
 const signatureHeader = '-----BEGIN PGP SIGNATURE-----';
-
-export class VerifyPayload {
-  @Length(90)
-  clearSignArmored: string;
-}
-
-export class ImportAndVerifyPayload extends VerifyPayload {
-  @Length(70, 65536)
-  publicKeyArmored: string;
-}
 
 export class InvalidDataError extends Error {}
 export class NoPublicKeyVerifyError extends Error {

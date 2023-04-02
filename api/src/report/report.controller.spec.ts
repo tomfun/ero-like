@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PaginationQueryDto } from '../core/paginationQueryPipe';
+import { PaginationQueryDto } from '../core/pagination-query.pipe';
 import { ReportController } from './report.controller';
 import { ReportService } from './report.service';
 

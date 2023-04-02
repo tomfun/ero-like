@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { UserEntity as UserEntityInner } from 'ero-like-sdk/dist/user.entity';
 import {
   Entity,
@@ -11,9 +12,11 @@ import { SignatureEntity } from './signature.entity';
 
 @Entity('user')
 export class UserEntity extends UserEntityInner {
+  @ApiProperty()
   @PrimaryGeneratedColumn('uuid')
   declare id: string;
 
+  @ApiProperty()
   @ManyToOne(() => SignatureEntity)
   declare agreementSignature: SignatureEntity;
 
@@ -23,12 +26,14 @@ export class UserEntity extends UserEntityInner {
   @ManyToOne(() => SignatureEntity)
   declare lastUpdateSignature: SignatureEntity;
 
+  @ApiProperty()
   @CreateDateColumn()
   declare createdAt: Date;
 
   @UpdateDateColumn()
   declare updatedAt: Date;
 
+  @ApiProperty()
   @Column()
   declare nick: string;
 }

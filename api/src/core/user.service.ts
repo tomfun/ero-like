@@ -2,7 +2,7 @@ import { InjectDataSource } from '@nestjs/typeorm/dist/common/typeorm.decorators
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { ImportAndVerifyPayload } from './gpg.service';
+import { ImportAndVerifyPayload } from './verify.payload';
 import { SignatureDataService } from './signature-data.service';
 import { SignatureEntity, UserEntity } from '../entity';
 

@@ -8,6 +8,7 @@ import {
 } from '@nestjs/platform-fastify';
 import { NestFactory } from '@nestjs/core';
 import { HttpException } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import Server from 'fastify';
 import * as qs from 'qs';
 import { AppModule } from './app.module';
@@ -38,6 +39,16 @@ async function bootstrap() {
     }),
   );
   app.enableShutdownHooks();
+
+  const openApiDocument = SwaggerModule.createDocument(
+    app,
+    new DocumentBuilder()
+      .setTitle('Ero Like')
+      .setDescription('The Ero Like API to look for ...')
+      .setVersion('0.0.0')
+      .build(),
+  );
+  SwaggerModule.setup('api', app, openApiDocument);
 
   for (let i = 5; i >= 0; i--) {
     try {

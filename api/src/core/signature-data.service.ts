@@ -5,11 +5,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { DataEntity, SignatureEntity } from '../entity';
-import {
-  GpgService,
-  ImportAndVerifyPayload,
-  NoPublicKeyVerifyError,
-} from './gpg.service';
+import { GpgService, NoPublicKeyVerifyError } from './gpg.service';
+import { ImportAndVerifyPayload } from './verify.payload';
 
 type UnwrapPromise<T> = T extends Promise<infer R> ? R : never;
 

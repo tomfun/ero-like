@@ -1,4 +1,11 @@
-import { ReportEntity as ReportEntityInner } from 'ero-like-sdk/dist/report.entity';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  ReportEntity as ReportEntityInner,
+  ReportDataSubstanceBodyPayload as ReportDataSubstanceBodyPayloadInner,
+  ReportDataUserBodyPayload as ReportDataUserBodyPayloadInner,
+  ReportDataTimeLineReportBodyPayload as ReportDataTimeLineReportBodyPayloadInner,
+  ReportDataBodyPayload as ReportDataBodyPayloadInner,
+} from 'ero-like-sdk/dist/report.entity';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -22,23 +29,27 @@ import {
 import { SignatureEntity } from './signature.entity';
 import { UserEntity } from './user.entity';
 
-export class ReportDataSubstanceBodyPayload {
+export class ReportDataSubstanceBodyPayload extends ReportDataSubstanceBodyPayloadInner {
+  @ApiProperty()
   @IsInt()
   @Min(0)
   @Max(7 * 24 * 3600)
-  timeSecond: number;
+  declare timeSecond: number;
 
   // todo
+  @ApiProperty()
   @IsIn(['heroin', '2C-B', '2C-I', 'DOB', 'LSA', 'LSD', 'MDMA'])
-  namePsychonautWikiOrg: string;
+  declare namePsychonautWikiOrg: string;
 
+  @ApiProperty()
   @IsNumber()
   @Min(Number.MIN_VALUE)
   @Max(70 * 1000 * 1000 * 1000)
-  dose: number;
+  declare dose: number;
 
+  @ApiProperty()
   @IsIn(['mg', 'µg', 'g'])
-  doseUnit: string;
+  declare doseUnit: string;
 
   // activeSubstance
   // todo: array
@@ -47,6 +58,7 @@ export class ReportDataSubstanceBodyPayload {
   // coefficientToGramActiveSubstancePsychonautWikiOrg: string;
 
   // todo: add more https://psychonautwiki.org/wiki/Routes_of_administration#Oral
+  @ApiProperty()
   @IsIn([
     'oral',
     'sublingual',
@@ -56,80 +68,95 @@ export class ReportDataSubstanceBodyPayload {
     'rectal',
     'transdermal',
   ])
-  routeOfAdministration: string;
+  declare routeOfAdministration: string;
 
+  @ApiProperty()
   @IsInt()
   @Min(0)
   @Max(100)
-  surePercent: number;
+  declare surePercent: number;
 }
 
-export class ReportDataUserBodyPayload {
+export class ReportDataUserBodyPayload extends ReportDataUserBodyPayloadInner {
+  @ApiProperty()
   @IsInt()
   @Min(0)
   @Max(100)
-  ageYear: number;
+  declare ageYear: number;
 
+  @ApiProperty()
   @IsInt()
   @Min(0)
   @Max(100)
-  isMale: number;
+  declare isMale: number;
 
+  @ApiProperty()
   @IsInt()
   @Min(0)
   @Max(300)
-  heightMeter: number;
+  declare heightMeter: number;
 
+  @ApiProperty()
   @IsInt()
   @Min(0)
   @Max(300)
-  weightGram: number;
+  declare weightGram: number;
 
+  @ApiProperty()
   @Length(3, 3)
-  country: string;
+  declare country: string;
 }
 
-export class ReportDataTimeLineReportBodyPayload {
+export class ReportDataTimeLineReportBodyPayload extends ReportDataTimeLineReportBodyPayloadInner {
+  @ApiProperty()
   @IsInt()
   @Min(0)
   @Max(7 * 24 * 3600)
-  timeSecond: number;
+  declare timeSecond: number;
 
+  @ApiProperty()
   @Length(4, 20000)
-  report: string;
+  declare report: string;
 }
 
 /**
  * Is not true class. It is not used. But type the same
  */
-export class ReportDataBodyPayload {
+export class ReportDataBodyPayload extends ReportDataBodyPayloadInner {
+  @ApiProperty()
   @Length(4, 250)
-  title: string;
+  declare title: string;
 
   // https://psychonautwiki.org/wiki/Psychoactive_substance_index
+  @ApiProperty({ type: [ReportDataSubstanceBodyPayload] })
   @ValidateNested()
   @IsArray()
   @Type(() => ReportDataSubstanceBodyPayload)
-  substances: Array<ReportDataSubstanceBodyPayload>;
+  declare substances: Array<ReportDataSubstanceBodyPayload>;
 
+  @ApiProperty()
   @ValidateNested()
   @Type(() => ReportDataUserBodyPayload)
-  user: ReportDataUserBodyPayload;
+  declare user: ReportDataUserBodyPayload;
 
+  @ApiProperty()
   @Length(4, 250)
-  background: string;
+  declare background: string;
 
+  @ApiProperty()
   @IsOptional()
   @Length(4, 20000)
-  generalReport: string;
+  declare generalReport: string;
 
+  @ApiProperty({ type: [ReportDataTimeLineReportBodyPayload] })
   @ValidateNested()
   @IsArray()
   @Type(() => ReportDataTimeLineReportBodyPayload)
-  timeLineReport: Array<ReportDataTimeLineReportBodyPayload>;
+  declare timeLineReport: Array<ReportDataTimeLineReportBodyPayload>;
 
+  @ApiProperty()
   @IsInt()
-  dateTimestamp: number;
+  declare dateTimestamp: number;
   // todo: effect, tolerance
   // https://psychonautwiki.org/wiki/Experience_index
 }
@@ -137,18 +164,22 @@ export class ReportDataBodyPayload {
 @Entity('report')
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
 export class ReportEntity extends ReportEntityInner {
+  @ApiProperty()
   @PrimaryGeneratedColumn('uuid')
   declare id: string;
 
+  @ApiProperty()
   @ManyToOne(() => UserEntity)
   declare user: UserEntity;
 
   @ManyToOne(() => SignatureEntity)
   declare signature: SignatureEntity;
 
+  @ApiProperty()
   @CreateDateColumn()
   declare createdAt: Date;
 
+  @ApiProperty()
   @Column({ type: 'jsonb' })
   declare d: ReportDataBodyPayload;
 }
