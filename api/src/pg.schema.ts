@@ -27,8 +27,8 @@ export class PgSchema {
   @Expose({ name: 'POSTGRES_USER' })
   dbUsername: string;
 
-  @Length(1)
   @IsOptional()
+  @Length(1)
   @Expose({ name: 'POSTGRES_DB' })
-  dbDatabase: string;
+  dbDatabase = 'postgres';
 }

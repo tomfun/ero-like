@@ -8,5 +8,4 @@ import { SignatureEntity } from './signature.entity';
 import { ReportEntity } from './report.entity';
 import { UserEntity } from './user.entity';
 
-console.log(SignatureEntity);
 export const entities = [DataEntity, SignatureEntity, ReportEntity, UserEntity];

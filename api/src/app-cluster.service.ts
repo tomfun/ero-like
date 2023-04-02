@@ -6,6 +6,17 @@ import { Injectable, Logger } from '@nestjs/common';
 const cluster: Cluster = require('cluster');
 const numCPUs = os.cpus().length;
 
+let workerIndex = null;
+if (!cluster.isMaster) {
+  const cb = (index: number) => {
+    // Unregister immediately current listener for message
+    process.off('message', cb);
+    // Run application
+    workerIndex = index;
+  };
+  process.on('message', cb);
+}
+
 @Injectable()
 export class AppClusterService {
   private readonly logger = new Logger(AppClusterService.name);
@@ -42,7 +53,7 @@ export class AppClusterService {
       cluster.fork().send(i);
     }
     cluster.on('online', (worker) => {
-      this.logger.log('Worker %s is online', worker.process.pid);
+      this.logger.log(`Worker ${worker.process.pid} is online`);
     });
     cluster.on('exit', (worker, code) => {
       this.logger.log(`Worker ${worker.process.pid} died with code ${code}`);
@@ -61,14 +72,7 @@ export class AppClusterService {
 
   private worker(applicationFactory: (index: number) => void) {
     this.logger.log(`fork pid #${process.pid} alive`);
-    const cb = (index: number) => {
-      // Unregister immediately current listener for message
-      process.off('message', cb);
-      // Run application
-      this.logger.log(`fork pid #${process.pid} is ${index}`);
-      applicationFactory(index);
-    };
-
-    process.on('message', cb);
+    this.logger.log(`fork pid #${process.pid} is ${workerIndex}`);
+    applicationFactory(workerIndex);
   }
 }
