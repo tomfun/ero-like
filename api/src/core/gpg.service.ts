@@ -7,7 +7,7 @@ import { spawn } from 'child_process';
 import { mkdtemp } from 'fs/promises';
 import * as os from 'os';
 import { Repository } from 'typeorm';
-import { ReportEntity } from './entity';
+import { ReportEntity } from '../entity';
 import { Length } from 'class-validator';
 
 const tempDirPrefix = `ero-like-${process.pid}-gpg-`;

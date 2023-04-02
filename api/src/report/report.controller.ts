@@ -6,7 +6,7 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { InvalidDataError } from './gpg.service';
+import { InvalidDataError } from '../core/gpg.service';
 import {
   ReportService,
   ReportForList,
@@ -16,9 +16,9 @@ import {
   Paginable,
   PaginateQuery,
   PaginationQueryDto,
-} from './paginationQueryPipe';
-import { UserNotFoundError } from './user.service';
-import { ValidBody } from './validBodyPipe';
+} from '../core/paginationQueryPipe';
+import { UserNotFoundError } from '../core/user.service';
+import { ValidBody } from '../validBodyPipe';
 import { PaginationFilters, ReportFilters } from './filtersQueryPipe';
 
 @Controller('/api/report')

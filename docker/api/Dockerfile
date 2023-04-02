@@ -19,3 +19,5 @@ COPY api .
 
 RUN npm --loglevel warn --color=always run build
 
+ARG VERSION=n/a
+ENV VERSION ${VERSION}

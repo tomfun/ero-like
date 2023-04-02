@@ -4,7 +4,7 @@ import { pick } from 'lodash';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { DataEntity, SignatureEntity } from './entity';
+import { DataEntity, SignatureEntity } from '../entity';
 import {
   GpgService,
   ImportAndVerifyPayload,

@@ -1,22 +1,11 @@
 import { BadRequestException, Controller, Post } from '@nestjs/common';
 import { ImportAndVerifyPayload, InvalidDataError } from './gpg.service';
 import {
-  ReportService,
-  ReportBodyPayload,
-  ReportForList,
-} from './report.service';
-import {
-  Paginable,
-  PaginateQuery,
-  PaginationQueryDto,
-} from './paginationQueryPipe';
-import {
   NotAcceptAgreementError,
   UserCreateError,
   UserService,
 } from './user.service';
-import { ValidBody } from './validBodyPipe';
-import { PaginationFilters, ReportFilters } from './filtersQueryPipe';
+import { ValidBody } from '../validBodyPipe';
 
 @Controller('/api/user')
 export class UserController {

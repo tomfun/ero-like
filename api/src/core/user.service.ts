@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ImportAndVerifyPayload } from './gpg.service';
 import { SignatureDataService } from './signature-data.service';
-import { SignatureEntity, UserEntity } from './entity';
+import { SignatureEntity, UserEntity } from '../entity';
 
 export class NotAcceptAgreementError extends Error {}
 export class UserCreateError extends Error {}
