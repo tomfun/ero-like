@@ -15,6 +15,15 @@ npm install
 
 ## Running the app
 
+### Fixtures
+Prefill with testing data
+https://github.com/RobinCK/typeorm-fixtures
+
+```bash
+docker compose run api \
+  npm run fixtures
+```
+
 ### Migrations
 ```bash
 # development

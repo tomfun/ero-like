@@ -2,6 +2,7 @@ version: '3'
 services:
   postgres:
     image: postgres:14.6
+    user: ${uid:-999}:${gid:-999}
     ports:
       - 5432:5432
     environment:
@@ -13,7 +14,8 @@ services:
       - ./docker/data/postgres:/var/lib/postgresql/data
 
   api:
-    image: node:18
+    image: node:18.15-alpine3.17
+    user: ${uid:-1000}:${gid:-1000}
     ports:
       - 3000:3000
       - 9229:9229

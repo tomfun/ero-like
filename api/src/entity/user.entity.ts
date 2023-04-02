@@ -1,3 +1,4 @@
+import { UserEntity as UserEntityInner } from 'ero-like-sdk/dist/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -9,25 +10,25 @@ import {
 import { SignatureEntity } from './signature.entity';
 
 @Entity('user')
-export class UserEntity {
+export class UserEntity extends UserEntityInner {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  declare id: string;
 
   @ManyToOne(() => SignatureEntity)
-  agreementSignature: SignatureEntity;
+  declare agreementSignature: SignatureEntity;
 
   @ManyToOne(() => SignatureEntity)
-  firstUpdateSignature: SignatureEntity;
+  declare firstUpdateSignature: SignatureEntity;
 
   @ManyToOne(() => SignatureEntity)
-  lastUpdateSignature: SignatureEntity;
+  declare lastUpdateSignature: SignatureEntity;
 
   @CreateDateColumn()
-  createdAt: Date;
+  declare createdAt: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  declare updatedAt: Date;
 
   @Column()
-  nick: string;
+  declare nick: string;
 }

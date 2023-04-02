@@ -10,11 +10,11 @@ import {
   TypeSymbol,
 } from './filtersQueryPipe';
 import { Paginable, PaginationQueryDto } from './paginationQueryPipe';
-import { ReportDataBodyPayload, ReportEntity } from './report.entity';
+import { ReportDataBodyPayload, ReportEntity } from './entity';
 import { SignatureDataService } from './signature-data.service';
 import { UserService } from './user.service';
 
-export { ReportDataBodyPayload, ReportEntity } from './report.entity';
+export { ReportDataBodyPayload, ReportEntity } from './entity';
 
 export type ReportForList = Omit<ReportEntity, 'user' | 'signature'>;
 export type ReportBodyPayload = Omit<ReportEntity, 'user' | 'signature'>;

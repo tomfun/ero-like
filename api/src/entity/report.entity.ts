@@ -1,3 +1,4 @@
+import { ReportEntity as ReportEntityInner } from 'ero-like-sdk/dist/report.entity';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -135,19 +136,19 @@ export class ReportDataBodyPayload {
 
 @Entity('report')
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
-export class ReportEntity {
+export class ReportEntity extends ReportEntityInner {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  declare id: string;
 
   @ManyToOne(() => UserEntity)
-  user: UserEntity;
+  declare user: UserEntity;
 
   @ManyToOne(() => SignatureEntity)
-  signature: SignatureEntity;
+  declare signature: SignatureEntity;
 
   @CreateDateColumn()
-  createdAt: Date;
+  declare createdAt: Date;
 
   @Column({ type: 'jsonb' })
-  d: ReportDataBodyPayload;
+  declare d: ReportDataBodyPayload;
 }
