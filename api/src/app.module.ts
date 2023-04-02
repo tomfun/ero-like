@@ -1,6 +1,7 @@
-import { DynamicModule, Module } from '@nestjs/common';
+import { DynamicModule, Inject, Module, OnModuleDestroy } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SentryModule } from '@ntegral/nestjs-sentry';
+import { AppClusterService } from './app-cluster.service';
 
 import { strictConfigForRoot } from './app.module-config';
 import { AppSchema } from './app.schema';
@@ -10,7 +11,7 @@ import { config as typeOrmConfig } from './pg.config-factory';
 import { ReportModule } from './report/report.module';
 
 @Module({})
-export class AppModule {
+export class AppModule implements OnModuleDestroy {
   static forConfig(config: AppSchema): DynamicModule {
     return {
       module: AppModule,
@@ -29,7 +30,12 @@ export class AppModule {
         TypeOrmModule.forRoot(typeOrmConfig(config)),
         TypeOrmModule.forFeature(entities),
       ],
-      providers: [],
+      providers: [AppClusterService],
     };
+  }
+  @Inject() appClusterService: AppClusterService;
+
+  async onModuleDestroy() {
+    await this.appClusterService.stop();
   }
 }

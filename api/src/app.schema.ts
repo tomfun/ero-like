@@ -36,6 +36,11 @@ export class AppSchema {
   @Expose({ name: 'LOG' })
   log: string;
 
+  @Allow()
+  @Expose({ name: 'CLUSTER_WORKERS' })
+  @Transform(({ value }) => (value ? +value : 0))
+  clusterWorkers: 1;
+
   get logHttp(): boolean {
     return this.log ? this.log === '1' || !!this.log?.match(/http/) : false;
   }

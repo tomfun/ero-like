@@ -35,6 +35,7 @@ services:
       PUBLIC_URL: 'http://localhost:3000'
       SENTRY_DISABLE: '1'
       TRUST_PROXY: '0'
+      CLUSTER_WORKERS: 0
 
     #   command: node --trace-warnings --enable-source-maps dist/src/main
     #    command: npm run start:dev
