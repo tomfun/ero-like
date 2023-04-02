@@ -1,14 +1,13 @@
-import { DynamicModule, Module, ValidationPipe } from '@nestjs/common';
-import { APP_PIPE } from '@nestjs/core';
+import { DynamicModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SentryModule } from '@ntegral/nestjs-sentry';
 
-import { AppSchema } from './app.schema';
 import { strictConfigForRoot } from './app.module-config';
+import { AppSchema } from './app.schema';
 import { CoreModule } from './core/core.module';
+import { entities } from './entity';
 import { config as typeOrmConfig } from './pg.config-factory';
 import { ReportModule } from './report/report.module';
-import { entities } from './entity';
 
 @Module({})
 export class AppModule {

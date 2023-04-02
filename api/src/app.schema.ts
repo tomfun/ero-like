@@ -9,14 +9,9 @@ import {
   IsNumber,
   IsOptional,
   Allow,
-  IsEmail,
   ValidateIf,
 } from 'class-validator';
 import { Expose, Transform } from 'class-transformer';
-import {
-  transformDurationToSeconds,
-  TransformDurationToSeconds,
-} from './helper';
 
 export class AppSchema {
   @Allow()
