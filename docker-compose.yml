@@ -48,11 +48,13 @@ services:
     image: node:18
     ports:
       - 3001:3001
-    command: npm run dev
+    command: npm run vite
     working_dir: /ero-like/frontend
     environment:
       IS_DOCKER_COMPOSE: 1
     depends_on:
       - api
     volumes:
+      - ./client-sdk:/ero-like/client-sdk
+      - ./client-config:/ero-like/client-config
       - ./frontend:/ero-like/frontend
