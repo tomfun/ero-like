@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as process from 'process';
-import rimraf from 'rimraf';
+import * as rimraf from 'rimraf';
 import { join } from 'path';
 import { spawn } from 'child_process';
 import { mkdtemp } from 'fs/promises';
@@ -186,7 +186,9 @@ export class GpgService {
       }
       throw e;
     } finally {
-      await rimraf(tempDirPath);
+      await new Promise((res, rej) =>
+        rimraf(tempDirPath, {}, (err) => (err ? rej(err) : res(null))),
+      );
     }
   }
 
