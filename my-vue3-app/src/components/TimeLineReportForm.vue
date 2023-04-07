@@ -27,7 +27,7 @@
         id="reportText"
         v-bind:value="item?.report"
         placeholder="add your report"
-        @keypress="onInput">
+        @keyup="onInput">
       </textarea>
       <button v-if="item?.report" v-on:click="pushReportData">Add report data</button>
     </div>
@@ -57,7 +57,6 @@ export default defineComponent({
     onSelect(event: any) {
       let changedProp: Partial<TimeLineReport> = {};
       if (event.target !== null && this.item && event.target.id === 'timeSecond') {
-        console.log(typeof event.target.value);
         changedProp = { timeSecond: Number(event.target.value) };
       }
       this.$emit('update:item', changedProp);

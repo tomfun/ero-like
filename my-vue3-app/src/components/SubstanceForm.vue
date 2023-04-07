@@ -1,84 +1,65 @@
 <template>
-  <div class="submitForm__cont">
-    <div class="submitForm__cont-block" v-if="item">
+  <div class="submitForm__cont" v-if="item">
+    <div class="submitForm__cont-block">
       <h3 class="submitReportForm__title">Choose substance name</h3>
       <select
         class="submitForm__select"
         @change="onSelect"
         id="namePsychonautWikiOrg"
         placeholder="item?.namePsychonautWikiOrg"
-        v-bind:value="item?.namePsychonautWikiOrg">
-        <option>Heroin</option>
-        <option>LSD</option>
-        <option>Cocain</option>
-        <option>Weed</option>
+        v-bind:value="item?.namePsychonautWikiOrg"
+        >
+        <option v-for="option in namePsychonautWikiOrgOptions" :value="option" v-bind:key="option">
+          {{ option }}
+        </option>
       </select>
     </div>
-    <div class="submitForm__cont-block" v-if="item">
+    <div class="submitForm__cont-block">
       <h3 class="submitReportForm__title">Choose active substance</h3>
       <select
         class="submitForm__select"
         @change="onSelect"
         id="activeSubstance"
         v-bind:value="item?.activeSubstance">
-        <option>Heroin</option>
-        <option>LSD</option>
-        <option>Cocain</option>
-        <option>Weed</option>
+        <option v-for="option in namePsychonautWikiOrgOptions" :value="option" v-bind:key="option">
+          {{ option }}
+        </option>
       </select>
     </div>
-    <div class="submitForm__cont-block" v-if="item?.namePsychonautWikiOrg">
+    <div class="submitForm__cont-block">
       <h3 class="submitReportForm__title">Choose dosage unit</h3>
       <select
         class="submitForm__select"
         @change="onSelect"
         id="doseUnit"
         v-bind:value="item?.doseUnit">
-        <option>Milligram</option>
-        <option>Gram</option>
+        <option v-for="option in doseUnitOptions" :value="option" v-bind:key="option">
+          {{ option }}
+        </option>
       </select>
     </div>
-    <div class="submitForm__cont-block" v-if="item?.doseUnit">
+    <div class="submitForm__cont-block">
       <h3 class="submitReportForm__title">Choose amount</h3>
-      <select
+      <input
+        type="number"
         class="submitForm__select"
         id="dose"
-        v-if="item?.doseUnit === 'Milligram'"
-        @change="onSelect"
-        v-bind:value="item?.dose">
-        <option>5</option>
-        <option>10</option>
-        <option>15</option>
-        <option>20</option>
-        <option>30</option>
-        <option>40</option>
-      </select>
-      <select
-        id="dose"
-        class="submitForm__select"
-        v-if="item?.doseUnit === 'Gram'"
-        @change="onSelect"
-        v-bind:value="item?.dose">
-        <option>0.5</option>
-        <option>1</option>
-        <option>2</option>
-        <option>3</option>
-      </select>
+        v-bind:value="item?.dose"
+        @keyup="onInput" />
     </div>
-    <div class="submitForm__cont-block" v-if="item?.dose">
+    <div class="submitForm__cont-block">
       <h3 class="submitReportForm__title">Choose route of administration</h3>
       <select
         id="routeOfAdministration"
         class="submitForm__select"
         @change="onSelect"
         v-bind:value="item?.routeOfAdministration">
-        <option>Intranasally</option>
-        <option>Intravenously</option>
-        <option>Inhalative</option>
-        <option>Orally</option>
+        <option v-for="option in routeOfAdministrationOptions" :value="option" v-bind:key="option">
+          {{ option }}
+        </option>
       </select>
     </div>
-    <div class="submitForm__cont-block" v-if="item?.routeOfAdministration">
+    <div class="submitForm__cont-block">
       <h3 class="submitReportForm__title">How much you sure about the quality of the substance?</h3>
       <select
         class="submitForm__select"
@@ -97,7 +78,7 @@
         <option>100</option>
       </select>
     </div>
-    <div class="submitForm__cont-block" v-if="item?.surePercent">
+    <div class="submitForm__cont-block">
       <h3 class="submitReportForm__title">Select time of input</h3>
       <select
         class="submitForm__select"
@@ -120,7 +101,7 @@
       <!-- eslint-disable-next-line max-len -->
       <span>Both of the timelines(substance input, reporting) starts with the first substance input.</span>
     </div>
-    <button v-if="item?.surePercent" v-on:click="pushSubstanceData">Add substance data</button>
+    <button v-on:click="pushSubstanceData">Add substance data</button>
   </div>
 </template>
 
@@ -148,6 +129,14 @@ export default defineComponent({
   setup(props, { emit }) {
     emit('update:item');
   },
+  data() {
+    return {
+      namePsychonautWikiOrgOptions: ['heroin', '2C-B', '2C-I', 'DOB', 'LSA', 'LSD', 'MDMA'],
+      activeSubstanceOptions: ['heroin', '2C-B', '2C-I', 'DOB', 'LSA', 'LSD', 'MDMA'],
+      doseUnitOptions: ['mg', 'µg', 'g'],
+      routeOfAdministrationOptions: ['oral', 'sublingual', 'insufflated', 'intravenous', 'smoked', 'rectal', 'transdermal'],
+    };
+  },
   methods: {
     onSelect(event: any) {
       if (event.target !== null && this.item) {
@@ -171,14 +160,18 @@ export default defineComponent({
           case 'doseUnit':
             changedProp = { doseUnit: event.target.value };
             break;
-          case 'dose':
-            changedProp = { dose: event.target.value };
-            break;
           default:
             changedProp = {};
         }
         this.$emit('update:item', changedProp);
       }
+    },
+    onInput(event: any) {
+      let changedProp: Partial<SubstanceData> = {};
+      if (event.target !== null && this.item && event.target.id === 'dose') {
+        changedProp = { dose: Number(event.target.value) };
+      }
+      this.$emit('update:item', changedProp);
     },
     pushSubstanceData() {
       if (this.item) {

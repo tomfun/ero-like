@@ -9,48 +9,54 @@
         <h2 class="submitReportForm__title">Title your report</h2>
         <input class="submitForm__title-input" v-model="reportData.title" placeholder="Add title">
       </div>
-      <div class="submitReportForm__substance-cont" v-if="reportData.title">
-        <button v-on:click="handleAddSubstance" :disabled="addSubstanceButtonDisable">
-          Add substance form
-        </button>
-        <div style="display: flex;" v-if="staged">
-          <SubstanceForm v-model="stagedSubstance" v-bind:item="stagedSubstance"
-          @update:item="updateSubForm"/>
-        </div>
-        <div class="submitReportForm__ready-substance-cont" v-if="reportData.substances.length">
-          <h2 class="submitReportForm__title">Ready substances data for submit:</h2>
-          <ul>
-            <li v-for="(sub, index) in reportData.substances" v-bind:key="index">
-              <h3>{{ index + 1 }}:</h3>
-              {{ sub }}
-              <button v-on:click="editSubstanceData(index)">Edit</button>
-            </li>
-          </ul>
-        </div>
-        <div class="submitReportForm__time-line-cont" v-if="reportData.substances.length">
-          <h2 class="submitReportForm__title">Tell us about your journey in details</h2>
-          <button v-on:click="handleAddTimeLineReport" :disabled="addReportButtonDisable">
-            Add time line form
+      <Tabs>
+        <tab title="Substances">
+          <h3>Substances</h3>
+          <button v-on:click="handleAddSubstance" :disabled="addSubstanceButtonDisable">
+            Add substance form
           </button>
-          <div style="display: flex;" v-if="stagedRep">
-            <TimeLineReportForm v-model="stagedReport" v-bind:item="stagedReport"
-            @update:item="updateRepForm"/>
+          <div style="display: flex;" v-if="staged">
+            <SubstanceForm v-model="stagedSubstance" v-bind:item="stagedSubstance"
+            @update:item="updateSubForm"/>
           </div>
-        </div>
-      </div>
-      <div class="submitReportForm__ready-time-line-cont" v-if="reportData.timeLineReport.length">
-        <h2 class="submitReportForm__title">Ready report data for submit:</h2>
-        <ul>
-          <li v-for="(sub, index) in reportData.timeLineReport" v-bind:key="index">
-            <h3>{{ index + 1 }}:</h3>
-            {{ sub }}
-            <button v-on:click="editReportData(index)">Edit</button>
-          </li>
-        </ul>
-      </div>
+          <div class="submitReportForm__ready-substance-cont" v-if="reportData.substances.length">
+            <h2 class="submitReportForm__title">Ready substances data for submit:</h2>
+            <ul>
+              <li v-for="(sub, index) in reportData.substances" v-bind:key="index">
+                <h3>{{ index + 1 }}:</h3>
+                {{ sub }}
+                <button v-on:click="editSubstanceData(index)">Edit</button>
+              </li>
+            </ul>
+          </div>
+        </tab>
+        <tab title="Form">
+          <div class="submitReportForm__time-line-cont">
+            <h2 class="submitReportForm__title">Tell us about your journey in details</h2>
+            <button v-on:click="handleAddTimeLineReport" :disabled="addReportButtonDisable">
+              Add time line form
+            </button>
+            <div style="display: flex;" v-if="stagedRep">
+              <TimeLineReportForm v-model="stagedReport" v-bind:item="stagedReport"
+              @update:item="updateRepForm"/>
+            </div>
+          </div>
+          <div class="submitReportForm__ready-time-line-cont"
+            v-if="reportData.timeLineReport.length">
+          <h2 class="submitReportForm__title">Ready report data for submit:</h2>
+            <ul>
+              <li v-for="(sub, index) in reportData.timeLineReport" v-bind:key="index">
+                <h3>{{ index + 1 }}:</h3>
+                {{ sub }}
+                <button v-on:click="editReportData(index)">Edit</button>
+              </li>
+            </ul>
+          </div>
+        </tab>
+      </Tabs>
       <div class="submitReportForm__ready-time-line-cont" v-if="reportData.timeLineReport.length">
         <h2 class="submitReportForm__title">Tell us few words about your background:</h2>
-        <textarea v-model="reportData.background" placeholder="add your report"></textarea>
+        <textarea v-model="reportData.background" placeholder="add your background"></textarea>
       </div>
       <button v-on:click="handleValidation">Validate</button>
     </div>
@@ -61,6 +67,8 @@
 import { defineComponent } from 'vue';
 import SubstanceForm from './SubstanceForm.vue';
 import TimeLineReportForm from './TimeLineReportForm.vue';
+import Tabs from './Tabs.vue';
+import Tab from './Tab.vue';
 
 type SubstanceData = {
   timeSecond: number;
@@ -92,6 +100,8 @@ export default defineComponent({
   components: {
     SubstanceForm,
     TimeLineReportForm,
+    Tabs,
+    Tab,
   },
   data() {
     return {
@@ -129,7 +139,7 @@ export default defineComponent({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           substances: [...this.reportData.substances],
-          TimeLineReport: [...this.reportData.timeLineReport],
+          timeLineReport: [...this.reportData.timeLineReport],
           title: this.reportData.title,
           background: this.reportData.background,
           dateTimestamp: Date.now(),
