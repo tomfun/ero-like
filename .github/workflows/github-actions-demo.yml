@@ -20,7 +20,7 @@ jobs:
         #       npm test
 
       - run: |
-          cd my-vue3-app
+          cd frontend
           npm ci
           npm run lint
           npm run build --if-present
@@ -38,7 +38,7 @@ jobs:
           node-version: 16.x
           cache: npm
       - run: |
-          cd my-vue3-app
+          cd frontend
           mkdir public/.wtf/
           echo ${{ github.ref_name }} > public/.wtf/D_I_TAG_UNIQ
           echo ${{ github.sha }} >> public/.wtf/D_I_TAG_UNIQ
