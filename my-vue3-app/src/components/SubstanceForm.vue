@@ -1,9 +1,11 @@
 <template>
-  <div class="submitForm__cont" v-if="item">
-    <div class="submitForm__cont-block">
-      <h3 class="submitReportForm__title">Choose substance name</h3>
+  <div class="substanceForm" v-if="item">
+    {{ item }}
+    <div class="substanceForm__main-cont">
+      <div class="substanceForm__cont-block">
+      <h3 class="substanceReportForm__title">Substance name</h3>
       <select
-        class="submitForm__select"
+        class="substanceForm__select"
         @change="onSelect"
         id="namePsychonautWikiOrg"
         placeholder="item?.namePsychonautWikiOrg"
@@ -13,95 +15,108 @@
           {{ option }}
         </option>
       </select>
+      </div>
+      <div class="substanceForm__cont-block">
+        <h3 class="substanceReportForm__title">Choose active substance</h3>
+        <select
+          class="substanceForm__select"
+          @change="onSelect"
+          id="activeSubstance"
+          v-bind:value="item?.activeSubstance">
+          <option
+            v-for="option in namePsychonautWikiOrgOptions"
+            :value="option"
+            v-bind:key="option">
+            {{ option }}
+          </option>
+        </select>
+      </div>
+      <div class="substanceForm__cont-block">
+        <h3 class="substanceReportForm__title">Choose dosage unit</h3>
+        <select
+          class="substanceForm__select"
+          @change="onSelect"
+          id="doseUnit"
+          v-bind:value="item?.doseUnit">
+          <option v-for="option in doseUnitOptions" :value="option" v-bind:key="option">
+            {{ option }}
+          </option>
+        </select>
+      </div>
+      <div class="substanceForm__cont-block">
+        <h3 class="substanceReportForm__title">Choose amount</h3>
+        <input
+          type="number"
+          class="substanceForm__select"
+          id="dose"
+          v-bind:value="item?.dose"
+          @change="onInput"
+          @keyup="onInput" />
+      </div>
+      <div class="substanceForm__cont-block">
+        <h3 class="substanceReportForm__title">Choose route of administration</h3>
+        <select
+          id="routeOfAdministration"
+          class="substanceForm__select"
+          @change="onSelect"
+          v-bind:value="item?.routeOfAdministration">
+          <option
+            v-for="option in routeOfAdministrationOptions"
+            :value="option"
+            v-bind:key="option">
+            {{ option }}
+          </option>
+        </select>
+      </div>
+      <div class="substanceForm__cont-block">
+        <h3 class="substanceReportForm__title">
+          How much you sure about the quality of the substance?
+        </h3>
+        <select
+          class="substanceForm__select"
+          @change="onSelect"
+          id="surePercent"
+          v-bind:value="item?.surePercent">
+          <option>10</option>
+          <option>20</option>
+          <option>30</option>
+          <option>40</option>
+          <option>50</option>
+          <option>60</option>
+          <option>70</option>
+          <option>80</option>
+          <option>90</option>
+          <option>100</option>
+        </select>
+      </div>
+      <div class="substanceForm__cont-block">
+        <h3 class="substanceReportForm__title">Select time of input</h3>
+        <select
+          class="substanceForm__select"
+          @change="onSelect"
+          id="timeSecond"
+          v-bind:value="item?.timeSecond">
+          <option>0</option>
+          <option>5</option>
+          <option>10</option>
+          <option>15</option>
+          <option>20</option>
+          <option>30</option>
+          <option>40</option>
+          <option>50</option>
+          <option>60</option>
+          <option>80</option>
+          <option>100</option>
+        </select>
+      </div>
     </div>
-    <div class="submitForm__cont-block">
-      <h3 class="submitReportForm__title">Choose active substance</h3>
-      <select
-        class="submitForm__select"
-        @change="onSelect"
-        id="activeSubstance"
-        v-bind:value="item?.activeSubstance">
-        <option v-for="option in namePsychonautWikiOrgOptions" :value="option" v-bind:key="option">
-          {{ option }}
-        </option>
-      </select>
-    </div>
-    <div class="submitForm__cont-block">
-      <h3 class="submitReportForm__title">Choose dosage unit</h3>
-      <select
-        class="submitForm__select"
-        @change="onSelect"
-        id="doseUnit"
-        v-bind:value="item?.doseUnit">
-        <option v-for="option in doseUnitOptions" :value="option" v-bind:key="option">
-          {{ option }}
-        </option>
-      </select>
-    </div>
-    <div class="submitForm__cont-block">
-      <h3 class="submitReportForm__title">Choose amount</h3>
-      <input
-        type="number"
-        class="submitForm__select"
-        id="dose"
-        v-bind:value="item?.dose"
-        @keyup="onInput" />
-    </div>
-    <div class="submitForm__cont-block">
-      <h3 class="submitReportForm__title">Choose route of administration</h3>
-      <select
-        id="routeOfAdministration"
-        class="submitForm__select"
-        @change="onSelect"
-        v-bind:value="item?.routeOfAdministration">
-        <option v-for="option in routeOfAdministrationOptions" :value="option" v-bind:key="option">
-          {{ option }}
-        </option>
-      </select>
-    </div>
-    <div class="submitForm__cont-block">
-      <h3 class="submitReportForm__title">How much you sure about the quality of the substance?</h3>
-      <select
-        class="submitForm__select"
-        @change="onSelect"
-        id="surePercent"
-        v-bind:value="item?.surePercent">
-        <option>10</option>
-        <option>20</option>
-        <option>30</option>
-        <option>40</option>
-        <option>50</option>
-        <option>60</option>
-        <option>70</option>
-        <option>80</option>
-        <option>90</option>
-        <option>100</option>
-      </select>
-    </div>
-    <div class="submitForm__cont-block">
-      <h3 class="submitReportForm__title">Select time of input</h3>
-      <select
-        class="submitForm__select"
-        @change="onSelect"
-        id="timeSecond"
-        v-bind:value="item?.timeSecond">
-        <option>0</option>
-        <option>5</option>
-        <option>10</option>
-        <option>15</option>
-        <option>20</option>
-        <option>30</option>
-        <option>40</option>
-        <option>50</option>
-        <option>60</option>
-        <option>80</option>
-        <option>100</option>
-      </select>
-      <span>If this is the substance you took in the very begining, then choose zero.</span>
-      <!-- eslint-disable-next-line max-len -->
-      <span>Both of the timelines(substance input, reporting) starts with the first substance input.</span>
-    </div>
-    <button v-on:click="pushSubstanceData">Add substance data</button>
+    <button
+      v-on:click="pushSubstanceData"
+      class="substanceForm__add-sub-data-but">Add substance data
+    </button>
+    <span>If this is the substance you took in the very begining, then choose zero.</span>
+        <!-- eslint-disable-next-line max-len -->
+    <span>Both of the timelines(substance input, reporting) starts with the first substance input.</span>
   </div>
 </template>
 
@@ -183,20 +198,39 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-.submitForm__select {
+.substanceForm {
+  display: flex;
+  flex-direction: column;
+  margin: 5vh 0;
+}
+.substanceForm__select {
   margin: auto;
   text-align: center;
+  margin: 5vh 0;
 }
-.submitForm__cont {
+.substanceForm__cont {
   display: flex;
-  flex-direction: column;
+
 }
-.submitReportForm__title {
+.substanceReportForm__title {
   margin: 2vh auto;
   text-align: center;
+  font-size: 14px;
+  margin: 0;
 }
-.submitForm__cont-block {
+.substanceForm__cont-block {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  padding: 1vh;
+}
+.substanceForm__main-cont {
+  display: flex;
+  flex-direction: row;
+}
+.substanceForm__add-sub-data-but {
+  border-radius: 15px;
+  border: 1px solid black;
+  margin: auto;
 }
 </style>

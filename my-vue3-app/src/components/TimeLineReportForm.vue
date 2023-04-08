@@ -1,5 +1,6 @@
 <template>
   <div class="submitForm__cont" v-if="item">
+    {{ item }}
     <div class="submitForm__cont-block">
       <h3 class="submitReportForm__title">Choose time line</h3>
       <span>You can estimate the timeline value since the substance administration.</span>
@@ -22,14 +23,20 @@
         <option>100</option>
       </select>
       <!-- eslint-disable-next-line max-len -->
-      <h3 class="submitReportForm__title">Few(or not! ;) words about your feelings, thoughts, dreams, etc. at the selected time.</h3>
+      <!-- <h3 class="submitReportForm__title">Few(or not! ;) words about your feelings, thoughts, dreams, etc. at the selected time.</h3> -->
       <textarea
         id="reportText"
+        class="submitReportForm__text-area"
         v-bind:value="item?.report"
         placeholder="add your report"
         @keyup="onInput">
       </textarea>
-      <button v-if="item?.report" v-on:click="pushReportData">Add report data</button>
+      <button
+        v-if="item?.report"
+        v-on:click="pushReportData"
+        >
+        Add report data
+      </button>
     </div>
   </div>
 </template>
@@ -42,6 +49,7 @@ type TimeLineReport = {
   timeSecond: number;
   report: string;
   dataCompleted: Function;
+  simple: boolean;
 };
 
 export default defineComponent({
@@ -76,3 +84,10 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped lang="scss">
+  .submitReportForm__text-area {
+    width: 40%;
+    height: 7vh;
+  }
+</style>

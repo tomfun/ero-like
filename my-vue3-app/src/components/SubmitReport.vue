@@ -4,34 +4,71 @@
     <router-link :to="{ name: 'UserRegistration' }">register</router-link>
     <h1 class="submitReportForm__title">Submit Form</h1>
     {{ reportData }}
-    <div class="submitForm">
+    <br />
+    <br />
+    <br />
+    {{ stagedSubstance }}
+    {{ stagedReport }}
+    <div class="submitReportForm__main-cont">
       <div class="submitForm__title-cont">
         <h2 class="submitReportForm__title">Title your report</h2>
         <input class="submitForm__title-input" v-model="reportData.title" placeholder="Add title">
       </div>
       <Tabs>
-        <tab title="Substances">
-          <h3>Substances</h3>
-          <button v-on:click="handleAddSubstance" :disabled="addSubstanceButtonDisable">
-            Add substance form
-          </button>
-          <div style="display: flex;" v-if="staged">
-            <SubstanceForm v-model="stagedSubstance" v-bind:item="stagedSubstance"
-            @update:item="updateSubForm"/>
-          </div>
-          <div class="submitReportForm__ready-substance-cont" v-if="reportData.substances.length">
-            <h2 class="submitReportForm__title">Ready substances data for submit:</h2>
-            <ul>
-              <li v-for="(sub, index) in reportData.substances" v-bind:key="index">
-                <h3>{{ index + 1 }}:</h3>
-                {{ sub }}
-                <button v-on:click="editSubstanceData(index)">Edit</button>
-              </li>
-            </ul>
+        <tab title="Simple">
+          <div class="submitReportForm__staged-sub-cont">
+            <div class="submitReportForm__ready-substance-cont" v-if="reportData.substances.length">
+              <h2 class="submitReportForm__title">Ready substances data for submit:</h2>
+              <ul>
+                <li v-for="(sub, index) in reportData.substances" v-bind:key="index">
+                  <h3>{{ index + 1 }}:</h3>
+                  {{ sub }}
+                  <button v-on:click="editSubstanceData(index)">Edit</button>
+                </li>
+              </ul>
+            </div>
+            <button
+              v-on:click="handleAddSubstance"
+              :disabled="addSubstanceButtonDisable"
+              class="submitReportForm__add-sub-but">
+              Add substance form
+            </button>
+            <div style="display: flex;" v-if="staged">
+              <SubstanceForm v-model="stagedSubstance" v-bind:item="stagedSubstance"
+              @update:item="updateSubForm"/>
+            </div>
+            <textarea
+              id="reportText"
+              class="submitReportForm__text-area"
+              v-model="stagedReport.report"
+              placeholder="add your report"
+              @keyup="onInput"
+              >
+            </textarea>
           </div>
         </tab>
-        <tab title="Form">
+        <tab title="Timelined">
           <div class="submitReportForm__time-line-cont">
+            <div class="submitReportForm__ready-substance-cont" v-if="reportData.substances.length">
+              <h2 class="submitReportForm__title">Ready substances data for submit:</h2>
+              <ul>
+                <li v-for="(sub, index) in reportData.substances" v-bind:key="index">
+                  <h3>{{ index + 1 }}:</h3>
+                  {{ sub }}
+                  <button v-on:click="editSubstanceData(index)">Edit</button>
+                </li>
+              </ul>
+            </div>
+            <button
+              v-on:click="handleAddSubstance"
+              :disabled="addSubstanceButtonDisable"
+              class="submitReportForm__add-sub-but">
+              Add substance form
+            </button>
+            <div style="display: flex;" v-if="staged">
+              <SubstanceForm v-model="stagedSubstance" v-bind:item="stagedSubstance"
+              @update:item="updateSubForm"/>
+            </div>
             <h2 class="submitReportForm__title">Tell us about your journey in details</h2>
             <button v-on:click="handleAddTimeLineReport" :disabled="addReportButtonDisable">
               Add time line form
@@ -54,9 +91,13 @@
           </div>
         </tab>
       </Tabs>
-      <div class="submitReportForm__ready-time-line-cont" v-if="reportData.timeLineReport.length">
-        <h2 class="submitReportForm__title">Tell us few words about your background:</h2>
-        <textarea v-model="reportData.background" placeholder="add your background"></textarea>
+      <div class="submitReportForm__ready-time-line-cont">
+        <!-- <h2 class="submitReportForm__title">Tell us few words about your background:</h2> -->
+        <textarea
+          class="submitReportForm__text-area"
+          v-model="reportData.background"
+          placeholder="Tell us about yourself">
+        </textarea>
       </div>
       <button v-on:click="handleValidation">Validate</button>
     </div>
@@ -78,13 +119,14 @@ type SubstanceData = {
   routeOfAdministration: string;
   activeSubstance: string;
   surePercent: number;
-  dataCompleted: Function;
+  dataCompleted: () => void;
 };
 
 type TimeLineReport = {
   timeSecond: number;
   report: string;
   dataCompleted: Function;
+  simple: boolean;
 };
 
 type ReportData = {
@@ -103,6 +145,11 @@ export default defineComponent({
     Tabs,
     Tab,
   },
+  mounted() {
+    this.handleAddSubstance();
+    this.handleAddTimeLineReport();
+    this.reportData.timeLineReport = [...this.reportData.timeLineReport, this.stagedReport];
+  },
   data() {
     return {
       reportData: {
@@ -113,7 +160,7 @@ export default defineComponent({
         title: '',
       } as unknown as ReportData,
       stagedSubstance: Object as unknown as SubstanceData,
-      staged: false as boolean,
+      staged: true as boolean,
       stagedReport: Object as unknown as TimeLineReport,
       stagedRep: false as boolean,
     };
@@ -154,14 +201,28 @@ export default defineComponent({
       // this.$data.reportText = data.reportText; // ... hm
       // this.$data.gpgSignature = data.gpgSignature;
     },
+    onInput(event: any) {
+      // let changedProp: Partial<TimeLineReport> = {};
+      // if (event.target !== null && event.target.id === 'reportText') {
+      //   changedProp = { report: event.target.value };
+      // }
+      this.reportData.timeLineReport[0].report = event.target.value;
+    },
     handleAddTimeLineReport() {
       const report: TimeLineReport = {
         timeSecond: 0,
         report: '',
         dataCompleted: () => {
+          // if (this.reportData.timeLineReport.report === this.stagedReport.report) {
+          //   // eslint-disable-next-line no-return-assign
+          //   this.reportData.timeLineReport = [this.stagedReport];
+          //   this.stagedRep = false;
+          //   return;
+          // }
           this.reportData.timeLineReport = [...this.reportData.timeLineReport, this.stagedReport];
           this.stagedRep = false;
         },
+        simple: true,
       };
       this.stagedReport = report;
       this.stagedRep = true;
@@ -250,7 +311,22 @@ a {
   margin: auto;
 }
 
-.submitReportForm__substance-form-cont {
+.submitReportForm__main-cont {
+  width: 85%;
+  margin: auto;
+}
 
+.submitReportForm__add-sub-but {
+  border-radius: 15px;
+  border: 1px solid black;
+  margin: auto;
+}
+.submitReportForm__staged-sub-cont {
+  display: flex;
+  flex-direction: column;
+}
+.submitReportForm__text-area {
+  width: 40%;
+  height: 7vh;
 }
 </style>
