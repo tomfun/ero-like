@@ -63,8 +63,6 @@ export class ReportDataBodyPayload {
 export class ReportEntity {
   id: string;
 
-  user: UserEntity;
-
   signature: SignatureEntity;
 
   createdAt: Date;

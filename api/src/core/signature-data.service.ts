@@ -1,10 +1,16 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { InjectDataSource } from '@nestjs/typeorm/dist/common/typeorm.decorators';
 import { createHash } from 'crypto';
 import { pick } from 'lodash';
-import { Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { DataEntity, SignatureEntity } from '../entity';
+import {
+  BlockEntity,
+  BlockType,
+  DataEntity,
+  PublicKeyEntity,
+  SignatureEntity,
+} from '../entity';
 import { GpgService, NoPublicKeyVerifyError } from './gpg.service';
 import { ImportAndVerifyPayload } from './verify.payload';
 
@@ -15,8 +21,14 @@ export class SignatureDataService {
   @InjectDataSource()
   private dataSource: DataSource;
 
+  @InjectRepository(BlockEntity)
+  private blockRepo: Repository<BlockEntity>;
+
   @InjectRepository(DataEntity)
   private dataRepo: Repository<DataEntity>;
+
+  @InjectRepository(PublicKeyEntity)
+  private publicKeyRepo: Repository<PublicKeyEntity>;
 
   @InjectRepository(SignatureEntity)
   private signRepo: Repository<SignatureEntity>;
@@ -30,18 +42,44 @@ export class SignatureDataService {
       importAndVerifyPayload,
     );
 
-    let publicKey = new DataEntity();
-    publicKey.createdAt = now;
-    publicKey.type = 'text/gpg/public-key';
-    publicKey.mime = 'text/plain';
-    publicKey.clearSignDataPart = importAndVerifyPayload.publicKeyArmored;
-    publicKey.sha256 = await this.calculateSha256(publicKey.clearSignDataPart);
+    let publicKeyBlock = new BlockEntity();
+    publicKeyBlock.createdAt = now;
+    publicKeyBlock.type = BlockType.PUBLIC;
+    publicKeyBlock.blockArmored = importAndVerifyPayload.publicKeyArmored;
+    publicKeyBlock = await this.findOrDefaultBlock(publicKeyBlock);
+
+    const publicKeys = [];
+    for (const keyData of data.publicKeys) {
+      let publicKey = new PublicKeyEntity();
+      publicKey.publicKeyFingerprint = keyData.publicKeyFingerprint;
+      publicKey.type = keyData.type;
+      publicKey.publicKey = keyData.pkey.join('');
+      publicKey = await this.findOrDefaultPublicKey(publicKey);
+      if (publicKey.id) {
+        if (keyData.expires && keyData.expires > now) {
+          publicKey.invalidAt = keyData.expires;
+        } else if (!keyData.expires && publicKey.invalidAt > now) {
+          publicKey.invalidAt = null;
+        } else if (keyData.expires && keyData.expires < now) {
+          if (publicKey.invalidAt) {
+            publicKey.invalidAt =
+              publicKey.invalidAt < now ? publicKey.invalidAt : now;
+          } else {
+            publicKey.invalidAt = now;
+          }
+        }
+      } else {
+        publicKey.createdAt = keyData.created;
+        publicKey.block = publicKeyBlock;
+        publicKey.invalidAt = keyData.expires;
+      }
+    }
 
     let agreement = new DataEntity();
     agreement.createdAt = now;
     agreement.type = 'text';
     agreement.mime = 'text/plain';
-    agreement.clearSignDataPart = data.clearSignDataPart;
+    agreement.clearSignDataPart = data.signatureData.clearSignDataPart;
     agreement.sha256 = await this.calculateSha256(agreement.clearSignDataPart);
 
     [publicKey, agreement] = await Promise.all([
@@ -72,7 +110,7 @@ export class SignatureDataService {
     agreementSignature.subkeyFingerprint = data.usedKeyFingerprint;
 
     return {
-      publicKeySignature,
+      publicKey,
       agreementSignature,
       verifyData: data,
     };
@@ -91,6 +129,7 @@ export class SignatureDataService {
         throw e;
       }
       notFoundError = e;
+      // todo: use another repo
       const publicKeysSignatures = await this.signRepo.find({
         where: {
           signature: '',
@@ -149,7 +188,7 @@ export class SignatureDataService {
     signature.hash = verifyData.hash;
     signature.signature = verifyData.signature;
     signature.packet = packet;
-    signature.primaryKeyFingerprint = verifyData.mainKey;
+    signature.primaryKeyFingerprint = verifyData.primaryKeyFingerprint;
     signature.signedAt = verifyData.signatureDate;
     signature.subkeyFingerprint = verifyData.usedKeyFingerprint;
 
@@ -165,11 +204,25 @@ export class SignatureDataService {
     return hash.digest('hex');
   }
 
+  private async findOrDefaultBlock(block: BlockEntity) {
+    const b = await this.blockRepo.findOneBy(
+      pick(block, ['blockArmored', 'type']),
+    );
+    return b || block;
+  }
+
   private async findOrDefaultData(data: DataEntity) {
     const d = await this.dataRepo.findOneBy(
       pick(data, ['clearSignDataPart', 'type', 'sha256']),
     );
     return d || data;
+  }
+
+  private async findOrDefaultPublicKey(key: PublicKeyEntity) {
+    const p = await this.publicKeyRepo.findOneBy(
+      pick(key, ['publicKeyFingerprint', 'publicKey', 'type']),
+    );
+    return p || key;
   }
 
   private async findOrDefaultSignature(signature: SignatureEntity) {

@@ -118,7 +118,9 @@ export class ReportService {
       report = await this.reportRepo.findOne({
         where: { signature: { id: signature.id } },
         relations: {
-          user: true,
+          signature: {
+            user: true,
+          },
         },
       });
       if (report) {
@@ -134,11 +136,9 @@ export class ReportService {
         metatype: ReportDataBodyPayload,
       },
     );
-    const user = await this.userService.fidUser(signature);
     report = new ReportEntity();
     report.d = createReportDto;
     report.signature = signature;
-    report.user = user;
     await this.reportRepo.manager.save([
       report.signature.data,
       report.signature,

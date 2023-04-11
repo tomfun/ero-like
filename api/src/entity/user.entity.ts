@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
 } from 'typeorm';
-import { SignatureEntity } from './signature.entity';
+import type { SignatureEntity } from './signature.entity';
 
 @Entity('user')
 export class UserEntity extends UserEntityInner {
@@ -17,14 +17,10 @@ export class UserEntity extends UserEntityInner {
   declare id: string;
 
   @ApiProperty()
-  @ManyToOne(() => SignatureEntity)
+  // prevent circular dependency
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  @ManyToOne(() => require('./signature.entity').SignatureEntity)
   declare agreementSignature: SignatureEntity;
-
-  @ManyToOne(() => SignatureEntity)
-  declare firstUpdateSignature: SignatureEntity;
-
-  @ManyToOne(() => SignatureEntity)
-  declare lastUpdateSignature: SignatureEntity;
 
   @ApiProperty()
   @CreateDateColumn()

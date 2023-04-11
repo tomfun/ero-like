@@ -37,7 +37,7 @@ export class blockTable1680776879745 {
             "createdAt" timestamp DEFAULT now() not null,
             "updatedAt" timestamp DEFAULT now() not null,
             "invalidAt" timestamp           null,
-            "isHistory"             bool    not null,
+            "type"      varchar(50)         not null,
             "primaryKeyFingerprint" bytea   not null,
             "publicKeyFingerprint"  bytea   not null,
             "publicKey"             bytea   not null

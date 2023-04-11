@@ -168,10 +168,6 @@ export class ReportEntity extends ReportEntityInner {
   @PrimaryGeneratedColumn('uuid')
   declare id: string;
 
-  @ApiProperty()
-  @ManyToOne(() => UserEntity)
-  declare user: UserEntity;
-
   @ManyToOne(() => SignatureEntity)
   declare signature: SignatureEntity;
 

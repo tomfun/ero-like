@@ -81,7 +81,7 @@ export class GpgService {
         signatureDate,
         usedKeyType,
         usedKeyFingerprint,
-        mainKey,
+        primaryKeyFingerprint,
         clearSignDataPart,
         clearSignSignaturePart,
         hash,
@@ -95,7 +95,7 @@ export class GpgService {
         signatureDate,
         usedKeyType,
         usedKeyFingerprint,
-        mainKey,
+        primaryKeyFingerprint,
         clearSignDataPart,
         clearSignSignaturePart,
         hash,
@@ -140,17 +140,13 @@ export class GpgService {
         errs,
       );
 
-      const {
-        signatureDate,
-        usedKeyType,
-        usedKeyFingerprint,
-        mainKey,
-        clearSignDataPart,
-        clearSignSignaturePart,
-        hash,
-      } = await this.verifyCommon(importAndVerifyPayload, tempDirPath, errs);
+      const signatureData = await this.verifyCommon(
+        importAndVerifyPayload,
+        tempDirPath,
+        errs,
+      );
 
-      if (!mainKey.includes(importedKeyShort)) {
+      if (!signatureData.primaryKeyFingerprint.includes(importedKeyShort)) {
         throw new InvalidDataError(
           'verify: mainKey is not the same as imported key',
         );
@@ -163,16 +159,16 @@ export class GpgService {
       );
 
       return {
-        signatureDate,
-        usedKeyType,
-        usedKeyFingerprint,
-        importedKeyUser,
-        mainKey,
-        signatureAlgorithm,
+        signatureData,
         signature: data.join(''),
-        clearSignDataPart,
-        clearSignSignaturePart,
-        hash,
+        publicKeys: await this.getUserPublicKeys(
+          signatureData.primaryKeyFingerprint,
+          tempDirPath,
+          errs,
+        ),
+        revocatedUserKeys: [],
+        importedKeyUser,
+        signatureAlgorithm,
       };
     } catch (e) {
       if (e instanceof NoPublicKeyVerifyError) {
@@ -240,6 +236,7 @@ export class GpgService {
       throw new InvalidDataError('gpg exited with non zero status');
     }
     out += errs.join('');
+    // todo: check what if there are many ssb?
     const importMatchKey = out.match(
       /gpg: key ([0-9A-F]+): public key "(.+)" imported\n/,
     );
@@ -335,7 +332,7 @@ export class GpgService {
     if (!verifyMatchMainKey) {
       throw new InvalidDataError('verify: there is no primary key fingerprint');
     }
-    const mainKey = verifyMatchMainKey[1].replace(/\s+/g, '');
+    const primaryKeyFingerprint = verifyMatchMainKey[1].replace(/\s+/g, '');
 
     const indexOfSignature =
       importAndVerifyPayload.clearSignArmored.indexOf(signatureHeader);
@@ -354,7 +351,7 @@ export class GpgService {
       signatureDate,
       usedKeyType,
       usedKeyFingerprint,
-      mainKey,
+      primaryKeyFingerprint,
       clearSignDataPart,
       clearSignSignaturePart,
       hash,
@@ -476,5 +473,162 @@ export class GpgService {
       throw new Error('Date parse problem, input: ' + gpgDateString);
     }
     return d;
+  }
+
+  private async getUserPublicKeys(
+    user: string,
+    gnuPgHome: string,
+    errs: any[],
+  ) {
+    errs.length = 0;
+    let out = '';
+
+    const listPackets = spawn(
+      'gpg',
+      [
+        '--no-autostart',
+        '--utf8-strings',
+        '--lock-once',
+        '-v',
+        '--list-packets',
+        '-',
+      ],
+      {
+        cwd: gnuPgHome,
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: {
+          GNUPGHOME: gnuPgHome,
+          TZ: 'UTC',
+        },
+      },
+    );
+
+    const codePromisePackets = new Promise((r, reject) => {
+      listPackets.on('close', r);
+      listPackets.on('error', reject);
+    });
+    listPackets.stderr.setEncoding('utf-8');
+    listPackets.stderr.on('data', (ch) => errs.push(ch));
+    listPackets.stdout.setEncoding('utf-8');
+    listPackets.stdout.on('data', (ch) => (out += ch));
+    this.logger.debug(`cp gpg --list-packets pid: ${listPackets.pid}`);
+
+    const exportPublicKeys = spawn(
+      'gpg',
+      ['--no-autostart', '--export', '--armor', user],
+      {
+        cwd: gnuPgHome,
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: {
+          GNUPGHOME: gnuPgHome,
+          TZ: 'UTC',
+        },
+      },
+    );
+    const codePromiseExport = new Promise((r, reject) => {
+      exportPublicKeys.on('close', r);
+      exportPublicKeys.on('error', reject);
+    });
+    exportPublicKeys.stderr.setEncoding('utf-8');
+    exportPublicKeys.stderr.on('data', (ch) => errs.push(ch));
+    exportPublicKeys.stdout.pipe(listPackets.stdin);
+    this.logger.debug(`cp gpg --export pid: ${exportPublicKeys.pid}`);
+
+    let code = await codePromiseExport;
+    this.logger.debug(`cp gpg --export finished code: ${code}`);
+    if (code !== 0) {
+      throw new InvalidDataError('export pubic keys error');
+    }
+    code = await codePromisePackets;
+    this.logger.debug(`cp gpg --list-packets finished code: ${code}`);
+    if (code !== 0) {
+      throw new InvalidDataError('gpg list-packets (for pubic keys) error');
+    }
+
+    const pubKeysRegex =
+      /:public (sub )?key packet:\n\s+.+created (?<created>\d+), expires (?<expires>\d+)\n(\s+pkey\[\d+]:\s*(\w+)\n)+\s+keyid:\s*(?<keyid>\w+)/gm;
+    const pubKeysBitsRegex = /^\s+pkey\[\d]: (?<pkey>\w+)\n/gm;
+    const publicKeys = {} as Record<
+      string,
+      {
+        created: string;
+        expires: string;
+        keyid: string;
+        pkey: string[];
+      }
+    >;
+
+    let itemMatch: RegExpExecArray;
+    while ((itemMatch = pubKeysRegex.exec(out)) !== null) {
+      let pKeyMatch: RegExpExecArray;
+      const pkey = [] as string[];
+      while ((pKeyMatch = pubKeysBitsRegex.exec(itemMatch[0])) !== null) {
+        pkey.push(pKeyMatch.groups.pkey);
+      }
+      publicKeys[itemMatch.groups.keyid] = { ...itemMatch.groups, pkey } as {
+        created: string;
+        expires: string;
+        keyid: string;
+        pkey: string[];
+      };
+    }
+
+    out = '';
+    const fullKeyIds = spawn(
+      'gpg',
+      [
+        '--utf8-strings',
+        '--no-autostart',
+        '--with-subkey-fingerprints',
+        '--with-colons',
+        '--list-options',
+        'show-unusable-subkeys',
+        '--list-public-keys',
+        user,
+      ],
+      {
+        cwd: gnuPgHome,
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: {
+          GNUPGHOME: gnuPgHome,
+          TZ: 'UTC',
+        },
+      },
+    );
+    const codePromiseFullKeyIds = new Promise((r, reject) => {
+      fullKeyIds.on('close', r);
+      fullKeyIds.on('error', reject);
+    });
+    fullKeyIds.stderr.setEncoding('utf-8');
+    fullKeyIds.stderr.on('data', (ch) => errs.push(ch));
+    fullKeyIds.stdout.setEncoding('utf-8');
+    fullKeyIds.stdout.on('data', (ch) => (out += ch));
+    this.logger.debug(`cp gpg --list-pubic-keys pid: ${fullKeyIds.pid}`);
+
+    code = await codePromiseFullKeyIds;
+    this.logger.debug(`cp gpg --list-pubic-keys finished code: ${code}`);
+    if (code !== 0) {
+      throw new InvalidDataError('list pubic keys ids error');
+    }
+
+    const pubKeysFullIdsRegex =
+      /^(pub|sub):.:(?<bits>\d+):(?<alg>\d+):(?<shortKeyId>\w+):(?<created>\d+)?:(?<expires>\d+)?::[\w\-]?:::(?<capabilities>[sceartg?]+).+\nfpr([^:]*:?){9}(?<keyid>\w+):\n/gm;
+    const result = [];
+    while ((itemMatch = pubKeysFullIdsRegex.exec(out)) !== null) {
+      const { keyid, created, expires, shortKeyId } = itemMatch.groups;
+      if (!publicKeys[shortKeyId]?.pkey) {
+        throw new Error('public keys parse error');
+      }
+      result.push({
+        ...itemMatch.groups,
+        type: `${itemMatch.groups.alg}-${itemMatch.groups.bits}`,
+        publicKeyFingerprint: keyid,
+        created: created ? new Date(1000 * +created) : null,
+        expires: expires ? new Date(1000 * +expires) : null,
+        pkey: publicKeys[shortKeyId].pkey,
+      });
+    }
+
+    return result;
   }
 }
