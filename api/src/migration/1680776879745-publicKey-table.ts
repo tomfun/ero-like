@@ -63,7 +63,27 @@ export class blockTable1680776879745 {
         ADD constraint signature_block_id_fk
             foreign key ("blockId") references "block";
 
+    ALTER TABLE signature
+        ADD "signedPublicKeyId" uuid null;
+
+    ALTER TABLE signature
+        ADD constraint signature_signedpublickey_id_fk
+            foreign key ("signedPublicKeyId") references "publicKey";
+
+    ALTER TABLE signature
+        ADD "publicKeyId" uuid null;
+
+    ALTER TABLE signature
+        ADD constraint signature_publickey_id_fk
+            foreign key ("publicKeyId") references "publicKey";
+
+    ALTER TABLE signature
+        RENAME COLUMN "subkeyFingerprint" TO "usedKeyFingerprint";
+
     CREATE INDEX publicKey_publicKeyId_idx ON "publicKey" ("publicKeyFingerprint");
+
+    ALTER TABLE report
+        DROP "userId";
 
     `);
   }

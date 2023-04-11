@@ -28,7 +28,8 @@ docker compose run api \
 ```bash
 # development
 npm run build
-npm run migrate
+docker compose run api \
+  npm run migrate
 ```
 
 ### After
