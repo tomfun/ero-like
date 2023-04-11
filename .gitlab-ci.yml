@@ -55,6 +55,12 @@ stages:
   dependencies: []
   image: curlimages/curl:latest
   script:
+    - |
+      if [ "$CI_BUILD_REF_NAME" = "main" ]; then
+        export TAG_PREFIX=""
+      else
+        export TAG_PREFIX="dev-"
+      fi
     - curl --fail -XPOST "https://jenkins.tomfun.co/buildByToken/buildWithParameters?job=$JENKINS_JOB&token=$JENKINS_DEMO_DEPLOY_TOKEN&IMAGE_TAG=$TAG_PREFIX$CI_BUILD_REF&PUBLIC_HTTP_HOST=$PUBLIC_HTTP_HOST"
     - sleep 20
     - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_BUILD_REF" || sleep 20
@@ -69,7 +75,6 @@ job-deploy-demo:
     PUBLIC_HTTP_HOST: ${CI_ENVIRONMENT_SLUG}-demo-ero-like.tomfun.co
     URI_TO_TEST: ${CI_ENVIRONMENT_URL}/.wtf/D_I_TAG_UNIQ
     JENKINS_JOB: ero-like.tomfun.co%2Fdeploy
-    TAG_PREFIX: 'dev-'
 
 job-deploy-prod:
   <<: *job-deploy
@@ -84,7 +89,6 @@ job-deploy-prod:
     PUBLIC_HTTP_HOST: ero-like.online
     URI_TO_TEST: ${CI_ENVIRONMENT_URL}/.wtf/D_I_TAG_UNIQ
     JENKINS_JOB: ero-like.tomfun.co%2FdeployProd
-    TAG_PREFIX: ''
 
 job-deploy-stop:
   stage: deploy
