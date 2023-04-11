@@ -1,0 +1,107 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { Length } from 'class-validator';
+
+export class VerifyPayload {
+  @ApiProperty({
+    description: 'The age of a cat',
+    example: `-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+I read and agree with all terms of use of ero-like and confirm my registration on ero-like
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEBfntiBKqjNUqcWskquatlAIqu/EFAmQCVw8ACgkQquatlAIq
+u/GJRw//fpu1Y0FqfN1HITc+hnUvptoWT8i98dF2RFBIyinly+KvgHSQJHjUr1Ks
+jNgw+BHMkj9weG2VVH5xGNUrP3j7GYKIUAnniDBLUm1HE/XDq2mSCzc0cpX7reGy
+uhK4RFKykBIe2oF8PElNBfl/iTofcDNU6CVAfvGhpa+yX5GCrgF2UF7mSfYJqAAx
+bqWAtUUfKOS9eDtlmSI618kKF7Fz936sYKfThjiKJ9W8leF7BHt+4bVa0mLY4r65
+qSX9yUwDNB9q1QzDylM/jEmcXtD9Nf87wOXUh7omlOQmUozDnTX8IJiws+ImPipG
+PpFTvhSFmDHm+8oDWkj27I1ZfdQDI8GWpzXkIQwTUheZZiIainZ8Zce2otaf0d0J
+b3sQm+eIf+NPKcMelMqNrByriY9WJRbqNSTn5G20qWBq7fsxXPDvxRy+taGdctQi
+Gkh84VlfF8+/q8/P5NCx8DJgmKU/HctB/Ns8aHTmZCf4Fm0R5yCU9tozVoaUyqw+
+2vFA2Qmg0WEPXQs+inqIKw9UMH+oy4soHX3pSiXqv0Van9ysPvJ7x9nz2taI5XCA
+Gc6PnN4QW6xZog/IsaoykiOFhW28hMXTMCYGvjbspWw4JtiqehzgyS8jY9nrToub
+QIdSswmBJN8Sp8eNQ9jjGAvJZOzhBBMnFD1NAkbTBJ4zZb02bbY=
+=PjF2
+-----END PGP SIGNATURE-----
+`,
+    minimum: 90,
+  })
+  @Length(90)
+  clearSignArmored: string;
+}
+
+export class ImportAndVerifyPayload extends VerifyPayload {
+  @ApiProperty({
+    minimum: 70,
+    maximum: 65536,
+    example: `-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+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
+yB2jQjJns1lWvQ==
+=qQ0g
+-----END PGP PUBLIC KEY BLOCK-----
+`,
+  })
+  @Length(70, 65536)
+  publicKeyArmored: string;
+}

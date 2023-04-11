@@ -34,6 +34,22 @@
     "./dist/pagination-query.pipe": {
       "import": "./dist/pagination-query.pipe.modern.js",
       "require": "./dist/pagination-query.pipe.cjs"
+    },
+    "./dist/data.entity": {
+      "import": "./dist/data.entity.modern.js",
+      "require": "./dist/data.entity.cjs"
+    },
+    "./dist/report.entity": {
+      "import": "./dist/report.entity.modern.js",
+      "require": "./dist/report.entity.cjs"
+    },
+    "./dist/signature.entity": {
+      "import": "./dist/signature.entity.modern.js",
+      "require": "./dist/signature.entity.cjs"
+    },
+    "./dist/user.entity": {
+      "import": "./dist/user.entity.modern.js",
+      "require": "./dist/user.entity.cjs"
     }
   },
   "browser": {

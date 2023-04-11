@@ -6,34 +6,42 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { InvalidDataError } from './gpg.service';
+import { ApiCreatedResponse } from '@nestjs/swagger';
+import { InvalidDataError } from '../core/gpg.service';
+import { PaginableReportDto } from './paginable-report.dto';
 import {
   ReportService,
   ReportForList,
   ReportDataBodyPayload,
+  ReportEntity,
 } from './report.service';
 import {
-  Paginable,
   PaginateQuery,
   PaginationQueryDto,
-} from './paginationQueryPipe';
-import { UserNotFoundError } from './user.service';
-import { ValidBody } from './validBodyPipe';
-import { PaginationFilters, ReportFilters } from './filtersQueryPipe';
+} from '../core/pagination-query.pipe';
+import { UserNotFoundError } from '../core/user.service';
+import { ValidBody } from '../validBodyPipe';
+import { PaginationFilters, ReportFilters } from './filters-query.pipe';
 
 @Controller('/api/report')
 export class ReportController {
   constructor(private readonly appService: ReportService) {}
 
   @Get()
+  @ApiCreatedResponse({
+    type: PaginableReportDto,
+  })
   getReports(
     @PaginateQuery query: PaginationQueryDto,
     @PaginationFilters filters: ReportFilters,
-  ): Promise<Paginable<ReportForList>> {
+  ): Promise<PaginableReportDto> {
     return this.appService.getList(query, filters);
   }
 
   @Post('/validate')
+  @ApiCreatedResponse({
+    type: ReportDataBodyPayload,
+  })
   validateReport(
     @ValidBody
     createReportDto: ReportDataBodyPayload,
@@ -42,6 +50,9 @@ export class ReportController {
   }
 
   @Put()
+  @ApiCreatedResponse({
+    type: ReportEntity,
+  })
   async postReport(@Body() data: string): Promise<ReportForList> {
     try {
       return await this.appService.create(data);

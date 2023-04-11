@@ -8,16 +8,15 @@ import {
   ReportFilters,
   StringField,
   TypeSymbol,
-} from './filtersQueryPipe';
-import { Paginable, PaginationQueryDto } from './paginationQueryPipe';
-import { ReportDataBodyPayload, ReportEntity } from './report.entity';
-import { SignatureDataService } from './signature-data.service';
-import { UserService } from './user.service';
+} from './filters-query.pipe';
+import { Paginable, PaginationQueryDto } from '../core/pagination-query.pipe';
+import { ReportDataBodyPayload, ReportEntity } from '../entity';
+import { SignatureDataService } from '../core/signature-data.service';
+import { UserService } from '../core/user.service';
 
-export { ReportDataBodyPayload, ReportEntity } from './report.entity';
+export { ReportDataBodyPayload, ReportEntity } from '../entity';
 
-export type ReportForList = Omit<ReportEntity, 'user' | 'signature'>;
-export type ReportBodyPayload = Omit<ReportEntity, 'user' | 'signature'>;
+export type ReportForList = Omit<ReportEntity, 'signature'>;
 
 export const TYPE = 'drugs.ero-like.online/report@0.0.1-alpha-1';
 

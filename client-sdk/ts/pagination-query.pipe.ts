@@ -15,10 +15,10 @@ export class PaginationQueryPipe {
 
 export class PaginationQueryDto {
   page = 0;
-  pageSize = 2;
+  pageSize = 10;
 }
 
-export interface Paginable<Entity> {
+export class Paginable<Entity> {
   items: Entity[];
   page: number;
   pageSize: number;

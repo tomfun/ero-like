@@ -4,13 +4,9 @@ import { pick } from 'lodash';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { DataEntity } from './data.entity';
-import {
-  GpgService,
-  ImportAndVerifyPayload,
-  NoPublicKeyVerifyError,
-} from './gpg.service';
-import { SignatureEntity } from './signature.entity';
+import { DataEntity, SignatureEntity } from '../entity';
+import { GpgService, NoPublicKeyVerifyError } from './gpg.service';
+import { ImportAndVerifyPayload } from './verify.payload';
 
 type UnwrapPromise<T> = T extends Promise<infer R> ? R : never;
 
