@@ -85,7 +85,6 @@
         </tab>
       </Tabs>
       <div class="submitReportForm__ready-time-line-cont">
-        <!-- <h2 class="submitReportForm__title">Tell us few words about your background:</h2> -->
         <textarea
           class="submitReportForm__text-area"
           v-model="reportData.background"
@@ -187,7 +186,7 @@ export default defineComponent({
             dataCompleted: () => {},
           });
         });
-        this.simpleReportText += simpleReport.report;
+        this.simpleReportText = simpleReport.report;
         this.simple = true;
       } if (index === 1) {
         this.simple = false;
