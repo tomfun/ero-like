@@ -1,6 +1,5 @@
 <template>
   <div class="substanceForm" v-if="item">
-    {{ item }}
     <div class="substanceForm__main-cont">
       <div class="substanceForm__cont-block">
       <h3 class="substanceReportForm__title">Substance name</h3>

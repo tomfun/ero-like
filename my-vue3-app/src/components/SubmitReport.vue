@@ -3,18 +3,12 @@
     Only registered users can submit reports
     <router-link :to="{ name: 'UserRegistration' }">register</router-link>
     <h1 class="submitReportForm__title">Submit Form</h1>
-    {{ reportData }}
-    <br />
-    <br />
-    <br />
-    {{ stagedSubstance }}
-    {{ stagedReport }}
     <div class="submitReportForm__main-cont">
       <div class="submitForm__title-cont">
         <h2 class="submitReportForm__title">Title your report</h2>
         <input class="submitForm__title-input" v-model="reportData.title" placeholder="Add title">
       </div>
-      <Tabs>
+      <Tabs @tab-changed="handleTabChange">
         <tab title="Simple">
           <div class="submitReportForm__staged-sub-cont">
             <div class="submitReportForm__ready-substance-cont" v-if="reportData.substances.length">
@@ -40,9 +34,8 @@
             <textarea
               id="reportText"
               class="submitReportForm__text-area"
-              v-model="stagedReport.report"
+              v-model="simpleReportText"
               placeholder="add your report"
-              @keyup="onInput"
               >
             </textarea>
           </div>
@@ -148,7 +141,6 @@ export default defineComponent({
   mounted() {
     this.handleAddSubstance();
     this.handleAddTimeLineReport();
-    this.reportData.timeLineReport = [...this.reportData.timeLineReport, this.stagedReport];
   },
   data() {
     return {
@@ -163,6 +155,8 @@ export default defineComponent({
       staged: true as boolean,
       stagedReport: Object as unknown as TimeLineReport,
       stagedRep: false as boolean,
+      simpleReportText: '' as string,
+      simple: true as boolean,
     };
   },
   computed: {
@@ -180,13 +174,35 @@ export default defineComponent({
     },
   },
   methods: {
+    handleTabChange(index: number) {
+      if (index === 0 && this.reportData.timeLineReport.length > 0) {
+        // eslint-disable-next-line arrow-body-style
+        const simpleReport = this.reportData.timeLineReport.reduce((cumulatedRep, curRep) => {
+          return ({
+            // eslint-disable-next-line prefer-template
+            report: cumulatedRep.report + '\n' + curRep.report,
+            timeSecond: 0,
+            simple: true,
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            dataCompleted: () => {},
+          });
+        });
+        this.simpleReportText += simpleReport.report;
+        this.simple = true;
+      } if (index === 1) {
+        this.simple = false;
+      }
+    },
     async handleValidation() {
       const requestOptions = {
         method: 'Post',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           substances: [...this.reportData.substances],
-          timeLineReport: [...this.reportData.timeLineReport],
+          timeLineReport: this.simple ? [{
+            timeSecond: 0,
+            report: this.simpleReportText,
+          }] : [...this.reportData.timeLineReport],
           title: this.reportData.title,
           background: this.reportData.background,
           dateTimestamp: Date.now(),
@@ -201,24 +217,11 @@ export default defineComponent({
       // this.$data.reportText = data.reportText; // ... hm
       // this.$data.gpgSignature = data.gpgSignature;
     },
-    onInput(event: any) {
-      // let changedProp: Partial<TimeLineReport> = {};
-      // if (event.target !== null && event.target.id === 'reportText') {
-      //   changedProp = { report: event.target.value };
-      // }
-      this.reportData.timeLineReport[0].report = event.target.value;
-    },
     handleAddTimeLineReport() {
       const report: TimeLineReport = {
         timeSecond: 0,
         report: '',
         dataCompleted: () => {
-          // if (this.reportData.timeLineReport.report === this.stagedReport.report) {
-          //   // eslint-disable-next-line no-return-assign
-          //   this.reportData.timeLineReport = [this.stagedReport];
-          //   this.stagedRep = false;
-          //   return;
-          // }
           this.reportData.timeLineReport = [...this.reportData.timeLineReport, this.stagedReport];
           this.stagedRep = false;
         },

@@ -1,6 +1,5 @@
 <template>
   <div class="submitForm__cont" v-if="item">
-    {{ item }}
     <div class="submitForm__cont-block">
       <h3 class="submitReportForm__title">Choose time line</h3>
       <span>You can estimate the timeline value since the substance administration.</span>
