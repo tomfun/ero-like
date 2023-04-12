@@ -12,3 +12,7 @@ export function transformDurationToSeconds(value: string): number {
 export const TransformDurationToSeconds = Transform(({ value }) =>
   value?.match(/^\d+$/) ? +value : transformDurationToSeconds(value),
 );
+
+export const TransformBufferToString = Transform(({ value }) =>
+  typeof value === 'string' ? value : value.toString(),
+);

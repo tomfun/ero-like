@@ -1,4 +1,5 @@
 import { BadRequestException, Controller, Post } from '@nestjs/common';
+import { instanceToPlain } from 'class-transformer';
 import { InvalidDataError } from './gpg.service';
 import { ImportAndVerifyPayload } from './verify.payload';
 import {
@@ -13,13 +14,13 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('/dry-run')
-  async postReportDryRun(
+  async postUserDryRun(
     @ValidBody
     importAndVerifyDto: ImportAndVerifyPayload,
   ) {
     try {
       const data = await this.userService.createUserDryRun(importAndVerifyDto);
-      return data.user;
+      return instanceToPlain(data.user, { groups: ['user'] });
     } catch (e) {
       this.convertUserRegisterError(e);
       throw e;
@@ -27,12 +28,15 @@ export class UserController {
   }
 
   @Post()
-  async postReport(
+  async postUser(
     @ValidBody
     importAndVerifyDto: ImportAndVerifyPayload,
   ) {
     try {
-      return await this.userService.createUser(importAndVerifyDto);
+      return instanceToPlain(
+        await this.userService.createUser(importAndVerifyDto),
+        { groups: ['user'] },
+      );
     } catch (e) {
       this.convertUserRegisterError(e);
     }

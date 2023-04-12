@@ -124,7 +124,6 @@ export class ReportService {
         },
       });
       if (report) {
-        report.signature = signature;
         return report;
       }
     }
@@ -140,6 +139,7 @@ export class ReportService {
     report.d = createReportDto;
     report.signature = signature;
     await this.reportRepo.manager.save([
+      report.signature.block,
       report.signature.data,
       report.signature,
     ]);

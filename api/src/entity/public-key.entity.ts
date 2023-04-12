@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import { PublicKeyEntity as PublicKeyEntityInner } from 'ero-like-sdk/dist/public-key.entity';
 import {
   Entity,
@@ -9,39 +10,59 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { BlockEntity } from './block.entity';
+import { UserEntity } from './user.entity';
 
 @Entity('publicKey')
 export class PublicKeyEntity extends PublicKeyEntityInner {
-  @PrimaryGeneratedColumn('uuid')
   @ApiProperty()
+  @Expose()
+  @PrimaryGeneratedColumn('uuid')
   declare id: string;
 
   @ApiProperty()
+  @Expose({ groups: ['entity', 'user'] })
   @ManyToOne(() => BlockEntity)
   declare block: BlockEntity;
 
-  @CreateDateColumn()
   @ApiProperty()
+  @Expose({ groups: ['entity'] })
+  @ManyToOne(() => BlockEntity)
+  declare user: UserEntity;
+
+  @ApiProperty()
+  @Expose()
+  @CreateDateColumn()
   declare createdAt: Date;
 
-  @UpdateDateColumn()
   @ApiProperty()
+  @Expose()
+  @UpdateDateColumn()
   declare updatedAt: Date;
 
-  @Column()
   @ApiProperty()
+  @Expose()
+  @Column()
   declare invalidAt: Date;
 
-  @ApiProperty()
   @Column()
   declare type: string;
 
   @Column({ type: 'bytea' })
   declare primaryKeyFingerprint: string | ArrayBuffer;
 
+  @ApiProperty({ name: 'primaryKeyFingerprint' })
+  @Expose({ name: 'primaryKeyFingerprint' })
+  get primaryKeyFingerprintString() {
+    return typeof this.primaryKeyFingerprint === 'string'
+      ? this.primaryKeyFingerprint
+      : this.primaryKeyFingerprint.toString();
+  }
+
   @Column({ type: 'bytea' })
   declare publicKeyFingerprint: string | ArrayBuffer;
 
+  @ApiProperty({ name: 'publicKeyFingerprint' })
+  @Expose({ name: 'publicKeyFingerprint' })
   get publicKeyFingerprintString() {
     return typeof this.publicKeyFingerprint === 'string'
       ? this.publicKeyFingerprint

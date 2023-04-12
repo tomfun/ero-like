@@ -6,7 +6,7 @@
     </h1>
     <div class="formgrid grid">
       <div class="field col">
-        <label for="publicKeyArmored">gpg public key</label>
+        <label for="publicKeyArmored">Public key (gpg public key block)</label>
         <Textarea v-model="publicKeyArmored"
                   cols="66"
                   :autoResize="true"
@@ -73,7 +73,7 @@ nAoFL1Xt5HCELslo4S6vjNMtIHLm6Jw3Hu0sUlfW81lu+q53XhFZcP22HB/MIRhD
         </p>
       </div>
       <div class="field col">
-        <label for="clearSignArmored">Username</label>
+        <label for="clearSignArmored">Signature (gpg clear-sign output)</label>
         <Textarea v-model="clearSignArmored"
                   name="clearSignArmored"
                   id="clearSignArmored"
@@ -122,16 +122,16 @@ TaVHnbJ8jErfklgnRTPibX8AdmEFJasONNMJ/7euoBoH+aAYG/k=
         <Message severity="success" v-if="user.id">
           user created!
         </Message>
-        <Message severity="info" v-if="user.lastUpdateSignature.primaryKeyFingerprint">
+        <Message severity="info" v-if="user.agreementSignature.primaryKeyFingerprint">
           user: {{ user.nick }}<br>
-          private key id: {{ user.lastUpdateSignature.primaryKeyFingerprint }}<br>
+          private key id: {{ user.agreementSignature.primaryKeyFingerprint }}<br>
           <span
-v-if="user.lastUpdateSignature.primaryKeyFingerprint === user.lastUpdateSignature.subkeyFingerprint"
+v-if="user.agreementSignature.primaryKeyFingerprint === user.agreementSignature.usedKeyFingerprint"
           >
             signature made by private key
           </span>
           <span
-            v-else>sub key id: {{ user.lastUpdateSignature.subkeyFingerprint }}</span>
+            v-else>sub key id: {{ user.agreementSignature.usedKeyFingerprint }}</span>
         </Message>
       </div>
     </div>
@@ -149,10 +149,12 @@ export default defineComponent({
       user: {
         id: undefined,
         nick: undefined,
-        lastUpdateSignature: {
+        agreementSignature: {
+          block: {},
           data: {},
+          publicKey: {},
           primaryKeyFingerprint: undefined,
-          subkeyFingerprint: undefined,
+          usedKeyFingerprint: undefined,
         },
       },
       publicKeyArmored: '',

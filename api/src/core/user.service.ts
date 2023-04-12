@@ -97,7 +97,11 @@ export class UserService {
       await m.save(publicKeys);
       await m.save(user.agreementSignature.block);
       user.agreementSignature = await m.save(user.agreementSignature);
-      return m.save(user);
+      await m.save(user);
+      const userUpdateEntities = [user.agreementSignature, ...publicKeys];
+      userUpdateEntities.forEach((e) => (e.user = user));
+      await m.save(userUpdateEntities);
+      return user;
     });
   }
 }
