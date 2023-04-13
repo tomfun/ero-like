@@ -113,9 +113,9 @@ function buildReportsFiltersScopedNumeric<ScopedReport, K extends keyof ScopedRe
 }
 
 function buildReportsFilters(this: Pagination['filters']): false|Array<(r: Report) => boolean> {
-  const userFieldFilters = (buildReportsFiltersScopedString as BuildReportsFiltersScopedString<Report['user'], 'nick', string>).call(
-    this as Record<'user.nick', FilterRecordPair<string>>,
-    'user.',
+  const userFieldFilters = (buildReportsFiltersScopedString as BuildReportsFiltersScopedString<Report['signature']['user'], 'nick', string>).call(
+    this as Record<'signature.user.nick', FilterRecordPair<string>>,
+    'signature.user.',
     ['nick'],
   );
   const dFieldFilters = (buildReportsFiltersScopedString as BuildReportsFiltersScopedString<Report['d'], 'title' | 'substances', string>).call(
@@ -130,7 +130,7 @@ function buildReportsFilters(this: Pagination['filters']): false|Array<(r: Repor
     ),
   );
   const fieldFilters = ([] as Array<(r: Report) => boolean>)
-    .concat(userFieldFilters.map((cb) => (r: Report) => cb(r.user)))
+    .concat(userFieldFilters.map((cb) => (r: Report) => cb(r.signature.user)))
     .concat(dFieldFilters.map((cb) => (r: Report) => cb(r.d)));
 
   if (!fieldFilters.length) {

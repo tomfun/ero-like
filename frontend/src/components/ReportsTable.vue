@@ -6,17 +6,17 @@
     style="height: .5em"
   />
   </div>
-  <DataTable :value="reports" :lazy="true" v-model:filters="filters" 
+  <DataTable :value="reports" :lazy="true" v-model:filters="filters"
     v-model:expandedRows="expandedRows" dataKey="id"
     :paginator="true" :resizableColumns="true" :rows="pagination.pageSize"
     :totalRecords="pagination.itemsTotal" :rowsPerPageOptions="[10,20,50,100]"
     :paginatorTemplate="pag" @page="onPage($event)" filterDisplay="row"
     @filter="onFilter()"
     :globalFilterFields="[
-      'user.nick', 'd.title', 'd.substances.*.namePsychonautWikiOrg', 'd.dateTimestamp']"
+      'signature.user.nick', 'd.title', 'd.substances.*.namePsychonautWikiOrg', 'd.dateTimestamp']"
     >
     <Column expander style="width: 5rem" />
-    <Column field="user.nick" filter-field="user.nick" header="Nick" style="min-width: 14rem"
+    <Column field="signature.user.nick" filter-field="signature.user.nick" header="Nick" style="min-width: 14rem"
             filterMatchMode="startsWith"
             :filterMatchModeOptions="configFilterMatchModeOptions.text.slice(0, 2)"
             ref="nick">
@@ -24,15 +24,15 @@
         <AutoComplete
           placeholder="Search by nick"
           v-model="filterModel.value"
-          :suggestions="(filterModel as ModelReportFilters['user.nick']).suggestions"
+          :suggestions="(filterModel as ModelReportFilters['signature.user.nick']).suggestions"
           @update:modelValue="filterCallback()"
           @keydown.enter="filterCallback()"
-          @complete="onComplete('user.nick', (filterModel as ModelReportFilters['user.nick']), $event)"
+          @complete="onComplete('signature.user.nick', (filterModel as ModelReportFilters['signature.user.nick']), $event)"
         />
       </template>
       <template #body="{data}">
-        <span :title="formatDate(new Date(data.user.createdAt))">
-          {{ data.user.nick }}
+        <span :title="formatDate(new Date(data.signature.user.createdAt))">
+          {{ data.signature.user.nick }}
         </span>
       </template>
     </Column>
@@ -96,7 +96,7 @@
             <Panel header="Substances" class="substance-cont" toggleable :collapsed="false">
               <ul class="substance-full-data-list">
                 <li v-for="sub in dataKey.data.d.substances" :key="sub">
-                  <Panel :header="sub.namePsychonautWikiOrg" toggleable :collapsed="false"> 
+                  <Panel :header="sub.namePsychonautWikiOrg" toggleable :collapsed="false">
                     <p class="m-0">
                       Dose: {{ sub.dose }}<br/>
                       Dose Unit: {{ sub.doseUnit }} <br/>
@@ -104,7 +104,7 @@
                       Quality percent:{{ sub.surePercent }}<br/>
                       Name on Psychonaut Wiki Org: {{ sub.namePsychonautWikiOrg }}<br/>
                       Route of administration: {{ sub.routeOfAdministration }}<br/>
-                    </p>              
+                    </p>
                   </Panel>
                 </li>
               </ul>
@@ -124,11 +124,11 @@
             <Panel header="Timeline" class="substance-cont" toggleable :collapsed="false">
               <ul class="substance-full-data-list">
                 <li v-for="tl in dataKey.data.d.timeLineReport" :key="tl">
-                  <Panel :header="tl.timeSecond.toString()" toggleable :collapsed="false"> 
+                  <Panel :header="tl.timeSecond.toString()" toggleable :collapsed="false">
                     <p class="m-0">
                       Time: {{ tl.timeSecond }}<br/>
                       Description: {{ tl.report }}<br/>
-                    </p>              
+                    </p>
                   </Panel>
                 </li>
               </ul>
@@ -166,7 +166,7 @@ type ModelReportFilters = ReportFilters & {
     value: null | Date;
     matchMode: 'dateIs' | 'dateIsNot' | 'dateBefore' | 'dateAfter';
   };
-  'user.nick': {
+  'signature.user.nick': {
     suggestions: string[];
   };
 };
@@ -181,7 +181,7 @@ export default defineComponent({
   components: { DataTable, Column },
   data() {
     const filters: ModelReportFilters = {
-      'user.nick': {
+      'signature.user.nick': {
         value: null,
         suggestions: [],
         matchMode: 'startsWith',
@@ -337,13 +337,14 @@ export default defineComponent({
     },
     onComplete(
       path: string,
-      filter: ReportFilters['user.nick'] & { suggestions: string[] },
+      filter: ReportFilters['signature.user.nick'] & { suggestions: string[] },
       { query }: { query: string },
     ) {
-      filter.suggestions = Object
+      const suggestions = Object
         .values(this.data)
         .map((r) => get(r, path))
         .filter((f) => f.startsWith(query));
+      filter.suggestions = Array.from(new Set(suggestions));
     },
     formatDate(value: number | Date) {
       const date = (typeof value === 'number' ? new Date(value * 1000) : value);

@@ -12,7 +12,7 @@ export const SET_LOADING = 'set_loading';
 export default {
   [SET_PAGINATION](state: State, pagination: Pagination) {
     state.pagination = pagination;
-    state.pagination.filters['user.nick'] = pagination.filters['user.nick'];
+    state.pagination.filters['signature.user.nick'] = pagination.filters['signature.user.nick'];
     state.pagination.filters['d.title'] = pagination.filters['d.title'];
     state.pagination.encodedQuery = pagination.encodedQuery;
   },
