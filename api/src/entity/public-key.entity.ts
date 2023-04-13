@@ -26,7 +26,7 @@ export class PublicKeyEntity extends PublicKeyEntityInner {
 
   @ApiProperty()
   @Expose({ groups: ['entity'] })
-  @ManyToOne(() => BlockEntity)
+  @ManyToOne(() => UserEntity)
   declare user: UserEntity;
 
   @ApiProperty()

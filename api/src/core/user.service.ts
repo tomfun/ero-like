@@ -93,7 +93,7 @@ export class UserService {
     );
     await this.dataSource.manager.save(user.agreementSignature.data);
     return this.dataSource.transaction<UserEntity>(async (m) => {
-      await m.save(publicKeys.map((p) => p.block));
+      await m.save(Array.from(new Set(publicKeys.map((p) => p.block))));
       await m.save(publicKeys);
       await m.save(user.agreementSignature.block);
       user.agreementSignature = await m.save(user.agreementSignature);

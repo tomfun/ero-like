@@ -147,7 +147,7 @@ GET {{host}}/api/report?page=2&pageSize=3&nick=tomfun
 
 ###
 
-GET {{host}}/api/report?page=0&user[nick][endsWith]=fun&user[nick][startsWith]=tom&d[title][startsWith]=Вечерний&d[substances.*.namePsychonautWikiOrg][include]=2C-I
+GET {{host}}/api/report?page=0&signature[user][nick][endsWith]=fun&signature[user][nick][startsWith]=tom&d[title][startsWith]=Вечерний&d[substances.*.namePsychonautWikiOrg][include]=2C-I
 
 ###
 

@@ -103,7 +103,7 @@ TaVHnbJ8jErfklgnRTPibX8AdmEFJasONNMJ/7euoBoH+aAYG/k=
               Detailed instructions
             </a>. After you had decided which user to use you need to use it instead of $user:<br/>
             <code>echo -e 'I read and agree with all terms of use of ero-like and confirm my
-              registration on ero-like' | gpg --clear-sign --local-user </code>
+              registration on ero-like' | gpg --clear-sign --disable-signer-uid --local-user </code>
             <b>$user</b>
             <code>
               - </code><br/>

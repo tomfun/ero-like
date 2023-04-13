@@ -1,5 +1,6 @@
 import { Inject, Injectable, ValidationPipe } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as _ from 'lodash';
 import { Repository } from 'typeorm';
 import {
   KeyClassSymbol,
@@ -44,21 +45,37 @@ export class ReportService {
   ): Promise<Paginable<ReportForList>> {
     let query = this.reportRepo
       .createQueryBuilder('r')
-      .where(`type = 'ReportEntity'`);
-    if (filters?.user?.nick) {
-      const nickWhere = this.buildStringWhere(
-        filters.user.nick,
-        'u.nick',
-        'userNick',
-      );
-      query = query.innerJoinAndSelect(
-        'r.user',
-        'u',
-        'u.id = r.userId' + (nickWhere ? ` AND ${nickWhere.sql}` : ''),
-        nickWhere?.params,
-      );
+      .innerJoinAndSelect('r.signature', 's')
+      .select(['r', 's.id', 's.signedAt', 's.user']);
+    if (filters?.signature?.user?.nick || filters?.signature?.user?.id) {
+      const joins = [];
+      const params = {};
+      if (filters.signature.user.id) {
+        const idWhere = this.buildStringWhere(
+          filters.signature.user.id,
+          'u.id',
+          'userId',
+        );
+        if (idWhere) {
+          joins.push(idWhere.sql);
+          _.assign(params, idWhere.params);
+        }
+      }
+      if (filters.signature.user.nick) {
+        const nickWhere = this.buildStringWhere(
+          filters.signature.user.nick,
+          'u.nick',
+          'userNick',
+        );
+        if (nickWhere) {
+          joins.push(nickWhere.sql);
+          _.assign(params, nickWhere.params);
+        }
+      }
+      const joinWhere = joins.join(' AND ');
+      query = query.innerJoinAndSelect('s.user', 'u', joinWhere, params);
     } else {
-      query = query.innerJoinAndSelect('r.user', 'u', 'u.id = r.userId');
+      query = query.innerJoinAndSelect('s.user', 'u');
     }
     let i = 0;
     for (const f in filters.d) {

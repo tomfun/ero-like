@@ -278,6 +278,8 @@ export class GpgService {
         '--with-subkey-fingerprint',
         '-v',
         '--verify',
+        // '--verify-options',
+        // 'show-primary-uid-only,show-unusable-uids',
       ],
       {
         cwd: gnuPgHome,

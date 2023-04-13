@@ -139,6 +139,7 @@ export class SignatureDataService {
     let verifyData: UnwrapPromise<
       ReturnType<typeof GpgService.prototype.verify>
     >;
+    let publicKey: PublicKeyEntity = null;
     try {
       verifyData = await this.gpgService.verify(data);
     } catch (e) {
@@ -150,12 +151,13 @@ export class SignatureDataService {
           publicKeyFingerprint: e.keyFingerprint,
         },
         relations: {
+          user: true,
           block: true,
         },
       });
-      for (const publicKey of publicKeys) {
+      for (const key of publicKeys) {
         await this.gpgService.loadKey({
-          publicKeyArmored: publicKey.block.blockArmored,
+          publicKeyArmored: key.block.blockArmored,
         });
         try {
           verifyData = await this.gpgService.verify(data);
@@ -165,6 +167,7 @@ export class SignatureDataService {
           }
         }
         if (verifyData) {
+          publicKey = key;
           break;
         }
       }
@@ -208,10 +211,17 @@ export class SignatureDataService {
     signature.usedKeyFingerprint = verifyData.usedKeyFingerprint;
     signature = await this.findOrDefaultSignature(signature);
     signature.block = signatureBlock;
-    signature.publicKey = await this.publicKeyRepo.findOneBy({
-      primaryKeyFingerprint: verifyData.primaryKeyFingerprint,
-      publicKeyFingerprint: verifyData.usedKeyFingerprint,
-    });
+    signature.publicKey =
+      publicKey ||
+      (await this.publicKeyRepo.findOne({
+        where: {
+          primaryKeyFingerprint: verifyData.primaryKeyFingerprint,
+          publicKeyFingerprint: verifyData.usedKeyFingerprint,
+        },
+        relations: {
+          user: true,
+        },
+      }));
     signature.user = signature.publicKey.user;
 
     return {
