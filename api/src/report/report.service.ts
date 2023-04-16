@@ -244,4 +244,20 @@ export class ReportService {
     }
     return undefined;
   }
+
+  async getReport(id: string) {
+    return this.reportRepo.findOne({
+      where: { id },
+      relations: {
+        signature: {
+          user: true,
+          data: true,
+          block: true,
+          publicKey: {
+            block: true,
+          },
+        },
+      },
+    });
+  }
 }

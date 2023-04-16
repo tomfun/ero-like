@@ -175,6 +175,10 @@ docker-registry-api:
       -t registry.gitlab.com/tommyinc/ero-like/$DIR:$TAG_PREFIX$CI_COMMIT_SHA
       -t registry.gitlab.com/tommyinc/ero-like/$DIR:$TAG_PREFIX$CI_COMMIT_REF_NAME
       -f docker/$DIR/Dockerfile .
+    - source dev/e2e.sh
+    - $npm run test -- --colors
+    - $migrate
+    - $npm run test:e2e -- --colors
 
 
 build_sdk:

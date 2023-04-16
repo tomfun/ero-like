@@ -153,6 +153,17 @@ GET {{host}}/api/report?page=0&signature[user][nick][endsWith]=fun&signature[use
 
 GET {{host}}/api/report?d[dateTimestamp][lte]=1678021709
 
+### get single report
+#### join parts to verify
+#### `-----BEGIN PGP SIGNED MESSAGE-----
+#### Hash: ${report.signature.hash}
+####
+#### ${report.signature.data.clearSignDataPart}
+#### ${report.signature.block.blockArmored}
+#### `
+
+GET {{host}}/api/report/6363717a-cdf6-46a2-b938-4695cd36eda3
+
 ### Invalid (3 keys)
 
 POST {{host}}/api/user

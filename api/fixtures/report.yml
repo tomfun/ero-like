@@ -1,5 +1,5 @@
 entity: report
 items:
-  tournament1:
-    id: 1
+  report1:
+    id: 6363717a-cdf6-46a2-b938-4695cd36eda3
     name: '{{name.firstName}}'

@@ -1,13 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import * as process from 'process';
 import * as rimraf from 'rimraf';
 import { join } from 'path';
 import { spawn } from 'child_process';
 import { mkdtemp } from 'fs/promises';
 import * as os from 'os';
-import { Repository } from 'typeorm';
-import { ReportEntity } from '../entity';
 import { ImportAndVerifyPayload, VerifyPayload } from './verify.payload';
 
 const tempDirPrefix = `ero-like-${process.pid}-gpg-`;
@@ -31,9 +28,6 @@ export class NoPublicKeyVerifyError extends Error {
 @Injectable()
 export class GpgService {
   private logger = new Logger(GpgService.name);
-
-  @InjectRepository(ReportEntity)
-  private reportRepo: Repository<ReportEntity>;
 
   public async armor(armoredTextInput: string): Promise<Buffer>;
   public async armor(binaryData: Buffer): Promise<string>;
@@ -236,7 +230,6 @@ export class GpgService {
       throw new InvalidDataError('gpg exited with non zero status');
     }
     out += errs.join('');
-    // todo: check what if there are many ssb?
     const importMatchKey = out.match(
       /gpg: key ([0-9A-F]+): public key "(.+)" imported\n/,
     );
@@ -548,8 +541,8 @@ export class GpgService {
     }
 
     const pubKeysRegex =
-      /:public (sub )?key packet:\n\s+.+created (?<created>\d+), expires (?<expires>\d+)\n(\s+pkey\[\d+]:\s*(\w+)\n)+\s+keyid:\s*(?<keyid>\w+)/gm;
-    const pubKeysBitsRegex = /^\s+pkey\[\d]: (?<pkey>\w+)\n/gm;
+      /:public (sub )?key packet:\n\s+.+created (?<created>\d+), expires (?<expires>\d+)\n(\s+pkey\[\d+]:\s*(\w+)(\s.+)?\n)+\s+keyid:\s*(?<keyid>\w+)/gm;
+    const pubKeysBitsRegex = /^\s+pkey\[\d]: (?<pkey>\w+)(\s.+)?\n/gm;
     const publicKeys = {} as Record<
       string,
       {

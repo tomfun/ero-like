@@ -21,6 +21,21 @@ export class UserService {
   @Inject()
   private signService: SignatureDataService;
 
+  async getUser(id: string) {
+    return this.userRepo.findOne({
+      where: { id },
+      relations: {
+        agreementSignature: {
+          data: true,
+          block: true,
+          publicKey: {
+            block: true,
+          },
+        },
+      },
+    });
+  }
+
   async createUserDryRun(importAndVerifyPayload: ImportAndVerifyPayload) {
     const { agreementSignature, verifyData, publicKeys } =
       await this.signService.userRegistration(importAndVerifyPayload);
