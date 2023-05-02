@@ -1,0 +1,244 @@
+stages:
+  - sdk
+  - config
+  - test
+  - registry
+  - deploy
+
+.cache-api-npm: &cache-api-npm
+  cache:
+    - paths:
+        - .npm
+    - key:
+        files:
+          - api/package-lock.json
+      paths:
+        - api/node_modules/
+
+.cache-front-npm: &cache-front-npm
+  cache:
+    - paths:
+        - .npm
+    - key:
+        files:
+          - frontend/package-lock.json
+      paths:
+        - frontend/node_modules/
+
+.cache-config-npm: &cache-config-npm
+  cache:
+    - paths:
+        - .npm
+    - key:
+        files:
+          - client-config/package-lock.json
+      paths:
+        - client-config/node_modules/
+
+.cache-sdk-npm: &cache-sdk-npm
+  cache:
+    - paths:
+        - .npm
+    - key:
+        files:
+          - client-sdk/package-lock.json
+      paths:
+        - client-sdk/node_modules/
+
+
+.job-deploy: &job-deploy
+  stage: deploy
+  environment:
+    name: $CI_BUILD_REF_NAME
+    url: https://${CI_ENVIRONMENT_SLUG}-demo-ero-like.tomfun.co
+    on_stop: job-deploy-stop
+  dependencies: []
+  image: curlimages/curl:latest
+  script:
+    - |
+      if [ "$CI_BUILD_REF_NAME" = "main" ]; then
+        export TAG_PREFIX=""
+      else
+        export TAG_PREFIX="dev-"
+      fi
+    - curl --fail -XPOST "https://jenkins.tomfun.co/buildByToken/buildWithParameters?job=$JENKINS_JOB&token=$JENKINS_DEMO_DEPLOY_TOKEN&IMAGE_TAG=$TAG_PREFIX$CI_BUILD_REF&PUBLIC_HTTP_HOST=$PUBLIC_HTTP_HOST"
+    - sleep 20
+    - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_BUILD_REF" || sleep 20
+    - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_BUILD_REF" || sleep 10
+    - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_BUILD_REF"
+
+
+job-deploy-demo:
+  <<: *job-deploy
+  variables:
+    GIT_STRATEGY: none
+    PUBLIC_HTTP_HOST: ${CI_ENVIRONMENT_SLUG}-demo-ero-like.tomfun.co
+    URI_TO_TEST: ${CI_ENVIRONMENT_URL}/.wtf/D_I_TAG_UNIQ
+    JENKINS_JOB: ero-like.tomfun.co%2Fdeploy
+
+job-deploy-prod:
+  <<: *job-deploy
+  environment:
+    name: ero-like.online
+    url: https://ero-like.online
+  only:
+    - main
+  when: manual
+  variables:
+    GIT_STRATEGY: none
+    PUBLIC_HTTP_HOST: ero-like.online
+    URI_TO_TEST: ${CI_ENVIRONMENT_URL}/.wtf/D_I_TAG_UNIQ
+    JENKINS_JOB: ero-like.tomfun.co%2FdeployProd
+
+job-deploy-stop:
+  stage: deploy
+  when: manual
+  environment:
+    name: $CI_BUILD_REF_NAME
+    action: stop
+  except:
+    - master
+  variables:
+    GIT_STRATEGY: none
+  dependencies: []
+  image: curlimages/curl:latest
+  script:
+    - export PUBLIC_HTTP_HOST=${CI_ENVIRONMENT_SLUG}-demo-ero-like.tomfun.co
+    - curl --fail -XPOST "https://jenkins.tomfun.co/buildByToken/buildWithParameters?job=ero-like.tomfun.co%2FstopDeploy&token=$JENKINS_DEMO_DEPLOY_TOKEN&IMAGE_TAG=$CI_BUILD_REF&PUBLIC_HTTP_HOST=$PUBLIC_HTTP_HOST"
+
+.docker-registry: &docker-registry
+  stage: registry
+  tags:
+    - docker
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_VERIFY: 0
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+  before_script:
+    - docker context ls
+    - docker context create build-context --docker "host=tcp://docker:2376,skip-tls-verify=true,cert=$DOCKER_CERT_PATH/cert.pem,ca=$DOCKER_CERT_PATH/ca.pem,key=$DOCKER_CERT_PATH/key.pem"
+    - docker buildx create build-context --use --platform linux/arm64
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+    - docker login -u $HUB_DOCKER_USER -p $HUB_DOCKER_TOKEN
+    - |
+      if [ "$CI_BUILD_REF_NAME" = "main" ]; then
+        export TAG_PREFIX=""
+      else
+        export TAG_PREFIX="dev-"
+      fi
+
+docker-registry-nginx:
+  <<: *docker-registry
+  dependencies:
+    - build_front
+  script:
+    - |
+      mkdir frontend/dist/.wtf
+      echo $CI_BUILD_REF_NAME > frontend/dist/.wtf/D_I_TAG_UNIQ
+      echo $CI_BUILD_REF >> frontend/dist/.wtf/D_I_TAG_UNIQ
+      date >> frontend/dist/.wtf/D_I_TAG_UNIQ
+      cat frontend/dist/.wtf/D_I_TAG_UNIQ
+    - >
+      docker buildx build
+      --platform linux/arm64/v8,linux/amd64
+      --build-arg CI_SERVER_HOST=$CI_SERVER_HOST
+      --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN
+      --pull
+      --push
+      -t $HUB_DOCKER_USER/ero-like-nginx:$TAG_PREFIX$CI_BUILD_REF
+      -t $HUB_DOCKER_USER/ero-like-nginx:$TAG_PREFIX$CI_BUILD_REF_NAME
+      -t registry.gitlab.com/tommyinc/ero-like/frontend:$TAG_PREFIX$CI_BUILD_REF
+      -t registry.gitlab.com/tommyinc/ero-like/frontend:$TAG_PREFIX$CI_BUILD_REF_NAME
+      -f docker/nginx/local-copy.Dockerfile .
+
+docker-registry-api:
+  <<: *docker-registry
+  dependencies:
+    - build_sdk
+    - build_config
+  script:
+    - export VERSION=$(echo "process.stdout.write(require('./package.json').version)" | docker run -v $PWD/api:/app -w /app --rm -i node:18.15-alpine3.17 -)-$CI_COMMIT_SHORT_SHA
+    - export DIR=api
+    - >
+      docker buildx build
+      --platform linux/arm64/v8,linux/amd64
+      --build-arg CI_SERVER_HOST=$CI_SERVER_HOST
+      --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN
+      --build-arg VERSION=$VERSION
+      --pull
+      --push
+      -t $HUB_DOCKER_USER/ero-like-$DIR:$TAG_PREFIX$CI_BUILD_REF
+      -t $HUB_DOCKER_USER/ero-like-$DIR:$TAG_PREFIX$CI_BUILD_REF_NAME
+      -t registry.gitlab.com/tommyinc/ero-like/$DIR:$TAG_PREFIX$CI_BUILD_REF
+      -t registry.gitlab.com/tommyinc/ero-like/$DIR:$TAG_PREFIX$CI_BUILD_REF_NAME
+      -f docker/$DIR/Dockerfile .
+
+
+build_sdk:
+  stage: sdk
+  extends:
+    - .cache-sdk-npm
+  artifacts:
+    paths:
+      - client-sdk/dist
+    expire_in: 30 days
+  image: node:18.15-alpine3.17
+  script:
+    - cd client-sdk
+    - npm install
+    - npm run build
+    - echo npm run lint ':('
+
+build_config:
+  stage: config
+  extends:
+    - .cache-config-npm
+  artifacts:
+    paths:
+      - client-config/dist
+    expire_in: 30 days
+  dependencies:
+    - build_sdk
+  image: node:18.15-alpine3.17
+  script:
+    - cd client-config
+    - npm install
+    - npm run build
+    - npm run lint
+
+
+build_api:
+  extends:
+    - .cache-api-npm
+  dependencies:
+    - build_sdk
+    - build_config
+  image: node:18.15-alpine3.17
+  script:
+    - cd client-config && npm install && cd ..
+    - cd api
+    - npm install
+    - npm run build
+    - npm run lint
+
+build_front:
+  extends:
+    - .cache-front-npm
+  dependencies:
+    - build_sdk
+    - build_config
+  image: node:18.15-alpine3.17
+  artifacts:
+    paths:
+      - frontend/dist
+    expire_in: 30 days
+  script:
+    - cd client-config && npm install && cd ..
+    - cd frontend
+    - npm install
+    - npm run build
+    - npm run lint

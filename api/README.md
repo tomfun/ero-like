@@ -4,11 +4,25 @@
 
 ## Installation
 
+### Before npm install
+You need to build [../client-config]
+to do so follow build section in [../client-config/README.md]
+
+### npm install
 ```bash
 npm install
 ```
 
 ## Running the app
+
+### Fixtures
+Prefill with testing data
+https://github.com/RobinCK/typeorm-fixtures
+
+```bash
+docker compose run api \
+  npm run fixtures
+```
 
 ### Migrations
 ```bash

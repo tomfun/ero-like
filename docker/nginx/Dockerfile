@@ -1,12 +1,22 @@
-FROM node:16 as artifacts
+FROM node:18.15-alpine3.17 as artifacts
 
-WORKDIR /app
+WORKDIR /app/frontend
 
-COPY my-vue3-app/package*.json ./
+RUN npm -G install npm
 
-RUN npm --loglevel warn --color=always install
+COPY frontend/package*.json ./
 
-COPY my-vue3-app .
+COPY client-sdk /app/client-sdk
+COPY client-config /app/client-config
+
+RUN npm --loglevel warn --color=always install && \
+    rm /app/client-*/.eslintrc.* && \
+    mkdir /app/client-config/node_modules && \
+    ls -lA /app/client-config/node_modules && \
+    cd /app/client-config/ && \
+    ln -sv ../../client-sdk /app/client-config/node_modules/ero-like-sdk
+
+COPY frontend .
 
 RUN npm --loglevel warn --color=always run build
 
@@ -16,5 +26,5 @@ FROM nginx
 COPY docker/nginx/conf.d_default.conf /etc/nginx/templates/default.conf.template
 ENV NGINX_REVERSE_PROXY_API=api:3000
 
-COPY --from=artifacts /app/dist/index.html /usr/share/nginx/html/50x.html
-COPY --from=artifacts /app/dist/ /usr/share/nginx/html
+COPY --from=artifacts /app/frontend/dist/index.html /usr/share/nginx/html/50x.html
+COPY --from=artifacts /app/frontend/dist/ /usr/share/nginx/html

@@ -1,6 +1,8 @@
 /docker/data
-/my-vue3-app/node_modules
+/frontend/node_modules
 /api/node_modules
+/client-sdk/node_modules
+/client-config/node_modules
 /.idea
 /.github
 
