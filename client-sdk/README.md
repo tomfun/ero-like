@@ -12,7 +12,7 @@ Module exports different env builds
 there is UMD for compatibility
 
 # Local installation
-
+Use for installation using path
 Pre requirements - npm which can do local folder install
 ```bash
 npm i -g npm
@@ -22,7 +22,7 @@ $ npm -v
 After building project
 ```bash
 # cd to YourProject
-cd ../api/
+# cd ../api/
 # and use [relative] file path
 # uses sym LINKS:
 npm install --save ../client-sdk

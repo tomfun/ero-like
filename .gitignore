@@ -2,6 +2,7 @@
 node_modules
 /dist
 /docker/data
+/client-sdk/dist
 
 # local env files
 .env.local
