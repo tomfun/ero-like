@@ -6,10 +6,10 @@
     <div class="submitReportForm__main-cont">
       <div class="submitForm__title-cont">
         <h2 class="submitReportForm__title">Title your report</h2>
-        <input class="submitForm__title-input" v-model="reportData.title" placeholder="Add title">
+        <InputText class="submitForm__title-input" v-model="reportData.title" placeholder="Add title" />
       </div>
-      <Tabs @tab-changed="handleTabChange">
-        <tab title="Simple">
+      <TabView v-on:tab-change="handleTabChange">
+        <TabPanel header="Simple">
           <div class="submitReportForm__staged-sub-cont">
             <div class="submitReportForm__ready-substance-cont" v-if="reportData.substances.length">
               <h2 class="submitReportForm__title">Ready substances data for submit:</h2>
@@ -17,7 +17,7 @@
                 <li v-for="(sub, index) in reportData.substances" v-bind:key="index">
                   <h3>{{ index + 1 }}:</h3>
                   {{ sub }}
-                  <button v-on:click="editSubstanceData(index)">Edit</button>
+                  <button v-on:click="editSubstance(index)">Edit</button>
                 </li>
               </ul>
             </div>
@@ -30,16 +30,16 @@
             <div style="display: flex;" v-if="staged">
               <SubstanceForm v-bind:item="stagedSubstance" @update:item="updateSubForm" />
             </div>
-            <textarea
+            <Textarea
               id="reportText"
               class="submitReportForm__text-area"
               v-model="simpleReportText"
               placeholder="add your report"
               >
-            </textarea>
+            </Textarea>
           </div>
-        </tab>
-        <tab title="Timelined">
+        </TabPanel>
+        <TabPanel header="Timelined">
           <div class="submitReportForm__time-line-cont">
             <div class="submitReportForm__ready-substance-cont" v-if="reportData.substances.length">
               <h2 class="submitReportForm__title">Ready substances data for submit:</h2>
@@ -47,7 +47,7 @@
                 <li v-for="(sub, index) in reportData.substances" v-bind:key="index">
                   <h3>{{ index + 1 }}:</h3>
                   {{ sub }}
-                  <button v-on:click="editSubstanceData(index)">Edit</button>
+                  <button v-on:click="editSubstance(index)">Edit</button>
                 </li>
               </ul>
             </div>
@@ -79,14 +79,14 @@
               </li>
             </ul>
           </div>
-        </tab>
-      </Tabs>
+        </TabPanel>
+      </TabView>
       <div class="submitReportForm__ready-time-line-cont">
-        <textarea
+        <Textarea
           class="submitReportForm__text-area"
           v-model="reportData.background"
           placeholder="Tell us about yourself">
-        </textarea>
+        </Textarea>
       </div>
       <button v-on:click="handleValidation">Validate</button>
     </div>
@@ -97,10 +97,12 @@
 import { defineComponent } from 'vue';
 import SubstanceForm from './SubstanceForm.vue';
 import TimeLineReportForm from './TimeLineReportForm.vue';
-import Tabs from './Tabs.vue';
-import Tab from './Tab.vue';
+import TabView, { type TabViewClickEvent } from 'primevue/tabview';
+import TabPanel from 'primevue/tabpanel';
+import Textarea from 'primevue/textarea';
+import InputText from 'primevue/inputtext';
 
-type SubstanceData = {
+type Substance = {
   timeSecond: number;
   dose: number;
   doseUnit: string;
@@ -119,7 +121,7 @@ type TimeLineReport = {
 };
 
 type ReportData = {
-  substances: SubstanceData[];
+  substances: Substance[];
   timeLineReport: TimeLineReport[];
   background: string;
   dateTimestamp: number;
@@ -131,8 +133,11 @@ export default defineComponent({
   components: {
     SubstanceForm,
     TimeLineReportForm,
-    Tabs,
-    Tab,
+    TabView,
+    TabPanel,
+    // eslint-disable-next-line vue/no-reserved-component-names
+    Textarea,
+    InputText
   },
   mounted() {
     this.handleAddSubstance();
@@ -147,7 +152,7 @@ export default defineComponent({
         dateTimestamp: 0,
         title: '',
       } as ReportData,
-      stagedSubstance: Object as unknown as SubstanceData,
+      stagedSubstance: Object as unknown as Substance,
       staged: true as boolean,
       stagedReport: Object as unknown as TimeLineReport,
       stagedRep: false as boolean,
@@ -170,22 +175,20 @@ export default defineComponent({
     },
   },
   methods: {
-    handleTabChange(index: number) {
-      if (index === 0 && this.reportData.timeLineReport.length > 0) {
-        // eslint-disable-next-line arrow-body-style
+    handleTabChange(event: TabViewClickEvent) {
+      if (event.index === 0 && this.reportData.timeLineReport.length > 0) {
         const simpleReport = this.reportData.timeLineReport.reduce((cumulatedRep, curRep) => {
           return ({
-            // eslint-disable-next-line prefer-template
             report: cumulatedRep.report + '\n' + curRep.report,
             timeSecond: 0,
             simple: true,
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
             dataCompleted: () => {},
           });
         });
         this.simpleReportText = simpleReport.report;
         this.simple = true;
-      } if (index === 1) {
+      } 
+      if (event.index === 1) {
         this.simple = false;
       }
     },
@@ -207,11 +210,6 @@ export default defineComponent({
       const response = await fetch('/api/report/validate', requestOptions);
       const data = await response.json();
       console.log(data);
-      // this.$data.id = data.id;
-      // this.$data.nick = data.nick;
-      // this.$data.title = data.title;
-      // this.$data.reportText = data.reportText; // ... hm
-      // this.$data.gpgSignature = data.gpgSignature;
     },
     handleAddTimeLineReport() {
       const report: TimeLineReport = {
@@ -232,15 +230,14 @@ export default defineComponent({
         ...params,
       };
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    updateSubForm(params: Partial<SubstanceData>) {
+    updateSubForm(params: Partial<Substance>) {
       this.stagedSubstance = {
         ...this.stagedSubstance,
         ...params,
       };
     },
     handleAddSubstance() {
-      const substance: SubstanceData = {
+      const substance: Substance = {
         timeSecond: 0,
         dose: 0,
         doseUnit: '',
@@ -257,7 +254,7 @@ export default defineComponent({
       this.stagedSubstance = substance;
       this.staged = true;
     },
-    editSubstanceData(index: number) {
+    editSubstance(index: number) {
       this.handleAddSubstance();
       this.stagedSubstance = { ...this.reportData.substances[index] };
       this.reportData.substances.splice(index, 1);
