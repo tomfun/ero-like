@@ -8,10 +8,10 @@ import {
   watch,
   toRefs,
   h,
-  VNode,
   computed,
   onBeforeUpdate,
 } from 'vue';
+import type { VNode } from 'vue';
 
 interface Props {
   defaultIndex: number;

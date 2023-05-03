@@ -28,8 +28,7 @@
               Add substance form
             </button>
             <div style="display: flex;" v-if="staged">
-              <SubstanceForm v-model="stagedSubstance" v-bind:item="stagedSubstance"
-              @update:item="updateSubForm"/>
+              <SubstanceForm v-bind:item="stagedSubstance" @update:item="updateSubForm" />
             </div>
             <textarea
               id="reportText"
@@ -59,16 +58,14 @@
               Add substance form
             </button>
             <div style="display: flex;" v-if="staged">
-              <SubstanceForm v-model="stagedSubstance" v-bind:item="stagedSubstance"
-              @update:item="updateSubForm"/>
+              <SubstanceForm v-bind:item="stagedSubstance" @update:item="updateSubForm"/>
             </div>
             <h2 class="submitReportForm__title">Tell us about your journey in details</h2>
             <button v-on:click="handleAddTimeLineReport" :disabled="addReportButtonDisable">
               Add time line form
             </button>
             <div style="display: flex;" v-if="stagedRep">
-              <TimeLineReportForm v-model="stagedReport" v-bind:item="stagedReport"
-              @update:item="updateRepForm"/>
+              <TimeLineReportForm v-bind:item="stagedReport" @update:item="updateRepForm" />          
             </div>
           </div>
           <div class="submitReportForm__ready-time-line-cont"
@@ -149,7 +146,7 @@ export default defineComponent({
         background: '',
         dateTimestamp: 0,
         title: '',
-      } as unknown as ReportData,
+      } as ReportData,
       stagedSubstance: Object as unknown as SubstanceData,
       staged: true as boolean,
       stagedReport: Object as unknown as TimeLineReport,
