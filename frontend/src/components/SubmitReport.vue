@@ -203,7 +203,7 @@ export default defineComponent({
       simple: true as boolean,
       errors: [] as string[],
       validReport: false as boolean,
-      validJson: Object as unknown as Substance,
+      validJson: {},
       clearSignArmored: '',
     };
   },
@@ -263,7 +263,7 @@ export default defineComponent({
         return
       }
       if (data.dateTimestamp > 0) { // validation for success...
-        this.validJson = data;
+        this.validJson = JSON.stringify(data);
         this.errors = [];
         this.validReport = true;
       }
