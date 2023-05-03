@@ -89,6 +89,54 @@
         </Textarea>
       </div>
       <button v-on:click="handleValidation">Validate</button>
+      <div class="submitReportForm__errors-cont" v-if="errors.length">
+        <h3>Errors:</h3>
+        <Message severity="error" v-for="(error) in errors" :key="error">
+          {{ error }}
+        </Message>
+      </div>
+      <div class="submitReportForm__validJson-cont" v-if="validReport">
+        <Message severity="success">
+          the report is valid!
+        </Message>
+        <h3>Valid JSON ready for submit:</h3>
+        {{ validJson }}
+        <Panel header="How do clear sign" toggleable :collapsed="true">
+          <p class="m-0">
+            Select the user you want to sign the report<br/>
+            List all users:<br/>
+            <code>gpg --list-keys</code><br/>
+            For details:
+            <a
+              href="https://docs.github.com/en/authentication/managing-commit-signature-verification/checking-for-existing-gpg-keys">
+              Detailed instructions
+            </a><br/>
+            After you had decided which user to use you need to use it instead of $user:<br/>
+            <code>echo -e '$YOUR_JSON' | gpg --clear-sign --local-user </code>
+            <b>$user</b>
+            <code> - </code><br/>
+            After that you have to select all text result, copy, and paste it in the field in the bottom.
+          </p>
+        </Panel>
+        <Textarea v-model="clearSignArmored"
+                  name="clearSignArmored"
+                  id="clearSignArmored"
+                  cols="66"
+                  :auto-resize="true"
+                  placeholder="-----BEGIN PGP SIGNED MESSAGE-----
+                    Hash: SHA256
+                    I read and agree with all terms of use of ero-like and confirm my registration on ero-like
+                    -----BEGIN PGP SIGNATURE-----
+                    iQIzBAABCgAdFiEEVUcfD9jeufsD1JVP3UX6TcUPhfEFAmC7Q2gACgkQ3UX6TcUP
+                    ....
+                      .
+                      .
+                    ....
+                    TaVHnbJ8jErfklgnRTPibX8AdmEFJasONNMJ/7euoBoH+aAYG/k=
+                    =B0/L
+                    -----END PGP SIGNATURE-----"/>
+        <Button @click="submit" v-if="clearSignArmored.length">Submit</Button>
+      </div>
     </div>
   </div>
 </template>
@@ -99,8 +147,6 @@ import SubstanceForm from './SubstanceForm.vue';
 import TimeLineReportForm from './TimeLineReportForm.vue';
 import TabView, { type TabViewClickEvent } from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
-import Textarea from 'primevue/textarea';
-import InputText from 'primevue/inputtext';
 
 type Substance = {
   timeSecond: number;
@@ -135,9 +181,6 @@ export default defineComponent({
     TimeLineReportForm,
     TabView,
     TabPanel,
-    // eslint-disable-next-line vue/no-reserved-component-names
-    Textarea,
-    InputText
   },
   mounted() {
     this.handleAddSubstance();
@@ -158,6 +201,10 @@ export default defineComponent({
       stagedRep: false as boolean,
       simpleReportText: '' as string,
       simple: true as boolean,
+      errors: [] as string[],
+      validReport: false as boolean,
+      validJson: Object as unknown as Substance,
+      clearSignArmored: '',
     };
   },
   computed: {
@@ -208,6 +255,28 @@ export default defineComponent({
         }),
       };
       const response = await fetch('/api/report/validate', requestOptions);
+      const data = await response.json();
+      console.log(data);
+      if (data.error) {
+        this.errors = [...data.message];
+        this.validReport = false;
+        return
+      }
+      if (data.dateTimestamp > 0) { // validation for success...
+        this.validJson = data;
+        this.errors = [];
+        this.validReport = true;
+      }
+      console.log(this.errors, this.validJson);
+    },
+    async submit() {
+      const requestOptions = {
+        method: 'Put',
+        headers: {
+          'Content-Type': 'text/plain'},
+        body: this.clearSignArmored,
+      };
+      const response = await fetch('/api/report', requestOptions);
       const data = await response.json();
       console.log(data);
     },
