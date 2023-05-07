@@ -6,7 +6,8 @@
     style="height: .5em"
   />
   </div>
-  <DataTable :value="reports" :lazy="true"  v-model:filters="filters"
+  <DataTable :value="reports" :lazy="true" v-model:filters="filters" 
+    v-model:expandedRows="expandedRows" dataKey="id"
     :paginator="true" :resizableColumns="true" :rows="pagination.pageSize"
     :totalRecords="pagination.itemsTotal" :rowsPerPageOptions="[10,20,50,100]"
     :paginatorTemplate="pag" @page="onPage($event)" filterDisplay="row"
@@ -14,6 +15,7 @@
     :globalFilterFields="[
       'user.nick', 'd.title', 'd.substances.*.namePsychonautWikiOrg', 'd.dateTimestamp']"
     >
+    <Column expander style="width: 5rem" />
     <Column field="user.nick" filter-field="user.nick" header="Nick" style="min-width: 14rem"
             filterMatchMode="startsWith"
             :filterMatchModeOptions="configFilterMatchModeOptions.text.slice(0, 2)"
@@ -88,6 +90,51 @@
         {{ formatDate(data.d.dateTimestamp) }}
       </template>
     </Column>
+    <template #expansion="dataKey">
+        <div class="p-3">
+            <h3>Title: {{ dataKey.data.d.title }}</h3>
+            <Panel header="Substances" class="substance-cont" toggleable :collapsed="true">
+              <ul class="substance-full-data-list">
+                <li v-for="sub in dataKey.data.d.substances" :key="sub">
+                  <Panel :header="sub.namePsychonautWikiOrg" toggleable :collapsed="true"> 
+                    <p class="m-0">
+                      Dose: {{ sub.dose }}<br/>
+                      Dose Unit: {{ sub.doseUnit }} <br/>
+                      Time: {{ sub.timeSecond }}<br/>
+                      Quality percent:{{ sub.surePercent }}<br/>
+                      Name on Psychonaut Wiki Org: {{ sub.namePsychonautWikiOrg }}<br/>
+                      Route of administration: {{ sub.routeOfAdministration }}<br/>
+                    </p>              
+                  </Panel>
+                </li>
+              </ul>
+            </Panel>
+            <Panel header="Author Info" class="substance-cont" toggleable :collapsed="true">
+              <p class="m-0">
+                Nick: {{  dataKey.data.user.nick }}<br/>
+                Created: {{  dataKey.data.user.createdAt }}<br/>
+                Updated at: {{  dataKey.data.user.updatedAt }}<br/>
+              </p>
+            </Panel>
+            <Panel header="Background" class="substance-cont" toggleable :collapsed="true">
+              <p class="m-0">
+                {{  dataKey.data.d.background }}
+              </p>
+            </Panel>
+            <Panel header="Timeline" class="substance-cont" toggleable :collapsed="true">
+              <ul class="substance-full-data-list">
+                <li v-for="tl in dataKey.data.d.timeLineReport" :key="tl">
+                  <Panel :header="tl.timeSecond" toggleable :collapsed="true"> 
+                    <p class="m-0">
+                      Time: {{ tl.timeSecond }}<br/>
+                      Description: {{ tl.report }}<br/>
+                    </p>              
+                  </Panel>
+                </li>
+              </ul>
+            </Panel>
+        </div>
+    </template>
   </DataTable>
 </template>
 
@@ -186,6 +233,7 @@ export default defineComponent({
           { value: 'dateAfter', label: 'Date After' },
         ],
       },
+      expandedRows: [],
     };
   },
   methods: {
