@@ -23,7 +23,7 @@ import router from './router';
 import store from './store';
 
 const i18n = createI18n({
-  locale: 'en', // set default locale
+  locale: 'ru', // set default locale
   messages: {}, // set empty messages object
 });
 
