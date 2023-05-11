@@ -122,7 +122,7 @@ job-deploy-stop:
     - docker context ls
     - docker context create build-context --docker "host=tcp://docker:2376,skip-tls-verify=true,cert=$DOCKER_CERT_PATH/cert.pem,ca=$DOCKER_CERT_PATH/ca.pem,key=$DOCKER_CERT_PATH/key.pem"
     - docker buildx create build-context --use --platform linux/arm64
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker login -u $HUB_DOCKER_USER -p $HUB_DOCKER_TOKEN
     - |
       if [ "$CI_BUILD_REF_NAME" = "main" ]; then
