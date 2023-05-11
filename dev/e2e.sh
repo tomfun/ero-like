@@ -6,7 +6,5 @@ export compose="docker compose --file docker-compose.ci.yml --file docker-compos
 export npm="$compose run --rm api npm"
 export migrate="$npm run migrate"
 
-#$migrate
-#$npm run fixtures
-$compose -d postgres
+$compose up -d postgres
 $compose ps
