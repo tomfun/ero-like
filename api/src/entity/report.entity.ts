@@ -27,7 +27,6 @@ import {
   TableInheritance,
 } from 'typeorm';
 import { SignatureEntity } from './signature.entity';
-import { UserEntity } from './user.entity';
 
 export class ReportDataSubstanceBodyPayload extends ReportDataSubstanceBodyPayloadInner {
   @ApiProperty()
