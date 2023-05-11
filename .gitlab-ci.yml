@@ -49,12 +49,13 @@ stages:
 .job-deploy: &job-deploy
   stage: deploy
   environment:
-    name: $CI_BUILD_REF_NAME
-    url: https://${CI_ENVIRONMENT_SLUG}-demo-ero-like.tomfun.co
+    name: $CI_COMMIT_REF_NAME
+    url: https://$PUBLIC_HTTP_HOST
     on_stop: job-deploy-stop
   dependencies: []
   image: curlimages/curl:latest
   script:
+    - export URI_TO_TEST=${CI_ENVIRONMENT_URL}/.wtf/D_I_TAG_UNIQ
     - |
       if [ "$CI_BUILD_REF_NAME" = "main" ]; then
         export TAG_PREFIX=""
@@ -72,8 +73,7 @@ job-deploy-demo:
   <<: *job-deploy
   variables:
     GIT_STRATEGY: none
-    PUBLIC_HTTP_HOST: ${CI_ENVIRONMENT_SLUG}-demo-ero-like.tomfun.co
-    URI_TO_TEST: ${CI_ENVIRONMENT_URL}/.wtf/D_I_TAG_UNIQ
+    PUBLIC_HTTP_HOST: $CI_ENVIRONMENT_SLUG-demo-ero-like.tomfun.co
     JENKINS_JOB: ero-like.tomfun.co%2Fdeploy
 
 job-deploy-prod:
@@ -87,14 +87,13 @@ job-deploy-prod:
   variables:
     GIT_STRATEGY: none
     PUBLIC_HTTP_HOST: ero-like.online
-    URI_TO_TEST: ${CI_ENVIRONMENT_URL}/.wtf/D_I_TAG_UNIQ
     JENKINS_JOB: ero-like.tomfun.co%2FdeployProd
 
 job-deploy-stop:
   stage: deploy
   when: manual
   environment:
-    name: $CI_BUILD_REF_NAME
+    name: $CI_COMMIT_REF_NAME
     action: stop
   except:
     - master
