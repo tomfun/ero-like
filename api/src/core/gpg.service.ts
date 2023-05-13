@@ -478,103 +478,14 @@ export class GpgService {
     errs.length = 0;
     let out = '';
 
-    const listPackets = spawn(
-      'gpg',
-      [
-        '--no-autostart',
-        '--utf8-strings',
-        '--lock-once',
-        '-v',
-        '--list-packets',
-        '-',
-      ],
-      {
-        cwd: gnuPgHome,
-        stdio: ['pipe', 'pipe', 'pipe'],
-        env: {
-          GNUPGHOME: gnuPgHome,
-          TZ: 'UTC',
-        },
-      },
-    );
-
-    const codePromisePackets = new Promise((r, reject) => {
-      listPackets.on('close', r);
-      listPackets.on('error', reject);
-    });
-    listPackets.stderr.setEncoding('utf-8');
-    listPackets.stderr.on('data', (ch) => errs.push(ch));
-    listPackets.stdout.setEncoding('utf-8');
-    listPackets.stdout.on('data', (ch) => (out += ch));
-    this.logger.debug(`cp gpg --list-packets pid: ${listPackets.pid}`);
-
-    const exportPublicKeys = spawn(
-      'gpg',
-      ['--no-autostart', '--export', '--armor', user],
-      {
-        cwd: gnuPgHome,
-        stdio: ['pipe', 'pipe', 'pipe'],
-        env: {
-          GNUPGHOME: gnuPgHome,
-          TZ: 'UTC',
-        },
-      },
-    );
-    const codePromiseExport = new Promise((r, reject) => {
-      exportPublicKeys.on('close', r);
-      exportPublicKeys.on('error', reject);
-    });
-    exportPublicKeys.stderr.setEncoding('utf-8');
-    exportPublicKeys.stderr.on('data', (ch) => errs.push(ch));
-    exportPublicKeys.stdout.pipe(listPackets.stdin);
-    this.logger.debug(`cp gpg --export pid: ${exportPublicKeys.pid}`);
-
-    let code = await codePromiseExport;
-    this.logger.debug(`cp gpg --export finished code: ${code}`);
-    if (code !== 0) {
-      throw new InvalidDataError('export pubic keys error');
-    }
-    code = await codePromisePackets;
-    this.logger.debug(`cp gpg --list-packets finished code: ${code}`);
-    if (code !== 0) {
-      throw new InvalidDataError('gpg list-packets (for pubic keys) error');
-    }
-
-    const pubKeysRegex =
-      /:public (sub )?key packet:\n\s+.+created (?<created>\d+), expires (?<expires>\d+)\n(\s+pkey\[\d+]:\s*(\w+)(\s.+)?\n)+\s+keyid:\s*(?<keyid>\w+)/gm;
-    const pubKeysBitsRegex = /^\s+pkey\[\d]: (?<pkey>\w+)(\s.+)?\n/gm;
-    const publicKeys = {} as Record<
-      string,
-      {
-        created: string;
-        expires: string;
-        keyid: string;
-        pkey: string[];
-      }
-    >;
-
-    let itemMatch: RegExpExecArray;
-    while ((itemMatch = pubKeysRegex.exec(out)) !== null) {
-      let pKeyMatch: RegExpExecArray;
-      const pkey = [] as string[];
-      while ((pKeyMatch = pubKeysBitsRegex.exec(itemMatch[0])) !== null) {
-        pkey.push(pKeyMatch.groups.pkey);
-      }
-      publicKeys[itemMatch.groups.keyid] = { ...itemMatch.groups, pkey } as {
-        created: string;
-        expires: string;
-        keyid: string;
-        pkey: string[];
-      };
-    }
-
-    out = '';
     const fullKeyIds = spawn(
       'gpg',
       [
         '--utf8-strings',
         '--no-autostart',
         '--with-subkey-fingerprints',
+        '--with-key-data',
+        '--with-sig-list',
         '--with-colons',
         '--list-options',
         'show-unusable-subkeys',
@@ -600,27 +511,29 @@ export class GpgService {
     fullKeyIds.stdout.on('data', (ch) => (out += ch));
     this.logger.debug(`cp gpg --list-pubic-keys pid: ${fullKeyIds.pid}`);
 
-    code = await codePromiseFullKeyIds;
+    const code = await codePromiseFullKeyIds;
     this.logger.debug(`cp gpg --list-pubic-keys finished code: ${code}`);
     if (code !== 0) {
       throw new InvalidDataError('list pubic keys ids error');
     }
 
     const pubKeysFullIdsRegex =
-      /^(pub|sub):.:(?<bits>\d+):(?<alg>\d+):(?<shortKeyId>\w+):(?<created>\d+)?:(?<expires>\d+)?::[\w\-]?:::(?<capabilities>[sceartg?]+).+\nfpr([^:]*:?){9}(?<keyid>\w+):\n/gm;
+      /^(pub|sub):.:(?<bits>\d+):(?<alg>\d+):(?<shortKeyId>\w+):(?<created>\d+)?:(?<expires>\d+)?:[^:]*:[\w\-]?:[^:]*:[^:]*:(?<capabilities>[sceartg?]+).+\nfpr([^:]*:?){9}(?<keyid>\w+):\ngrp([^:]*:?){9}(?<grp>\w+):\n(?<pkds>(pkd:\d:\d+:\w+:\n)+)/gm;
     const result = [];
+    let itemMatch: RegExpExecArray;
     while ((itemMatch = pubKeysFullIdsRegex.exec(out)) !== null) {
-      const { keyid, created, expires, shortKeyId } = itemMatch.groups;
-      if (!publicKeys[shortKeyId]?.pkey) {
-        throw new Error('public keys parse error');
-      }
+      const { keyid, created, expires, pkds } = itemMatch.groups;
+      delete itemMatch.groups.pkds;
       result.push({
         ...itemMatch.groups,
         type: `${itemMatch.groups.alg}-${itemMatch.groups.bits}`,
         publicKeyFingerprint: keyid,
         created: created ? new Date(1000 * +created) : null,
         expires: expires ? new Date(1000 * +expires) : null,
-        pkey: publicKeys[shortKeyId].pkey,
+        pkey: pkds
+          .split(':\n')
+          .map((pkd) => pkd.replace(/^pkd:\d:\d+:/, ''))
+          .filter((pkey) => pkey),
       });
     }
 

@@ -45,7 +45,7 @@ describe('AppController', () => {
         clearSignArmored: `-----BEGIN PGP SIGNED MESSAGE-----\nHash: ${clearSignArmored.hash}\n\n${clearSignArmored.clear}\n${clearSignArmored.signBlock}`,
         publicKeyArmored,
       }),
-    ).toBe({
+    ).toStrictEqual({
       importedKeyUser: expect.stringMatching(
         /^Hryhorii \(Greg\) Kotov <gk@crosspay.net>|Grigory Kotov tomfun199@gmail.com$/,
       ),
@@ -60,6 +60,7 @@ describe('AppController', () => {
           keyid: key1.v4,
           shortKeyId: key1.keyId,
           publicKeyFingerprint: key1.v4,
+          grp: 'AD56D2949027C8F93D0D292DF78F603ED8FCF89E',
           pkey: [key1.publicKey0, key1.publicKey1],
         },
         {
@@ -72,6 +73,7 @@ describe('AppController', () => {
           keyid: key2.v4,
           shortKeyId: key2.keyId,
           publicKeyFingerprint: key2.v4,
+          grp: '8BBF7CDBE31F49EA09EDD823F397D97A41CC4159',
           pkey: [key2.publicKey0, key2.publicKey1],
         },
       ],
@@ -148,7 +150,7 @@ describe('AppController', () => {
         clearSignArmored: `-----BEGIN PGP SIGNED MESSAGE-----\nHash: ${clearSignArmored.hash}\n\n${clearSignArmored.clear}\n${clearSignArmored.signBlock}`,
         publicKeyArmored,
       }),
-    ).toBe({
+    ).toStrictEqual({
       importedKeyUser: expect.stringMatching(/^test1 \(comment\) <t@e.com>$/),
       publicKeys: [
         {
@@ -161,6 +163,7 @@ describe('AppController', () => {
           keyid: key1.v4,
           shortKeyId: key1.keyId,
           publicKeyFingerprint: key1.v4,
+          grp: 'F65F21E2D671FC1A1EB7BFC3E57F3681166F1EA8',
           pkey: [key1.publicKey0, key1.publicKey1],
         },
         {
@@ -173,6 +176,7 @@ describe('AppController', () => {
           keyid: key2.v4,
           shortKeyId: key2.keyId,
           publicKeyFingerprint: key2.v4,
+          grp: 'CA208C273B83B364D9491031062C2DF107C137C6',
           pkey: [key2.publicKey0, key2.publicKey1],
         },
         {
@@ -185,6 +189,7 @@ describe('AppController', () => {
           keyid: key3.v4,
           shortKeyId: key3.keyId,
           publicKeyFingerprint: key3.v4,
+          grp: '8CBE5423AF5C05D7553C9E6FFF0DF3543CD713CF',
           pkey: [key3.publicKey0, key3.publicKey1],
         },
         {
@@ -197,6 +202,7 @@ describe('AppController', () => {
           keyid: key4.v4,
           shortKeyId: key4.keyId,
           publicKeyFingerprint: key4.v4,
+          grp: 'D15771B83744E5DBCC73DEA632DB60017B14545E',
           pkey: [
             key4.publicKey0,
             key4.publicKey1,
@@ -272,7 +278,7 @@ describe('AppController', () => {
     });
   });
 
-  it.only('temporaryImportAndVerify should return proper keys 02C0F331C1E6D84A EDDSA ed25519', async () => {
+  it('temporaryImportAndVerify should return proper keys 02C0F331C1E6D84A EDDSA ed25519', async () => {
     const clearSignArmored = {
       hash: 'SHA256',
       clear:
@@ -307,7 +313,7 @@ UKvfP8YZObmJQsuQ+a92TW6dZwM=
         clearSignArmored: `-----BEGIN PGP SIGNED MESSAGE-----\nHash: ${clearSignArmored.hash}\n\n${clearSignArmored.clear}\n${clearSignArmored.signBlock}`,
         publicKeyArmored,
       }),
-    ).toBe({
+    ).toStrictEqual({
       importedKeyUser: ' (test ecc)',
       publicKeys: [
         {
@@ -320,6 +326,7 @@ UKvfP8YZObmJQsuQ+a92TW6dZwM=
           keyid: key1.v4,
           shortKeyId: key1.keyId,
           publicKeyFingerprint: key1.v4,
+          grp: 'A956B2FD9879944E1C5DCF1A900306A64E47ADEA',
           pkey: [key1.publicKey0, key1.publicKey1],
         },
       ],
