@@ -3,11 +3,15 @@ import {
   Body,
   Controller,
   Get,
+  Header,
+  HttpCode,
+  HttpStatus,
   Param,
+  Patch,
   Post,
-  Put,
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiResponse } from '@nestjs/swagger';
+import * as stringify from 'json-stable-stringify';
 import { instanceToPlain } from 'class-transformer';
 import { UUID_V4_REGEX } from '../consts';
 import { InvalidDataError } from '../core/gpg.service';
@@ -59,7 +63,7 @@ curl -X 'GET' 'http://....../api/report/....' \\
 `,
   })
   @Get('/:id')
-  async getUser(@Param('id') id: string) {
+  async getReport(@Param('id') id: string) {
     if (!id) {
       throw new BadRequestException('Find by parameter id not provided');
     }
@@ -88,20 +92,25 @@ curl -X 'GET' 'http://....../api/report/....' \\
   @ApiCreatedResponse({
     type: ReportDataBodyPayload,
   })
+  @HttpCode(HttpStatus.OK)
+  @Header('content-type', 'application/json; charset=utf-8')
   validateReport(
     @ValidBody
     createReportDto: ReportDataBodyPayload,
   ): ReportDataBodyPayload {
-    return createReportDto;
+    return stringify(createReportDto);
   }
 
-  @Put()
+  @Patch()
   @ApiCreatedResponse({
     type: ReportEntity,
+    status: HttpStatus.OK,
   })
   async postReport(@Body() data: string): Promise<ReportForList> {
     try {
-      return await this.reportService.create(data);
+      return instanceToPlain(await this.reportService.create(data), {
+        groups: ['report', 'entity'],
+      }) as ReportForList;
     } catch (e) {
       if (e instanceof InvalidDataError || e instanceof UserNotFoundError) {
         throw new BadRequestException(e.message);

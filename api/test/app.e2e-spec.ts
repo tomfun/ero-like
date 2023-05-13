@@ -1,7 +1,6 @@
 import * as events from 'events';
 
-import { ValidationPipe } from '@nestjs/common';
-import { ConsoleLogger } from '@nestjs/common/services/console-logger.service';
+import { ConsoleLogger } from '@nestjs/common';
 import {
   FastifyAdapter,
   NestFastifyApplication,
@@ -55,7 +54,6 @@ describe('init (e2e)', () => {
       new FastifyAdapter(server),
       { logger },
     );
-    app.useGlobalPipes(new ValidationPipe());
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
     if (config.log === '1') {
@@ -74,7 +72,7 @@ describe('init (e2e)', () => {
   it(`POST /api/user/dry-run 400 invalid (3 keys)`, () => {
     return app
       .inject({
-        method: 'POST',
+        method: 'PATCH',
         url: '/api/user/dry-run',
         payload: {
           clearSignArmored:
@@ -121,11 +119,11 @@ describe('init (e2e)', () => {
     },
   };
 
-  it(`POST /api/user/dry-run 200`, async () => {
+  async function createTomfunUserAndCheck(url) {
     const { clearSignArmored, publicKeyArmored, key1 } = users.tomfun;
     const result = await app.inject({
-      method: 'POST',
-      url: '/api/user/dry-run',
+      method: 'PATCH',
+      url,
       payload: {
         clearSignArmored: `-----BEGIN PGP SIGNED MESSAGE-----\nHash: ${clearSignArmored.hash}\n\n${clearSignArmored.clear}\n${clearSignArmored.signBlock}`,
         publicKeyArmored,
@@ -167,66 +165,307 @@ describe('init (e2e)', () => {
         },
       },
     });
+    return result;
+  }
+
+  it(`POST /api/user/dry-run 200`, async () => {
+    await createTomfunUserAndCheck('/api/user/dry-run');
   });
 
   describe('idempotence', () => {
     let createdUser;
-    async function createTomfunUserAndCheck() {
-      const { clearSignArmored, publicKeyArmored, key1 } = users.tomfun;
-      const result = await app.inject({
-        method: 'POST',
-        url: '/api/user',
-        payload: {
-          clearSignArmored: `-----BEGIN PGP SIGNED MESSAGE-----\nHash: ${clearSignArmored.hash}\n\n${clearSignArmored.clear}\n${clearSignArmored.signBlock}`,
-          publicKeyArmored,
-        },
-      });
-      expect(result.statusCode).toEqual(201);
-      const json = result.json();
-      expect(json).toMatchObject({
-        nick: expect.stringMatching(/^Hryhorii \(Greg\) Kotov|Grigory Kotov$/),
-        agreementSignature: {
-          signedAt: '2023-03-03T20:22:39.000Z',
-          hash: [clearSignArmored.hash],
-          primaryKeyFingerprint: key1.v4,
-          usedKeyFingerprint: key1.v4,
-          signature: clearSignArmored.signature,
-          // packet: 'skip for now',
-          publicKey: {
-            createdAt: '2022-07-25T15:41:50.000Z',
-            invalidAt: null,
-            type: '1-4096',
-            primaryKeyFingerprint: key1.v4,
-            publicKeyFingerprint: key1.v4,
-            publicKey: key1.publicKey0 + key1.publicKey1,
-            block: {
-              type: 'PGP PUBLIC KEY BLOCK',
-              blockArmored: publicKeyArmored,
-            },
-          },
-          data: {
-            type: 'text',
-            mime: 'text/plain',
-            sha256:
-              '9c57803c40bc8088c3e3c836ac97a67d0db16baada45b725b20150fb5de74281',
-            clearSignDataPart: clearSignArmored.clear,
-          },
-          block: {
-            type: 'PGP SIGNATURE',
-            blockArmored: clearSignArmored.signBlock,
-          },
-        },
-      });
-      expect(json).toHaveProperty('id', expect.any(String));
-    }
 
     beforeAll(async () => {
-      createdUser = await createTomfunUserAndCheck();
+      const result = await createTomfunUserAndCheck('/api/user');
+      createdUser = result.json();
+      expect(createdUser).toHaveProperty('id', expect.any(String));
     });
 
-    it('get same user', async () => {
-      const newUser = await createTomfunUserAndCheck();
-      expect(newUser).toStrictEqual(createdUser);
+    it.each([1, 2])('get same user %i', async () => {
+      const result = await createTomfunUserAndCheck('/api/user');
+      expect(result.json()).toStrictEqual(createdUser);
+    });
+
+    it.each([1, 2])('get same user dry run %i', async () => {
+      const result = await createTomfunUserAndCheck('/api/user/dry-run');
+      expect(result.json()).toStrictEqual(createdUser);
+    });
+  });
+
+  const reports = {
+    extraField: {
+      substances: [
+        {
+          timeSecond: 0,
+          dose: 10,
+          doseUnit: 'mg',
+          namePsychonautWikiOrg: '2C-I',
+          routeOfAdministration: 'insufflated',
+          activeSubstance: '2C-I',
+          surePercent: 95,
+        },
+        {
+          timeSecond: 360,
+          dose: 10,
+          doseUnit: 'mg',
+          namePsychonautWikiOrg: '2C-I',
+          routeOfAdministration: 'insufflated',
+          activeSubstance: '2C-I',
+          surePercent: 95,
+        },
+      ],
+      timeLineReport: [
+        {
+          timeSecond: 0,
+          report: 'Печёт пиздец',
+        },
+        {
+          timeSecond: 300,
+          report: 'Ну что-то вроде есть',
+        },
+        {
+          timeSecond: 600,
+          report:
+            'Душевная лёгкость, вкус чая будто тает во рту, свет стал ламповым, атмосфера отдаёт пленящим теплом',
+        },
+      ],
+      background:
+        'А жизнь как масло, а ты как сыр в жопе перепробовав всё говно, остаёшься вонять благородной плесенью',
+      dateTimestamp: 1678021709,
+      title: 'Вечерний променад',
+    },
+    ok1: `{"background":"А жизнь как масло, а ты как сыр в жопе перепробовав всё говно, остаёшься вонять благородной плесенью","dateTimestamp":1678021709,"substances":[{"dose":10,"doseUnit":"mg","namePsychonautWikiOrg":"2C-I","routeOfAdministration":"insufflated","surePercent":95,"timeSecond":0},{"dose":10,"doseUnit":"mg","namePsychonautWikiOrg":"2C-I","routeOfAdministration":"insufflated","surePercent":95,"timeSecond":360}],"timeLineReport":[{"report":"Печёт пиздец","timeSecond":0},{"report":"Ну что-то вроде есть","timeSecond":300},{"report":"Душевная лёгкость, вкус чая будто тает во рту, свет стал ламповым, атмосфера отдаёт пленящим теплом","timeSecond":600}],"title":"Вечерний променад"}`,
+    signatureArmored1: `-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEBfntiBKqjNUqcWskquatlAIqu/EFAmRf08UACgkQquatlAIq
+u/HAzA//Rx4vJo32gInAtG7rT5ULAz+Jw6utCT2N4W8NrhiZn27aVd91CnQz+Tlh
+CGSN2ev7b+ODZlpByj8HaFIENObPy+k6SL7HMqkAn7gDn0dTppculkkpi8cvzD19
+iuc62x1xNcBwetLxM8TSODRJXYzbciqwudcFop82yFUFJREaKL+cKu4FITva25Nf
+Bn7LnmMxM1bJeknrHknB5F5qjgIEdjtSz8Ce0aaFgYEe3xMQGGLBCc6bBB3irqG2
+8tyK64dIeyRoV1DOpcFqrJpoE/a4slnK24RnnjNSVR2ENDc+xCBoJEOWpjh/NfNH
+pzF3FkJAjNse7E9RuQHUsr+3zbf0zH7FE17dFMoTTvRkqM83o7d1NoJq7yyTvEPQ
+E/ZzTR/ZsakTPBTUOhXURYaJiPRVInhOHV4pMc0sf7XLxFa81Z7Uh+jv490foXh7
+a7ksPp17iGKfpXxaxUBqVRCmgQUonL7DEnzPe7yKskeiqKXhgQYSjy9yeoaFuYOi
+RTE7g+5IstZGdF7Avodfq1rL5B3W4TcFzL2ZRBwrE9kN8EfAwHazmzS1TpNHrk4S
+YO8xR8wqClwK0743+7AQcb9rCibV8XJbQHVDkyeNoQgM+OMKA96sUUcYORVfq+JX
+pXcpAnsZczdDma+OQayFT77DX20LldOZ+pDNUL3cAmP0JRa0jTg=
+=3FlI
+-----END PGP SIGNATURE-----`,
+  };
+
+  it(`POST /api/report/validate 200`, async () => {
+    const result = await app.inject({
+      method: 'POST',
+      url: '/api/report/validate',
+      payload: reports.extraField,
+    });
+    expect(result.statusCode).toEqual(200);
+    const json = result.json();
+    expect(json).toStrictEqual(JSON.parse(reports.ok1));
+    expect(result.body).toEqual(reports.ok1);
+  });
+
+  describe('report', () => {
+    let createdUser;
+    beforeAll(async () => {
+      const result = await createTomfunUserAndCheck('/api/user');
+      createdUser = result.json();
+      expect(createdUser).toHaveProperty('id', expect.any(String));
+    });
+
+    it(`PATCH /api/report 400`, async () => {
+      const result = await app.inject({
+        method: 'PATCH',
+        url: '/api/report',
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+        payload: `-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{"substances":[{"timeSecond":0,"dose":1,"doseUnit":"mg","namePsychonautWikiOrg":"MDMA","routeOfAdministration":"oral","activeSubstance":"MDMA","surePercent":95},{"timeSecond":7200,"dose":10,"doseUnit":"mg","namePsychonautWikiOrg":"2C-B","routeOfAdministration":"insufflated","activeSubstance":"2C-B","surePercent":95}],"timeLineReport":[{"timeSecond":0,"report":"Вкинул"},{"timeSecond":300,"report":"Ничего"},{"timeSecond":1200,"report":"Ничего"},{"timeSecond":2400,"report":"Заебись"}],"background":"А жизнь как масло, а ты как сыр в жопе перепробовав всё говно, остаёшься вонять благородной плесенью","dateTimestamp":1658021709,"title":"Шо попало"}
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEBfntiBKqjNUqcWskquatlAIqu/EFAmQ4D7IACgkQquatlAIq
+u/Frvg/9EAe1QHxtHWZlfXVYRdkvhqcOl0a2fFBHIqd/4tZRmf7HMykQPrGWP/Xn
+gU/QbcOmPO/wj+6GfPQxD6cWARAsj3KP4TkVlc6E36TYRb9L/uXW7L0j5vQWe84v
+h/3ZF2e1Ak5clW15AJxOdG/M9JyLLDs8SZUQez7IfCOKsK2nZ3BLwp3W1u6Six0e
+Y6lMat27mLd8Ti6fvZBS6PAu2GayuClU9FevuYEewsxbYk0UHhrMOJzXGgpYmcE8
+Je1duuaG3IjQQB6djssZCYekWBWiqwBC7m2Bnhp07IqXH1ci5jU9cHqKwRL1w5h+
+BPSs9pzbNJFmkuvXEJsftTd70eMKar51eoMCbbD1PbuWAm12acO1VR+qELRLUWr8
+YUlsA0Vptln9S3c2+XEyJUtKYVaXCQdYWv5kHYlsNI69vWK2wXKdVfBHVxkNYzfN
+9fVwxqvj8xiR0DxFtJPkHbsfVJFBu3bbd5QKK2oOm0WwMVUDOsg8z3Y9AlFbkrbx
+HyV5oaSH2flrzuiCXi/Y+QP5OPfGXvxJBagR2ACAhsEQx95arGhZmzNr42NUUzD8
+NDJd8cFUBpHGYEqOeoTaogfQ9Cn9uX7cnTyoJu0HZVVrLyB1G12GGvbY7DDPPZeg
+EWJ4a7iMkXHQ4gXamxtdcDTeFjUAVpPxfjzPyG0bkLRGTmV8fBQ=
+=BZBx
+-----END PGP SIGNATURE-----`,
+      });
+      expect(result.statusCode).toEqual(400);
+      const json = result.json();
+      expect(json).toMatchObject({
+        message: 'You must use sorted keys to produce consistent hash',
+      });
+    });
+
+    let createdReport1;
+
+    it.each([1, 2])(`PATCH /api/report 200 %i`, async () => {
+      const result = await app.inject({
+        method: 'PATCH',
+        url: '/api/report',
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+        payload: `-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{"background":"А жизнь как масло, а ты как сыр в жопе перепробовав всё говно, остаёшься вонять благородной плесенью","dateTimestamp":1678021709,"substances":[{"dose":10,"doseUnit":"mg","namePsychonautWikiOrg":"2C-I","routeOfAdministration":"insufflated","surePercent":95,"timeSecond":0},{"dose":10,"doseUnit":"mg","namePsychonautWikiOrg":"2C-I","routeOfAdministration":"insufflated","surePercent":95,"timeSecond":360}],"timeLineReport":[{"report":"Печёт пиздец","timeSecond":0},{"report":"Ну что-то вроде есть","timeSecond":300},{"report":"Душевная лёгкость, вкус чая будто тает во рту, свет стал ламповым, атмосфера отдаёт пленящим теплом","timeSecond":600}],"title":"Вечерний променад"}
+${reports.signatureArmored1}`,
+      });
+      expect(result.statusCode).toEqual(200);
+      const json = result.json();
+      expect(json).toMatchObject({
+        id: expect.any(String),
+        createdAt: expect.any(String),
+        d: JSON.parse(reports.ok1),
+        signature: {
+          id: expect.any(String),
+          createdAt: expect.any(String),
+          signedAt: '2023-05-13T18:15:33.000Z',
+          primaryKeyFingerprint: '05F9ED8812AA8CD52A716B24AAE6AD94022ABBF1',
+          hash: ['SHA512'],
+          usedKeyFingerprint: '05F9ED8812AA8CD52A716B24AAE6AD94022ABBF1',
+          signature:
+            '471E2F268DF68089C0B46EEB4F950B033F89C3ABAD093D8DE16F0DAE18999F6EDA55DF750A7433F9396108648DD9EBFB6FE383665A41CA3F0768520434E6CFCBE93A48BEC732A9009FB8039F4753A6972E9649298BC72FCC3D7D8AE73ADB1D7135C0707AD2F133C4D23834495D8CDB722AB0B9D705A29F36C8550525111A28BF9C2AEE05213BDADB935F067ECB9E63313356C97A49EB1E49C1E45E6A8E0204763B52CFC09ED1A68581811EDF13101862C109CE9B041DE2AEA1B6F2DC8AEB87487B24685750CEA5C16AAC9A6813F6B8B259CADB84679E3352551D8434373EC42068244396A6387F35F347A731771642408CDB1EEC4F51B901D4B2BFB7CDB7F4CC7EC5135EDD14CA134EF464A8CF37A3B77536826AEF2C93BC43D013F6734D1FD9B1A9133C14D43A15D445868988F45522784E1D5E2931CD2C7FB5CBC456BCD59ED487E8EFE3DD1FA1787B6BB92C3E9D7B88629FA57C5AC5406A5510A68105289CBEC3127CCF7BBC8AB247A2A8A5E18106128F2F727A8685B983A245313B83EE48B2D646745EC0BE875FAB5ACBE41DD6E13705CCBD99441C2B13D90DF047C0C076B39B34B54E9347AE4E1260EF3147CC2A0A5C0AD3BE37FBB01071BF6B0A26D5F1725B40754393278DA1080CF8E30A03DEAC51471839155FABE257A57729027B1973374399AF8E41AC854FBEC35F6D0B95D399FA90CD50BDDC0263F42516B48D38',
+          user: {
+            id: createdUser.id,
+            nick: createdUser.nick,
+          },
+        },
+      });
+      createdReport1 = json;
+    });
+
+    it(`GET /api/report/:id`, async () => {
+      const result = await app.inject({
+        method: 'GET',
+        url: `/api/report/${createdReport1.id}`,
+      });
+      expect(result.statusCode).toEqual(200);
+      const json = result.json();
+      expect(json).toMatchObject({
+        id: createdReport1.id,
+        createdAt: expect.any(String),
+        d: JSON.parse(reports.ok1),
+        signature: {
+          id: expect.any(String),
+          createdAt: createdReport1.createdAt,
+          signedAt: '2023-05-13T18:15:33.000Z',
+          primaryKeyFingerprint: '05F9ED8812AA8CD52A716B24AAE6AD94022ABBF1',
+          hash: ['SHA512'],
+          usedKeyFingerprint: '05F9ED8812AA8CD52A716B24AAE6AD94022ABBF1',
+          signature:
+            '471E2F268DF68089C0B46EEB4F950B033F89C3ABAD093D8DE16F0DAE18999F6EDA55DF750A7433F9396108648DD9EBFB6FE383665A41CA3F0768520434E6CFCBE93A48BEC732A9009FB8039F4753A6972E9649298BC72FCC3D7D8AE73ADB1D7135C0707AD2F133C4D23834495D8CDB722AB0B9D705A29F36C8550525111A28BF9C2AEE05213BDADB935F067ECB9E63313356C97A49EB1E49C1E45E6A8E0204763B52CFC09ED1A68581811EDF13101862C109CE9B041DE2AEA1B6F2DC8AEB87487B24685750CEA5C16AAC9A6813F6B8B259CADB84679E3352551D8434373EC42068244396A6387F35F347A731771642408CDB1EEC4F51B901D4B2BFB7CDB7F4CC7EC5135EDD14CA134EF464A8CF37A3B77536826AEF2C93BC43D013F6734D1FD9B1A9133C14D43A15D445868988F45522784E1D5E2931CD2C7FB5CBC456BCD59ED487E8EFE3DD1FA1787B6BB92C3E9D7B88629FA57C5AC5406A5510A68105289CBEC3127CCF7BBC8AB247A2A8A5E18106128F2F727A8685B983A245313B83EE48B2D646745EC0BE875FAB5ACBE41DD6E13705CCBD99441C2B13D90DF047C0C076B39B34B54E9347AE4E1260EF3147CC2A0A5C0AD3BE37FBB01071BF6B0A26D5F1725B40754393278DA1080CF8E30A03DEAC51471839155FABE257A57729027B1973374399AF8E41AC854FBEC35F6D0B95D399FA90CD50BDDC0263F42516B48D38',
+          user: {
+            id: createdUser.id,
+            nick: createdUser.nick,
+          },
+          block: {
+            id: expect.any(String),
+            createdAt: expect.any(String),
+            type: 'PGP SIGNATURE',
+            blockArmored: reports.signatureArmored1,
+          },
+          data: {
+            id: expect.any(String),
+            createdAt: expect.any(String),
+            clearSignDataPart: reports.ok1,
+            mime: 'application/json',
+            sha256:
+              'f39e378ece0f8514b61b5d6d4acaaa300c709f5f5cb351c5627aa9ff0b55d712',
+            type: 'drugs.ero-like.online/report@0.0.1-alpha-1',
+          },
+          publicKey: {
+            id: expect.any(String),
+            createdAt: '2022-07-25T15:41:50.000Z',
+            invalidAt: null,
+            block: {
+              blockArmored: users.tomfun.publicKeyArmored,
+              createdAt: expect.any(String),
+              id: expect.any(String),
+            },
+          },
+        },
+      });
+    });
+
+    it.each([
+      [`page=0`, 1],
+      [`page=0&signature[user][nick][endsWith]=Kotov`, 1],
+      [
+        `page=0&signature[user][nick][endsWith]=Kotov&signature[user][nick][startsWith]=H`,
+        1,
+      ],
+      [
+        `page=0&signature[user][nick][endsWith]=Kotov&signature[user][nick][startsWith]=H&d[title][startsWith]=Вечерний`,
+        1,
+      ],
+      [
+        `page=0&signature[user][nick][endsWith]=Kotov&signature[user][nick][startsWith]=H&d[title][startsWith]=Вечерний&d[substances.*.namePsychonautWikiOrg][contains]=2C-I`,
+        1,
+      ],
+      [
+        `page=0&signature[user][nick][endsWith]=Kotov&signature[user][nick][startsWith]=H&d[title][startsWith]=Вечерний&d[substances.*.namePsychonautWikiOrg][contains]=2C-`,
+        1,
+      ],
+      [
+        `page=0&signature[user][nick][endsWith]=Kotov&signature[user][nick][startsWith]=H&d[title][startsWith]=Вечерний&d[substances.*.namePsychonautWikiOrg][contains]=2Ck`,
+        0,
+      ],
+      [
+        `page=0&signature[user][nick][endsWith]=Kotov&signature[user][nick][startsWith]=H&d[title][startsWith]=Вечерний&d[substances.*.namePsychonautWikiOrg][contains]=2C-B`,
+        0,
+      ],
+      [
+        `page=0&signature[user][nick][endsWith]=Kotov&signature[user][nick][startsWith]=H&d[title][startsWith]=ВечерниЁ`,
+        0,
+      ],
+      [
+        `page=0&signature[user][nick][endsWith]=Kotov&signature[user][nick][startsWith]=R`,
+        0,
+      ],
+      [`page=0&signature[user][nick][endsWith]=Greg`, 0],
+    ])(`GET /api/report?%s 200`, async (q, length) => {
+      const result = await app.inject({
+        method: 'GET',
+        url: `/api/report`,
+        query: q,
+      });
+      console.log(length);
+      expect(result.statusCode).toEqual(200);
+      const json = result.json();
+      expect(json).toMatchObject({
+        itemsTotal: length,
+        page: 0,
+        pageSize: 10,
+      });
+      expect(json.items).toHaveLength(length);
+      if (length === 0) {
+        return;
+      }
+      expect(json.items[0]).toMatchObject({
+        id: expect.any(String),
+        createdAt: expect.any(String),
+        d: JSON.parse(reports.ok1),
+        signature: {
+          signedAt: '2023-05-13T18:15:33.000Z',
+          user: {
+            id: createdUser.id,
+            nick: createdUser.nick,
+          },
+        },
+      });
     });
   });
 });

@@ -7,6 +7,7 @@ import {
   Column,
   CreateDateColumn,
 } from 'typeorm';
+import { TransformBufferToString } from '../helper';
 
 @Entity('data')
 export class DataEntity extends DataEntityInner {
@@ -28,6 +29,7 @@ export class DataEntity extends DataEntityInner {
 
   @ApiProperty()
   @Expose()
+  @TransformBufferToString
   @Column({ type: 'bytea' })
   declare sha256: string;
 

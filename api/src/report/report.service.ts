@@ -1,7 +1,9 @@
 import { Inject, Injectable, ValidationPipe } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as stringify from 'json-stable-stringify';
 import * as _ from 'lodash';
 import { Repository } from 'typeorm';
+import { InvalidDataError } from '../core/gpg.service';
 import {
   KeyClassSymbol,
   NumberField,
@@ -152,6 +154,11 @@ export class ReportService {
         metatype: ReportDataBodyPayload,
       },
     );
+    if (stringify(createReportDto) !== signature.data.clearSignDataPart) {
+      throw new InvalidDataError(
+        'You must use sorted keys to produce consistent hash',
+      );
+    }
     report = new ReportEntity();
     report.d = createReportDto;
     report.signature = signature;

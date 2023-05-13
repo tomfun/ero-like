@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
 } from 'typeorm';
+import { TransformBufferToString } from '../helper';
 import { BlockEntity } from './block.entity';
 import { UserEntity } from './user.entity';
 
@@ -69,6 +70,7 @@ export class PublicKeyEntity extends PublicKeyEntityInner {
       : this.publicKeyFingerprint.toString();
   }
 
+  @TransformBufferToString
   @Column({ type: 'bytea' })
   declare publicKey: string;
 }

@@ -5,7 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Post,
+  Patch,
 } from '@nestjs/common';
 import { instanceToPlain } from 'class-transformer';
 import { UUID_V4_REGEX } from '../consts';
@@ -37,7 +37,7 @@ export class UserController {
     });
   }
 
-  @Post('/dry-run')
+  @Patch('/dry-run')
   @HttpCode(HttpStatus.OK)
   async postUserDryRun(
     @ValidBody
@@ -52,7 +52,7 @@ export class UserController {
     }
   }
 
-  @Post()
+  @Patch()
   async postUser(
     @ValidBody
     importAndVerifyDto: ImportAndVerifyPayload,

@@ -69,9 +69,11 @@ export class SignatureEntity extends SignatureEntityInner {
   @Column({ type: 'bytea' })
   declare usedKeyFingerprint: string | ArrayBuffer;
 
+  @TransformBufferToString
   @Column({ type: 'bytea' })
   declare signature: string | ArrayBuffer;
 
+  @TransformBufferToString
   @Column({ type: 'bytea' })
   declare packet: string | ArrayBuffer;
 }
