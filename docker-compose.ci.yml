@@ -29,12 +29,5 @@ services:
       TRUST_PROXY: '0'
       CLUSTER_WORKERS: 0
     command: npm run e2e
-    working_dir: /ero-like/api
     depends_on:
       - postgres
-    volumes:
-      - ./api:/ero-like/api
-      - ./client-sdk:/ero-like/client-sdk
-      - ./client-config:/ero-like/client-config
-#      - ./docker/data/gpg/.gnupg2:/root/.gnupg
-      - ./docker/data/gpg:/root
