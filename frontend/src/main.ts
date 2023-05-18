@@ -28,7 +28,7 @@ const i18n = createI18n({
 });
 
 async function loadLocaleMessages(locale: any) {
-  const messages = await import(/* webpackChunkName: "locale-[request]" */ `./locales/${locale}.json`);
+  const messages = await import(/* webpackChunkName: "locale-[request]" */ `./locales/${locale}/messages.json`);
   i18n.global.setLocaleMessage(locale, messages.default);
   console.log(messages);
   // return nextTick();
