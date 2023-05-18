@@ -1,6 +1,6 @@
 <template>
   <div class="locale-changer">
-    <select v-model="$i18n.locale" @change="handleLanguageSelect">
+    <select @change="handleLanguageSelect">
       <option v-for="(lang, i) in langs" :key="`Lang${i}`" :value="lang">
         {{ lang }}
       </option>
@@ -10,16 +10,17 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { loadLocaleMessages } from '../main';
+// import { useLocale } from '../format.js/provider';
 
 export default defineComponent({
   name: 'LocaleChanger',
   data () {
-    return { langs: ['ru', 'en', 'he'] }
+    return { langs: ['en', 'ru', 'he'] }
   },
   methods: {
-    handleLanguageSelect(event: any) {    
-      return loadLocaleMessages(event.target.value);
+    handleLanguageSelect(event: Event) {
+      console.log('this.$locale', this.$locale, event);
+      // return loadLocaleMessages((event.target as HTMLSelectElement).value);
     }
   }
 });

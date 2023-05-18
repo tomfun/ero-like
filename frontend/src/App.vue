@@ -2,7 +2,8 @@
   <div id="nav">
     <router-link :to="{ name: 'Home' }">Home</router-link> |
     <router-link :to="{ name: 'Reports' }">Reports</router-link> |
-    <router-link :to="{ name: 'Submit' }">Submit Report</router-link>
+    <router-link :to="{ name: 'Submit' }">Submit Report</router-link> |
+    <LocaleChanger/>
   </div>
   <router-view/>
   <div id="nav-footer">
@@ -48,3 +49,6 @@ div.center, #nav, #nav-footer  {
   padding: 0;
 }
 </style>
+<script setup lang="ts">
+import LocaleChanger from './components/LocaleChanger.vue';
+</script>

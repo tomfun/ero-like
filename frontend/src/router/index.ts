@@ -53,7 +53,10 @@ const routes: Array<RouteRecordRaw> = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes: [{
+    path: '/:locale?',
+    children: routes,
+  }],
 });
 
 export default router;

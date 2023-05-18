@@ -13,28 +13,20 @@ import ProgressBar from 'primevue/progressbar';
 import Textarea from 'primevue/textarea';
 import InputNumber from 'primevue/inputnumber';
 import { createApp } from 'vue';
-import { createI18n } from 'vue-i18n';
+import { FluentBundle } from '@fluent/bundle'
+
 import 'primeicons/primeicons.css';
 import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primevue/resources/primevue.min.css';
 import './primeflex.scss';
 import App from './App.vue';
+import { createLocale } from './format.js/plugin';
 import router from './router';
 import store from './store';
 
-const i18n = createI18n({
-  locale: 'ru', // set default locale
-  messages: {}, // set empty messages object
-});
+import englishMessages from './locales/en/messages.ftl';
 
-async function loadLocaleMessages(locale: any) {
-  const messages = await import(/* webpackChunkName: "locale-[request]" */ `./locales/${locale}/messages.json`);
-  i18n.global.setLocaleMessage(locale, messages.default);
-  console.log(messages);
-  // return nextTick();
-}
-
-createApp(App)
+export const app = createApp(App)
   .use(PrimeVue)
   .component('AutoComplete', AutoComplete)
   .component('Button', Button)
@@ -51,7 +43,16 @@ createApp(App)
   .component('InputNumber', InputNumber)
   .use(store)
   .use(router)
-  .use(i18n)
+  .use(createLocale({
+    defaultLocale: 'en',
+    availableLocales: ['en', 'ru', 'he'],
+    async load(locale) {
+      const messages = locale === 'en'
+        ? englishMessages
+        : await import(/* webpackChunkName: "locale-[request]" */ `./locales/${locale}/messages.ftl`);
+      const translations = new FluentBundle(locale);
+      translations.addResource(messages.default.rsrs);
+      return translations;
+    }
+  }))
   .mount('#app');
-
-  export { i18n, loadLocaleMessages };
