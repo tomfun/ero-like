@@ -1,7 +1,7 @@
 version: '3'
 services:
   postgres:
-    image: postgres:14.6
+    image: postgres:15.3
     user: ${uid:-999}:${gid:-999}
     ports:
       - 5432:5432
