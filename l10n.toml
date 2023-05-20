@@ -6,4 +6,4 @@ l10n = "frontend/src/locales/{locale}/messages.json"
 
 [[paths]]
 reference = "frontend/src/locales/en/messages.ftl"
-l10n = "frontend/src/locales/{locale}/messages.ftl"
+l10n = "{locale}/messages.ftl"
