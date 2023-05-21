@@ -22,7 +22,6 @@
   "dependencies": {
     "@fluent/bundle": "^0.18.0",
     "@fluent/langneg": "^0.7.0",
-    "@fluent/sequence": "^0.8.0",
     "@formatjs/intl-pluralrules": "^5.2.2",
     "ero-like-config": "file:../client-config",
     "ero-like-sdk": "file:../client-sdk",

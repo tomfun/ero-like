@@ -7,8 +7,8 @@ import type { FormatJsOptions } from './locale';
 
 declare module 'vue' {
   interface ComponentCustomProperties {
-    $t: (messageId: string, variables: Record<string, FluentVariable>|null) => string;
-    $locale: { locale: string; }
+    $t: (messageId: string, variables?: Record<string, FluentVariable>|null) => string;
+    $locale: Locale;
   }
 }
 

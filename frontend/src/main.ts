@@ -48,7 +48,7 @@ export const app = createApp(App)
     availableLocales: ['en', 'ru', 'he'],
     async load(locale) {
       const messages = locale === 'en'
-        ? englishMessages
+        ? { default: englishMessages }
         : await import(/* webpackChunkName: "locale-[request]" */ `./locales/${locale}/messages.ftl`);
       const translations = new FluentBundle(locale);
       translations.addResource(messages.default.rsrs);

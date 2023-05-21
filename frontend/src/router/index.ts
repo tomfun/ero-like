@@ -12,37 +12,37 @@ import UserView from '../views/UserView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: '/',
+    path: '',
     name: 'Home',
     component: HomeView,
   },
   {
-    path: '/submit',
+    path: '/:locale?/submit',
     name: 'Submit',
     component: SubmitView,
   },
   {
-    path: '/user/registration',
+    path: '/:locale?/user/registration',
     name: 'UserRegistration',
     component: UserView,
   },
   {
-    path: '/reports',
+    path: '/:locale?/reports',
     name: 'Reports',
     component: ReportsView,
   },
   {
-    path: '/report/:id',
+    path: '/:locale?/report/:id',
     name: 'Report',
     component: ReportView,
   },
   {
-    path: '/about',
+    path: '/:locale?/about',
     name: 'About',
     component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue'),
   },
   {
-    path: '/terms',
+    path: '/:locale?/terms',
     name: 'Terms',
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route

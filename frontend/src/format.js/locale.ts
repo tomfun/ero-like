@@ -1,23 +1,29 @@
+import type { ShallowRef } from 'vue';
+import { shallowRef } from 'vue';
 import type { FluentVariable } from '@fluent/bundle/esm/bundle';
 import { negotiateLanguages } from "@fluent/langneg";
 import type { FluentBundle } from "@fluent/bundle";
-import { mapBundleSync } from "@fluent/sequence";
 
 export interface FormatJsOptions { defaultLocale: string, availableLocales: string[], load: (locale: string) => Promise<FluentBundle> }
 
 export class Locale {
-  public locale: string;
+  public localeRef: ShallowRef<string>;
   public readonly bundles = new Map() as Map<string, FluentBundle>;
   private readonly loadMap = new Map() as Map<string, Promise<void>>;
-  constructor(private readonly options: FormatJsOptions) {
-    this.locale = negotiateLanguages(
+  constructor(public readonly options: FormatJsOptions) {
+    const locale = negotiateLanguages(
       navigator.languages, // requested locales
       options.availableLocales, // available locales
       { defaultLocale: options.defaultLocale, strategy: "lookup", }
     )[0]
-    this._load(this.locale)
+    this.localeRef = shallowRef(locale);
+    this.loadTranslations(this.locale)
   }
-  private async _load(locale: string) {
+  get locale() {
+    return this.localeRef.value
+  }
+
+  async loadTranslations(locale: string) {
     if (this.loadMap.has(locale)) {
       return this.loadMap.get(locale)
     }
@@ -27,6 +33,7 @@ export class Locale {
     }));
     return this.loadMap.get(locale)
   }
+
   get load() {
     if (this.loadMap.has(this.locale)) {
       return this.loadMap.get(this.locale)
@@ -34,11 +41,9 @@ export class Locale {
     return Promise.resolve();
   }
 
-
   formatString(id: string, args: Record<string, FluentVariable>|null = null) {
-    const ctx = mapBundleSync(this.bundles.values(), id);
-
-    if (ctx === null) {
+    const ctx = this.bundles.get(this.locale);
+    if (!ctx) {
       return id;
     }
 
