@@ -221,6 +221,11 @@ export default defineComponent({
       if (this.getCurrentDesiredRoute() === this.$route.fullPath) {
         return;
       }
+      this.setDataFromRouter();
+      this.onFilter();
+      this.fetchDebounced.flush();
+    },
+    setDataFromRouter() {
       const convert = (operator: string, values: Record<string, number | string>) => ({
         value: values[operator],
         matchMode: operator,
@@ -279,8 +284,6 @@ export default defineComponent({
           return true;
         });
       });
-      this.onFilter();
-      this.fetchDebounced.flush();
     },
     onApiFinalResponse() {
       if (this.isLoading || this.isDebouncedFetch) {
@@ -349,15 +352,13 @@ export default defineComponent({
     encodedQuery() {
       this.onApiFinalResponse();
     },
+    '$route.fullPath'() {
+      this.onRouteUpdate();
+    }
   },
   beforeMount() {
+    this.setDataFromRouter();
     this.onRouteUpdate();
-    this.$watch(
-      () => this.$route.fullPath,
-      () => {
-        this.onRouteUpdate();
-      },
-    );
   },
 });
 
