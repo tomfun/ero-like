@@ -3,6 +3,7 @@ import { shallowRef } from 'vue';
 import type { FluentVariable } from '@fluent/bundle/esm/bundle';
 import { negotiateLanguages } from "@fluent/langneg";
 import type { FluentBundle } from "@fluent/bundle";
+import type { FormatJs } from './types';
 
 export interface FormatJsOptions { defaultLocale: string, isShowNotFoundTranslationsWarning?: boolean, availableLocales: string[], load: (locale: string) => Promise<FluentBundle> }
 
@@ -55,6 +56,11 @@ export class Locale {
       return id;
     }
     return ctx.formatPattern(msg?.value, args);
+  }
+
+  formatDate(date: number | Date, args?: Record<string, string> | FormatJs.DateTimeFormatOptions): FormatJs.DateTimeFormatResult {
+    const f = new Intl.DateTimeFormat(this.locale, args);
+    return f.format(date);
   }
 
   private warn(message: string) {

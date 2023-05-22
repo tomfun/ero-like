@@ -1,12 +1,13 @@
 <template>
   <div id="nav">
-    <router-link :to="{ name: 'Home', params: { locale: routerLocale } }">Home</router-link>
-    |
-    <router-link :to="{ name: 'Reports', params: { locale: routerLocale } }">Reports</router-link>
-    |
-    <router-link :to="{ name: 'Submit', params: { locale: routerLocale }  }">Submit Report
-    </router-link>
-    |
+    <div class="centered-items">
+      <router-link :to="{ name: 'Home', params: { locale: routerLocale } }">Home</router-link>
+      |
+      <router-link :to="{ name: 'Reports', params: { locale: routerLocale } }">Reports</router-link>
+      |
+      <router-link :to="{ name: 'Submit', params: { locale: routerLocale }  }">Submit Report
+      </router-link>
+    </div>
     <LocaleSelect/>
   </div>
   <router-view v-if="isLocaleLoaded"/>
@@ -51,11 +52,26 @@ div.center, #nav, #nav-footer {
     }
   }
 }
-.p-tabview .p-tabview-panels {
-  padding: 0;
+
+#nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .centered-items {
+    display: flex;
+    justify-content: center;
+    gap: 10px; // This will add a space between the links
+  }
 }
+
+
 #nav-footer {
   border-top: #2c3e50 2px solid;
+}
+
+.p-tabview .p-tabview-panels {
+  padding: 0;
 }
 </style>
 <script lang="ts">

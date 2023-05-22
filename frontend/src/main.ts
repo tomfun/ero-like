@@ -18,6 +18,7 @@ import { FluentBundle } from '@fluent/bundle'
 import 'primeicons/primeicons.css';
 import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primevue/resources/primevue.min.css';
+import "flag-icons/css/flag-icons.min.css";
 import './primeflex.scss';
 import App from './App.vue';
 import { createLocale } from './format.js/plugin';
@@ -45,7 +46,7 @@ export const app = createApp(App)
   .use(router)
   .use(createLocale({
     defaultLocale: 'en',
-    availableLocales: ['en', 'ru', 'he'],
+    availableLocales: ['en', 'ru', 'he', 'uk'],
     isShowNotFoundTranslationsWarning: import.meta.env.DEV,
     async load(locale) {
       const messages = locale === 'en'

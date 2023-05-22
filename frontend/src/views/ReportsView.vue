@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>{{ $t('report_view.title') }}</h1>
+    <h1>{{ $t('reports_title') }}</h1>
     <ReportsTable/>
   </div>
 </template>
