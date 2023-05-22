@@ -4,12 +4,13 @@ import type { FluentVariable } from '@fluent/bundle/esm/bundle';
 import { negotiateLanguages } from "@fluent/langneg";
 import type { FluentBundle } from "@fluent/bundle";
 
-export interface FormatJsOptions { defaultLocale: string, availableLocales: string[], load: (locale: string) => Promise<FluentBundle> }
+export interface FormatJsOptions { defaultLocale: string, isShowNotFoundTranslationsWarning?: boolean, availableLocales: string[], load: (locale: string) => Promise<FluentBundle> }
 
 export class Locale {
   public localeRef: ShallowRef<string>;
   public readonly bundles = new Map() as Map<string, FluentBundle>;
   private readonly loadMap = new Map() as Map<string, Promise<void>>;
+  private readonly showedWarnings = new Set() as Set<string>;
   constructor(public readonly options: FormatJsOptions) {
     const locale = negotiateLanguages(
       navigator.languages, // requested locales
@@ -44,10 +45,26 @@ export class Locale {
   formatString(id: string, args: Record<string, FluentVariable>|null = null) {
     const ctx = this.bundles.get(this.locale);
     if (!ctx) {
+      this.warn(`locale ${this.locale} not found`)
       return id;
     }
 
     const msg = ctx.getMessage(id);
-    return msg?.value ? ctx.formatPattern(msg?.value, args) : id;
+    if (!msg?.value) {
+      this.warn(`locale ${this.locale} translation message ${id} not found`);
+      return id;
+    }
+    return ctx.formatPattern(msg?.value, args);
+  }
+
+  private warn(message: string) {
+    if (!this.options.isShowNotFoundTranslationsWarning) {
+      return;
+    }
+    if (this.showedWarnings.has(message)) {
+      return;
+    }
+    console.warn(message);
+    this.showedWarnings.add(message)
   }
 }

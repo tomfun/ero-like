@@ -1,19 +1,31 @@
 <template>
   <div id="nav">
-    <router-link :to="{ name: 'Home', params: { locale: routerLocale } }">Home</router-link> |
-    <router-link :to="{ name: 'Reports', params: { locale: routerLocale } }">Reports</router-link> |
-    <router-link :to="{ name: 'Submit', params: { locale: routerLocale }  }">Submit Report</router-link> |
+    <router-link :to="{ name: 'Home', params: { locale: routerLocale } }">Home</router-link>
+    |
+    <router-link :to="{ name: 'Reports', params: { locale: routerLocale } }">Reports</router-link>
+    |
+    <router-link :to="{ name: 'Submit', params: { locale: routerLocale }  }">Submit Report
+    </router-link>
+    |
     <LocaleSelect/>
   </div>
   <router-view v-if="isLocaleLoaded"/>
-    <div id="nav-footer">
-      <router-link :to="{ name: 'Home', params: { locale: routerLocale } }">Home</router-link> |
-      <router-link :to="{ name: 'Reports', params: { locale: routerLocale } }">Reports </router-link> |
-      <router-link :to="{ name: 'UserRegistration', params: { locale: routerLocale } }">Register</router-link> |
-      <router-link :to="{ name: 'Submit', params: { locale: routerLocale } }">Submit Report</router-link> |
-      <router-link :to="{ name: 'About', params: { locale: routerLocale } }">About</router-link> |
-      <router-link :to="{ name: 'Terms', params: { locale: routerLocale } }">Terms of Use Agreement</router-link>
-    </div>
+  <div id="nav-footer">
+    <router-link :to="{ name: 'Home', params: { locale: routerLocale } }">Home</router-link>
+    |
+    <router-link :to="{ name: 'Reports', params: { locale: routerLocale } }">Reports</router-link>
+    |
+    <router-link :to="{ name: 'UserRegistration', params: { locale: routerLocale } }">Register
+    </router-link>
+    |
+    <router-link :to="{ name: 'Submit', params: { locale: routerLocale } }">Submit Report
+    </router-link>
+    |
+    <router-link :to="{ name: 'About', params: { locale: routerLocale } }">About</router-link>
+    |
+    <router-link :to="{ name: 'Terms', params: { locale: routerLocale } }">Terms of Use Agreement
+    </router-link>
+  </div>
 </template>
 <style lang="scss">
 #app {
@@ -23,7 +35,7 @@
   color: #2c3e50;
 }
 
-div.center, #nav, #nav-footer  {
+div.center, #nav, #nav-footer {
   text-align: center;
 }
 
@@ -47,6 +59,10 @@ div.center, #nav, #nav-footer  {
 }
 </style>
 <script lang="ts">
+import type {
+  NavigationGuardNext,
+  RouteLocationNormalized,
+} from 'vue-router';
 import LocaleSelect from './components/LocaleSelect.vue';
 
 export default {
@@ -69,9 +85,15 @@ export default {
     }
     return { html };
   },
+  mounted() {
+    this.$router.beforeEach(this.beforeEnter);
+  },
   watch: {
     '$route.params.locale': {
       async handler(locale: string) {
+        if (!this.$locale.options.availableLocales.includes(locale)) {
+          return;
+        }
         this.routerLocale = locale || '';
         if (!locale) {
           return;
@@ -93,5 +115,24 @@ export default {
       },
     },
   },
+  methods: {
+    async beforeEnter(to: RouteLocationNormalized, _from: unknown, next: NavigationGuardNext) {
+      const { locale } = to.params
+      if (!locale) {
+        return next()
+      }
+      if (locale instanceof Array || !this.$locale.options.availableLocales.includes(locale)) {
+        return next({
+          ...to,
+          params: {
+            ...to.params,
+            locale: this.routerLocale, // current optional explicit locale
+          }
+        })
+      }
+      await this.$locale.loadTranslations(locale)
+      return next()
+    }
+  }
 };
 </script>
