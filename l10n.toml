@@ -1,9 +1,3 @@
 basepath = "."
-
-[[paths]]
-reference = "frontend/src/locales/en/messages.json"
-l10n = "frontend/src/locales/{locale}/messages.json"
-
-[[paths]]
-reference = "frontend/src/locales/en/messages.ftl"
-l10n = "{locale}/messages.ftl"
+[[includes]]
+    path = "frontend/src/locales/l10n.toml"
