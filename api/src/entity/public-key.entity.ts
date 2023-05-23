@@ -60,6 +60,17 @@ export class PublicKeyEntity extends PublicKeyEntityInner {
   }
 
   @Column({ type: 'bytea' })
+  declare keygrip: string | ArrayBuffer;
+
+  @ApiProperty({ name: 'keygrip' })
+  @Expose({ name: 'keygrip' })
+  get keygripString() {
+    return typeof this.keygrip === 'string'
+      ? this.keygrip
+      : this.keygrip.toString();
+  }
+
+  @Column({ type: 'bytea' })
   declare publicKeyFingerprint: string | ArrayBuffer;
 
   @ApiProperty({ name: 'publicKeyFingerprint' })

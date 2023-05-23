@@ -18,6 +18,8 @@ export class PublicKeyEntity {
 
   primaryKeyFingerprint: string | ArrayBuffer;
 
+  keygrip: string | ArrayBuffer;
+
   publicKeyFingerprint: string | ArrayBuffer;
 
   publicKey: string | ArrayBuffer;

@@ -10,3 +10,4 @@ export * from './1678828784341-data-clearSignDataPart-allow-utf8';
 export * from './1679224938414-jsonb-report-indecies';
 export * from './1679224949112-user-nick-index';
 export * from './1680776879745-publicKey-table';
+export * from './1680776879945-add-keygrip-publicKey';

@@ -59,6 +59,7 @@ export class SignatureDataService {
       publicKey.primaryKeyFingerprint = signatureData.primaryKeyFingerprint;
       publicKey.publicKeyFingerprint = keyData.publicKeyFingerprint;
       publicKey.type = keyData.type;
+      publicKey.keygrip = keyData.grp;
       publicKey.publicKey = keyData.pkey.join('');
       publicKey = await this.findOrDefaultPublicKey(publicKey);
       if (publicKey.id) {

@@ -485,6 +485,7 @@ export class GpgService {
         '--no-autostart',
         '--with-subkey-fingerprints',
         '--with-key-data',
+        '--with-keygrip',
         '--with-sig-list',
         '--with-colons',
         '--list-options',
