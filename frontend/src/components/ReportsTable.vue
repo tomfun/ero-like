@@ -61,7 +61,7 @@
                    placeholder="Search by canonical name"/>
       </template>
       <template #body="{data}">
-        <ul class="substance-list" :title="maxSubstanceTimeSecond">
+        <ul class="substance-list" :title="maxSubstanceTimeSecond.toString()">
           <template v-for="(s, i) in data.d.substances" :key="i">
             <li class="arrow" :title="Math.round(s.timeSecond / 60) + ' minutes'">
             <div>
@@ -93,10 +93,10 @@
     <template #expansion="dataKey">
         <div class="p-3">
             <h3>Title: {{ dataKey.data.d.title }}</h3>
-            <Panel header="Substances" class="substance-cont" toggleable :collapsed="true">
+            <Panel header="Substances" class="substance-cont" toggleable :collapsed="false">
               <ul class="substance-full-data-list">
                 <li v-for="sub in dataKey.data.d.substances" :key="sub">
-                  <Panel :header="sub.namePsychonautWikiOrg" toggleable :collapsed="true"> 
+                  <Panel :header="sub.namePsychonautWikiOrg" toggleable :collapsed="false"> 
                     <p class="m-0">
                       Dose: {{ sub.dose }}<br/>
                       Dose Unit: {{ sub.doseUnit }} <br/>
@@ -109,22 +109,22 @@
                 </li>
               </ul>
             </Panel>
-            <Panel header="Author Info" class="substance-cont" toggleable :collapsed="true">
+            <Panel header="Author Info" class="substance-cont" toggleable :collapsed="false">
               <p class="m-0">
                 Nick: {{  dataKey.data.user.nick }}<br/>
                 Created: {{  dataKey.data.user.createdAt }}<br/>
                 Updated at: {{  dataKey.data.user.updatedAt }}<br/>
               </p>
             </Panel>
-            <Panel header="Background" class="substance-cont" toggleable :collapsed="true">
+            <Panel header="Background" class="substance-cont" toggleable :collapsed="false">
               <p class="m-0">
                 {{  dataKey.data.d.background }}
               </p>
             </Panel>
-            <Panel header="Timeline" class="substance-cont" toggleable :collapsed="true">
+            <Panel header="Timeline" class="substance-cont" toggleable :collapsed="false">
               <ul class="substance-full-data-list">
                 <li v-for="tl in dataKey.data.d.timeLineReport" :key="tl">
-                  <Panel :header="tl.timeSecond" toggleable :collapsed="true"> 
+                  <Panel :header="tl.timeSecond.toString()" toggleable :collapsed="false"> 
                     <p class="m-0">
                       Time: {{ tl.timeSecond }}<br/>
                       Description: {{ tl.report }}<br/>
@@ -427,5 +427,8 @@ export default defineComponent({
   background-color: #f1f1f1;
   list-style-type: none;
   padding: 4px 12px;
+}
+.substance-cont {
+  margin: 2vh;
 }
 </style>
