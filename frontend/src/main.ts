@@ -11,14 +11,12 @@ import Paginator from 'primevue/paginator';
 import Panel from 'primevue/panel';
 import ProgressBar from 'primevue/progressbar';
 import Textarea from 'primevue/textarea';
+import InputNumber from 'primevue/inputnumber';
 import { createApp } from 'vue';
-
 import 'primeicons/primeicons.css';
 import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primevue/resources/primevue.min.css';
-
 import './primeflex.scss';
-
 import App from './App.vue';
 import router from './router';
 import store from './store';
@@ -37,6 +35,7 @@ createApp(App)
   .component('Panel', Panel)
   .component('ProgressBar', ProgressBar)
   .component('Textarea', Textarea)
+  .component('InputNumber', InputNumber)
   .use(store)
   .use(router)
   .mount('#app');

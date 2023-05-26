@@ -43,4 +43,8 @@ div.center, #nav, #nav-footer  {
 #nav-footer {
   border-top: #2c3e50 2px solid;
 }
+
+.p-tabview .p-tabview-panels {
+  padding: 0;
+}
 </style>
