@@ -57,16 +57,16 @@ stages:
   script:
     - export URI_TO_TEST=${CI_ENVIRONMENT_URL}/.wtf/D_I_TAG_UNIQ
     - |
-      if [ "$CI_BUILD_REF_NAME" = "main" ]; then
+      if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
         export TAG_PREFIX=""
       else
         export TAG_PREFIX="dev-"
       fi
-    - curl --fail -XPOST "https://jenkins.tomfun.co/buildByToken/buildWithParameters?job=$JENKINS_JOB&token=$JENKINS_DEMO_DEPLOY_TOKEN&IMAGE_TAG=$TAG_PREFIX$CI_BUILD_REF&PUBLIC_HTTP_HOST=$PUBLIC_HTTP_HOST"
+    - curl --fail -XPOST "https://jenkins.tomfun.co/buildByToken/buildWithParameters?job=$JENKINS_JOB&token=$JENKINS_DEMO_DEPLOY_TOKEN&IMAGE_TAG=$TAG_PREFIX$CI_COMMIT_SHA&PUBLIC_HTTP_HOST=$PUBLIC_HTTP_HOST"
     - sleep 20
-    - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_BUILD_REF" || sleep 20
-    - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_BUILD_REF" || sleep 10
-    - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_BUILD_REF"
+    - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_COMMIT_SHA" || sleep 20
+    - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_COMMIT_SHA" || sleep 10
+    - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_COMMIT_SHA"
 
 
 job-deploy-demo:
@@ -103,7 +103,7 @@ job-deploy-stop:
   image: curlimages/curl:latest
   script:
     - export PUBLIC_HTTP_HOST=${CI_ENVIRONMENT_SLUG}-demo-ero-like.tomfun.co
-    - curl --fail -XPOST "https://jenkins.tomfun.co/buildByToken/buildWithParameters?job=ero-like.tomfun.co%2FstopDeploy&token=$JENKINS_DEMO_DEPLOY_TOKEN&IMAGE_TAG=$CI_BUILD_REF&PUBLIC_HTTP_HOST=$PUBLIC_HTTP_HOST"
+    - curl --fail -XPOST "https://jenkins.tomfun.co/buildByToken/buildWithParameters?job=ero-like.tomfun.co%2FstopDeploy&token=$JENKINS_DEMO_DEPLOY_TOKEN&IMAGE_TAG=$CI_COMMIT_SHA&PUBLIC_HTTP_HOST=$PUBLIC_HTTP_HOST"
 
 .docker-registry: &docker-registry
   stage: registry
@@ -124,7 +124,7 @@ job-deploy-stop:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker login -u $HUB_DOCKER_USER -p $HUB_DOCKER_TOKEN
     - |
-      if [ "$CI_BUILD_REF_NAME" = "main" ]; then
+      if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
         export TAG_PREFIX=""
       else
         export TAG_PREFIX="dev-"
@@ -137,8 +137,8 @@ docker-registry-nginx:
   script:
     - |
       mkdir frontend/dist/.wtf
-      echo $CI_BUILD_REF_NAME > frontend/dist/.wtf/D_I_TAG_UNIQ
-      echo $CI_BUILD_REF >> frontend/dist/.wtf/D_I_TAG_UNIQ
+      echo $CI_COMMIT_REF_NAME > frontend/dist/.wtf/D_I_TAG_UNIQ
+      echo $CI_COMMIT_SHA >> frontend/dist/.wtf/D_I_TAG_UNIQ
       date >> frontend/dist/.wtf/D_I_TAG_UNIQ
       cat frontend/dist/.wtf/D_I_TAG_UNIQ
     - >
@@ -148,10 +148,10 @@ docker-registry-nginx:
       --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN
       --pull
       --push
-      -t $HUB_DOCKER_USER/ero-like-nginx:$TAG_PREFIX$CI_BUILD_REF
-      -t $HUB_DOCKER_USER/ero-like-nginx:$TAG_PREFIX$CI_BUILD_REF_NAME
-      -t registry.gitlab.com/tommyinc/ero-like/frontend:$TAG_PREFIX$CI_BUILD_REF
-      -t registry.gitlab.com/tommyinc/ero-like/frontend:$TAG_PREFIX$CI_BUILD_REF_NAME
+      -t $HUB_DOCKER_USER/ero-like-nginx:$TAG_PREFIX$CI_COMMIT_SHA
+      -t $HUB_DOCKER_USER/ero-like-nginx:$TAG_PREFIX$CI_COMMIT_REF_NAME
+      -t registry.gitlab.com/tommyinc/ero-like/frontend:$TAG_PREFIX$CI_COMMIT_SHA
+      -t registry.gitlab.com/tommyinc/ero-like/frontend:$TAG_PREFIX$CI_COMMIT_REF_NAME
       -f docker/nginx/local-copy.Dockerfile .
 
 docker-registry-api:
@@ -170,10 +170,10 @@ docker-registry-api:
       --build-arg VERSION=$VERSION
       --pull
       --push
-      -t $HUB_DOCKER_USER/ero-like-$DIR:$TAG_PREFIX$CI_BUILD_REF
-      -t $HUB_DOCKER_USER/ero-like-$DIR:$TAG_PREFIX$CI_BUILD_REF_NAME
-      -t registry.gitlab.com/tommyinc/ero-like/$DIR:$TAG_PREFIX$CI_BUILD_REF
-      -t registry.gitlab.com/tommyinc/ero-like/$DIR:$TAG_PREFIX$CI_BUILD_REF_NAME
+      -t $HUB_DOCKER_USER/ero-like-$DIR:$TAG_PREFIX$CI_COMMIT_SHA
+      -t $HUB_DOCKER_USER/ero-like-$DIR:$TAG_PREFIX$CI_COMMIT_REF_NAME
+      -t registry.gitlab.com/tommyinc/ero-like/$DIR:$TAG_PREFIX$CI_COMMIT_SHA
+      -t registry.gitlab.com/tommyinc/ero-like/$DIR:$TAG_PREFIX$CI_COMMIT_REF_NAME
       -f docker/$DIR/Dockerfile .
 
 

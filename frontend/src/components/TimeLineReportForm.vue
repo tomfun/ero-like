@@ -1,32 +1,38 @@
+<!-- eslint-disable vue/no-mutating-props  -->
+<!-- use this rule because we are too lazy to not mutate "item" prop which is designed to be mutated -->
 <template>
-  <div class="submitForm__cont" v-if="item">
-    <div class="submitForm__cont-block">
-      <h3 class="submitReportForm__title">Choose time line</h3>
-      <span>You can estimate the timeline value since the substance administration.</span>
-      <InputText
-        class="submitForm__select"
-        @keyup="onInput"
-        id="timeSecond"
-        placeholder="item?.namePsychonautWikiOrg"
-        v-bind:value="item?.timeSecond" />
-      <Textarea
-        id="reportText"
-        class="submitReportForm__text-area"
-        v-bind:value="item?.report"
-        placeholder="add your report"
-        @keyup="onInput">
-      </Textarea>
-      <button v-if="item?.report" v-on:click="pushReportData">
-        Add report data
-      </button>
+  <div class="reportForm__cont" v-if="item">
+    <div class="reportForm__cont-block">
+      <span class=" substanceForm__cont-block_small p-float-label">
+          <InputNumber
+            class="reportForm__select"
+            v-model:modelValue="item.timeSecond"
+          />
+          <label :for="id('timeSecond')">Time in minutes</label>
+      </span>
+      <small :id="id('timeSecond')">You can estimate the time since the substance administration.</small>
     </div>
+    <div class="reportForm__cont-block">
+      <span class="p-float-label">
+        <Textarea
+          :id="id('reportText')"
+          class="p-inputtext-lg reportForm__text-area"
+          v-model:modelValue="item.report"
+          aria-describedby="report-text"
+        >
+        </Textarea>
+        <label :for="id('reportText')">Report text</label>
+      </span>
+      <small :id="id('report-text')">Type here everything you consider relevant to describe your expirience.</small>
+    </div>
+    <Button :disabled="item.report.length == 0" class="reportForm__but" v-on:click="pushReportData">
+      Add report text
+    </Button>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import Textarea from 'primevue/textarea';
-import InputText from 'primevue/inputtext';
 import type { PropType } from 'vue';
 
 type TimeLineReport = {
@@ -38,28 +44,21 @@ type TimeLineReport = {
 
 export default defineComponent({
   name: 'TimeLineReportForm',
-  components: {
-    // eslint-disable-next-line vue/no-reserved-component-names
-    Textarea,
-    InputText
-  },
   props: {
     item: Object as PropType<TimeLineReport>,
+  },
+  data() {
+    return {
+      uid: Math.random().toString(27).slice(2),
+    };
   },
   emits: ['update:item'],
   setup(props, { emit }) {
     emit('update:item');
   },
   methods: {
-    onInput(event: any) {
-      let changedProp: Partial<TimeLineReport> = {};
-      if (event.target !== null && this.item && event.target.id === 'reportText') {
-        changedProp = { report: event.target.value };
-      }
-      if (event.target !== null && this.item && event.target.id === 'timeSecond') {
-        changedProp = { timeSecond: Number(event.target.value) };
-      }
-      this.$emit('update:item', changedProp);
+    id(id: string) {
+      return this.uid + id.toString();
     },
     pushReportData() {
       if (this.item) {
@@ -71,8 +70,32 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-  .submitReportForm__text-area {
-    width: 40%;
-    height: 7vh;
+
+$break-point-mobile:480px;
+
+.reportForm__cont {
+  display: flex;
+  flex-direction: column;
+}
+.reportForm__text-area {
+  padding: 0;
+  width: 100%;
+  height: 15vh;
+}
+.reportForm__cont-block {
+  margin: 3vh 0
+}
+.reportForm__but {
+  margin: 3vh auto;
+}
+.submitReportForm__title_left {
+  margin-left: 0;
+}
+
+@media (max-width: $break-point-mobile) {
+  .reportForm__but {
+    margin: 0 auto 1vh;
   }
+}
+
 </style>
