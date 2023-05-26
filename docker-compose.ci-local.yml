@@ -1,0 +1,14 @@
+version: '3'
+services:
+  api:
+    ports:
+      - 9229:9229
+    environment:
+      #      DEBUG: '*'
+      ENVIRONMENT: ci-local
+      LOG: ""
+    command: npm run e2e:debug
+    volumes:
+      - ./api:/ero-like/api
+      - ./client-sdk:/ero-like/client-sdk
+      - ./client-config:/ero-like/client-config

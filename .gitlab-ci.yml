@@ -154,8 +154,10 @@ docker-registry-nginx:
       -t registry.gitlab.com/tommyinc/ero-like/frontend:$TAG_PREFIX$CI_COMMIT_REF_NAME
       -f docker/nginx/local-copy.Dockerfile .
 
-docker-registry-api:
+docker-registry-api-tests: &docker-registry-api
   <<: *docker-registry
+  after_script:
+    - docker compose --file docker-compose.ci.yml --file docker-compose.ci-local.yml --project-name ero-like-$CI_PIPELINE_ID-$CI_JOB_ID down --volumes --remove-orphans
   dependencies:
     - build_sdk
     - build_config
@@ -164,7 +166,31 @@ docker-registry-api:
     - export DIR=api
     - >
       docker buildx build
-      --platform linux/arm64/v8,linux/amd64
+      --platform linux/amd64
+      --build-arg CI_SERVER_HOST=$CI_SERVER_HOST
+      --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN
+      --build-arg VERSION=$VERSION
+      --pull
+      --push
+      -t $HUB_DOCKER_USER/ero-like-$DIR:$TAG_PREFIX$CI_COMMIT_SHA
+      -t $HUB_DOCKER_USER/ero-like-$DIR:$TAG_PREFIX$CI_COMMIT_REF_NAME
+      -t registry.gitlab.com/tommyinc/ero-like/$DIR:$TAG_PREFIX$CI_COMMIT_SHA
+      -t registry.gitlab.com/tommyinc/ero-like/$DIR:$TAG_PREFIX$CI_COMMIT_REF_NAME
+      -f docker/$DIR/Dockerfile .
+    - source dev/e2e.sh
+    - $npm run test -- --colors
+    - $migrate
+    - $npm run test:e2e -- --colors
+
+
+docker-registry-api-arm:
+  <<: *docker-registry-api
+  script:
+    - export VERSION=$(echo "process.stdout.write(require('./package.json').version)" | docker run -v $PWD/api:/app -w /app --rm -i node:18.15-alpine3.17 -)-$CI_COMMIT_SHORT_SHA
+    - export DIR=api
+    - >
+      docker buildx build
+      --platform linux/arm64/v8
       --build-arg CI_SERVER_HOST=$CI_SERVER_HOST
       --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN
       --build-arg VERSION=$VERSION

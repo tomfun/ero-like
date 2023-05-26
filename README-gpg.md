@@ -74,14 +74,29 @@ gpg: Good signature from "Grigory .......... <..........@gmail.com>" [ultimate]
 echo -e 'hello\n' | gpg --clear-sign -
 ```
 #### Use user for signing
+
+- see list keys section below
+- get key, for example 0B7B99EB466D3F5D525D7E269645B577DB71D157
+- do detached signature or clear sing
+
 ```shell
-# see list keys section below
 # sign into file
 gpg -vab --local-user 0B7B99EB466D3F5D525D7E269645B577DB71D157 1s.txt
 # input and signature in one
-echo -e 'I read and agree with all terms of use of ero-like and confirm my registration on ero-like' | gpg --local-user 0B7B99EB466D3F5D525D7E269645B577DB71D157 --clear-sign -
+echo -e 'I read and agree with all terms of use of ero-like and confirm my registration on ero-like' \
+  | gpg --local-user 0B7B99EB466D3F5D525D7E269645B577DB71D157 --clear-sign -
 # priority: --local-user 16AC27C7C31F6127!
 ```
+
+##### Sign without email (uid)
+
+In the example above you can use your user name or **email**. It makes your email (and name)
+included into signature packet and it is publicly readable. To prevent expose them:
+```shell
+echo -e 'I read and agree with all terms of use of ero-like and confirm my registration on ero-like' \
+  | gpg --disable-signer-uid --local-user user@example.com --clear-sign -
+```
+
 ### Export your key
 
 Be careful and export only your public key!

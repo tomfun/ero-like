@@ -1,13 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import * as process from 'process';
 import * as rimraf from 'rimraf';
 import { join } from 'path';
 import { spawn } from 'child_process';
 import { mkdtemp } from 'fs/promises';
 import * as os from 'os';
-import { Repository } from 'typeorm';
-import { ReportEntity } from '../entity';
 import { ImportAndVerifyPayload, VerifyPayload } from './verify.payload';
 
 const tempDirPrefix = `ero-like-${process.pid}-gpg-`;
@@ -31,9 +28,6 @@ export class NoPublicKeyVerifyError extends Error {
 @Injectable()
 export class GpgService {
   private logger = new Logger(GpgService.name);
-
-  @InjectRepository(ReportEntity)
-  private reportRepo: Repository<ReportEntity>;
 
   public async armor(armoredTextInput: string): Promise<Buffer>;
   public async armor(binaryData: Buffer): Promise<string>;
@@ -81,7 +75,7 @@ export class GpgService {
         signatureDate,
         usedKeyType,
         usedKeyFingerprint,
-        mainKey,
+        primaryKeyFingerprint,
         clearSignDataPart,
         clearSignSignaturePart,
         hash,
@@ -95,7 +89,7 @@ export class GpgService {
         signatureDate,
         usedKeyType,
         usedKeyFingerprint,
-        mainKey,
+        primaryKeyFingerprint,
         clearSignDataPart,
         clearSignSignaturePart,
         hash,
@@ -140,17 +134,13 @@ export class GpgService {
         errs,
       );
 
-      const {
-        signatureDate,
-        usedKeyType,
-        usedKeyFingerprint,
-        mainKey,
-        clearSignDataPart,
-        clearSignSignaturePart,
-        hash,
-      } = await this.verifyCommon(importAndVerifyPayload, tempDirPath, errs);
+      const signatureData = await this.verifyCommon(
+        importAndVerifyPayload,
+        tempDirPath,
+        errs,
+      );
 
-      if (!mainKey.includes(importedKeyShort)) {
+      if (!signatureData.primaryKeyFingerprint.includes(importedKeyShort)) {
         throw new InvalidDataError(
           'verify: mainKey is not the same as imported key',
         );
@@ -163,16 +153,16 @@ export class GpgService {
       );
 
       return {
-        signatureDate,
-        usedKeyType,
-        usedKeyFingerprint,
-        importedKeyUser,
-        mainKey,
-        signatureAlgorithm,
+        signatureData,
         signature: data.join(''),
-        clearSignDataPart,
-        clearSignSignaturePart,
-        hash,
+        publicKeys: await this.getUserPublicKeys(
+          signatureData.primaryKeyFingerprint,
+          tempDirPath,
+          errs,
+        ),
+        revocatedUserKeys: [],
+        importedKeyUser,
+        signatureAlgorithm,
       };
     } catch (e) {
       if (e instanceof NoPublicKeyVerifyError) {
@@ -281,6 +271,8 @@ export class GpgService {
         '--with-subkey-fingerprint',
         '-v',
         '--verify',
+        // '--verify-options',
+        // 'show-primary-uid-only,show-unusable-uids',
       ],
       {
         cwd: gnuPgHome,
@@ -335,7 +327,7 @@ export class GpgService {
     if (!verifyMatchMainKey) {
       throw new InvalidDataError('verify: there is no primary key fingerprint');
     }
-    const mainKey = verifyMatchMainKey[1].replace(/\s+/g, '');
+    const primaryKeyFingerprint = verifyMatchMainKey[1].replace(/\s+/g, '');
 
     const indexOfSignature =
       importAndVerifyPayload.clearSignArmored.indexOf(signatureHeader);
@@ -354,7 +346,7 @@ export class GpgService {
       signatureDate,
       usedKeyType,
       usedKeyFingerprint,
-      mainKey,
+      primaryKeyFingerprint,
       clearSignDataPart,
       clearSignSignaturePart,
       hash,
@@ -476,5 +468,76 @@ export class GpgService {
       throw new Error('Date parse problem, input: ' + gpgDateString);
     }
     return d;
+  }
+
+  private async getUserPublicKeys(
+    user: string,
+    gnuPgHome: string,
+    errs: any[],
+  ) {
+    errs.length = 0;
+    let out = '';
+
+    const fullKeyIds = spawn(
+      'gpg',
+      [
+        '--utf8-strings',
+        '--no-autostart',
+        '--with-subkey-fingerprints',
+        '--with-key-data',
+        '--with-keygrip',
+        '--with-sig-list',
+        '--with-colons',
+        '--list-options',
+        'show-unusable-subkeys',
+        '--list-public-keys',
+        user,
+      ],
+      {
+        cwd: gnuPgHome,
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: {
+          GNUPGHOME: gnuPgHome,
+          TZ: 'UTC',
+        },
+      },
+    );
+    const codePromiseFullKeyIds = new Promise((r, reject) => {
+      fullKeyIds.on('close', r);
+      fullKeyIds.on('error', reject);
+    });
+    fullKeyIds.stderr.setEncoding('utf-8');
+    fullKeyIds.stderr.on('data', (ch) => errs.push(ch));
+    fullKeyIds.stdout.setEncoding('utf-8');
+    fullKeyIds.stdout.on('data', (ch) => (out += ch));
+    this.logger.debug(`cp gpg --list-pubic-keys pid: ${fullKeyIds.pid}`);
+
+    const code = await codePromiseFullKeyIds;
+    this.logger.debug(`cp gpg --list-pubic-keys finished code: ${code}`);
+    if (code !== 0) {
+      throw new InvalidDataError('list pubic keys ids error');
+    }
+
+    const pubKeysFullIdsRegex =
+      /^(pub|sub):.:(?<bits>\d+):(?<alg>\d+):(?<shortKeyId>\w+):(?<created>\d+)?:(?<expires>\d+)?:[^:]*:[\w\-]?:[^:]*:[^:]*:(?<capabilities>[sceartg?]+).+\nfpr([^:]*:?){9}(?<keyid>\w+):\ngrp([^:]*:?){9}(?<grp>\w+):\n(?<pkds>(pkd:\d:\d+:\w+:\n)+)/gm;
+    const result = [];
+    let itemMatch: RegExpExecArray;
+    while ((itemMatch = pubKeysFullIdsRegex.exec(out)) !== null) {
+      const { keyid, created, expires, pkds } = itemMatch.groups;
+      delete itemMatch.groups.pkds;
+      result.push({
+        ...itemMatch.groups,
+        type: `${itemMatch.groups.alg}-${itemMatch.groups.bits}`,
+        publicKeyFingerprint: keyid,
+        created: created ? new Date(1000 * +created) : null,
+        expires: expires ? new Date(1000 * +expires) : null,
+        pkey: pkds
+          .split(':\n')
+          .map((pkd) => pkd.replace(/^pkd:\d:\d+:/, ''))
+          .filter((pkey) => pkey),
+      });
+    }
+
+    return result;
   }
 }

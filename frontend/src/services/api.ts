@@ -2,9 +2,12 @@
 
 interface ReportAlpha1 {
   id: string;
-  user: {
+  signature: {
     id: string;
-    nick: string;
+    user: {
+      id: string;
+      nick: string;
+    };
   };
   d: {
     dateTimestamp: number;
@@ -29,7 +32,7 @@ export type FilterRecordPair<T> = {
   matchMode: 'startsWith' | 'contains' | 'notContains' | 'endsWith' | 'equals' | 'notEquals' | 'in' | 'lt' | 'lte' | 'gt' | 'gte' | 'between' | 'dateIs' | 'dateIsNot' | 'dateBefore' | 'dateAfter';
 }
 export interface ReportFilters {
-  'user.nick': FilterRecordPair<string>;
+  'signature.user.nick': FilterRecordPair<string>;
   'd.title': FilterRecordPair<string>;
   'd.substances.*.namePsychonautWikiOrg': FilterRecordPair<string>;
   'd.dateTimestamp': FilterRecordPair<number>;
@@ -85,4 +88,8 @@ export default {
       encodedQuery,
     };
   },
+  async fetchReport(id: string): Promise<Report> {
+    const res = await fetch(`/api/report/${id}`);
+    return await res.json();
+  }
 };

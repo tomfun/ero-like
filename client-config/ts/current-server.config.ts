@@ -3,6 +3,7 @@ import {
   NumberField,
   NumberFilters,
   StringField,
+  QueryOperator,
   ReportFilterType, TypeSymbol, FiltersSymbol, KeyClassSymbol,
 } from 'ero-like-sdk/dist/filters-query.pipe';
 
@@ -23,19 +24,27 @@ export interface ReportDFilters
 export interface ReportFilters extends ReportFilterType<typeof reportConfig> {
   [TypeSymbol]: typeof Object;
 
-  user?: {
+  signature?: {
     [TypeSymbol]: typeof Object;
-    nick?: StringField;
-  };
+    user?: {
+      [TypeSymbol]: typeof Object;
+      id?: StringField;
+      nick?: StringField;
+    };
+  }
 
   d?: ReportDFilters;
 }
 
 export const reportConfig = {
   [TypeSymbol]: Object,
-  user: {
+  signature: {
     [TypeSymbol]: Object,
-    nick: { [TypeSymbol]: String, [FiltersSymbol]: HurtStringFilters },
+    user: {
+      [TypeSymbol]: Object,
+      id: { [TypeSymbol]: String, [FiltersSymbol]: [QueryOperator.Equal] },
+      nick: { [TypeSymbol]: String, [FiltersSymbol]: HurtStringFilters },
+    },
   },
   d: {
     [TypeSymbol]: Object,

@@ -23,10 +23,11 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:debug": "node --inspect-brk=0.0.0.0:9229 -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "prefixtures": "nest build",
     "fixtures": "fixtures load --dataSource=dist/pg.data-source.js fixtures",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:e2e:debug": "node --inspect-brk=0.0.0.0:9229 node_modules/.bin/jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
     "@fastify/static": "^6.10.0",
@@ -43,6 +44,7 @@
     "ero-like-config": "file:../client-config",
     "ero-like-sdk": "file:../client-sdk",
     "fastify": "^4.14.1",
+    "json-stable-stringify": "^1.0.2",
     "lodash": "^4.17.21",
     "minimist": "^1.2.8",
     "pg": "^8.9.0",

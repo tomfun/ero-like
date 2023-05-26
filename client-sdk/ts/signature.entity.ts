@@ -1,21 +1,30 @@
+import { BlockEntity } from './block.entity';
 import { DataEntity } from './data.entity';
+import { PublicKeyEntity } from './public-key.entity';
+import { UserEntity } from './user.entity';
 
 export class SignatureEntity {
   id: string;
 
-  data: DataEntity;
+  data: DataEntity | null;
+
+  block: BlockEntity | null;
+
+  signedPublicKey: PublicKeyEntity | null;
+
+  user: UserEntity | null;
+
+  publicKey: PublicKeyEntity | null;
 
   createdAt: Date;
+
+  updatedAt: Date;
 
   signedAt: Date;
 
   hash: string[];
 
-  primaryKeyFingerprint: string | ArrayBuffer;
-
-  subkeyFingerprint: string | ArrayBuffer;
+  usedKeyFingerprint: string | ArrayBuffer;
 
   signature: string | ArrayBuffer;
-
-  packet: string | ArrayBuffer;
 }

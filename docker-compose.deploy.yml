@@ -2,7 +2,7 @@ version: '3.8'
 services:
   postgres:
     restart: always
-    image: postgres:14.6
+    image: postgres:15.3
     environment:
       POSTGRES_PASSWORD: pass
       POSTGRES_USER: user

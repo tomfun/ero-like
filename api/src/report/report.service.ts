@@ -1,6 +1,9 @@
 import { Inject, Injectable, ValidationPipe } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as stringify from 'json-stable-stringify';
+import * as _ from 'lodash';
 import { Repository } from 'typeorm';
+import { InvalidDataError } from '../core/gpg.service';
 import {
   KeyClassSymbol,
   NumberField,
@@ -44,21 +47,37 @@ export class ReportService {
   ): Promise<Paginable<ReportForList>> {
     let query = this.reportRepo
       .createQueryBuilder('r')
-      .where(`type = 'ReportEntity'`);
-    if (filters?.user?.nick) {
-      const nickWhere = this.buildStringWhere(
-        filters.user.nick,
-        'u.nick',
-        'userNick',
-      );
-      query = query.innerJoinAndSelect(
-        'r.user',
-        'u',
-        'u.id = r.userId' + (nickWhere ? ` AND ${nickWhere.sql}` : ''),
-        nickWhere?.params,
-      );
+      .innerJoinAndSelect('r.signature', 's')
+      .select(['r', 's.id', 's.signedAt', 's.user']);
+    if (filters?.signature?.user?.nick || filters?.signature?.user?.id) {
+      const joins = [];
+      const params = {};
+      if (filters.signature.user.id) {
+        const idWhere = this.buildStringWhere(
+          filters.signature.user.id,
+          'u.id',
+          'userId',
+        );
+        if (idWhere) {
+          joins.push(idWhere.sql);
+          _.assign(params, idWhere.params);
+        }
+      }
+      if (filters.signature.user.nick) {
+        const nickWhere = this.buildStringWhere(
+          filters.signature.user.nick,
+          'u.nick',
+          'userNick',
+        );
+        if (nickWhere) {
+          joins.push(nickWhere.sql);
+          _.assign(params, nickWhere.params);
+        }
+      }
+      const joinWhere = joins.join(' AND ');
+      query = query.innerJoinAndSelect('s.user', 'u', joinWhere, params);
     } else {
-      query = query.innerJoinAndSelect('r.user', 'u', 'u.id = r.userId');
+      query = query.innerJoinAndSelect('s.user', 'u');
     }
     let i = 0;
     for (const f in filters.d) {
@@ -118,11 +137,12 @@ export class ReportService {
       report = await this.reportRepo.findOne({
         where: { signature: { id: signature.id } },
         relations: {
-          user: true,
+          signature: {
+            user: true,
+          },
         },
       });
       if (report) {
-        report.signature = signature;
         return report;
       }
     }
@@ -134,12 +154,16 @@ export class ReportService {
         metatype: ReportDataBodyPayload,
       },
     );
-    const user = await this.userService.fidUser(signature);
+    if (stringify(createReportDto) !== signature.data.clearSignDataPart) {
+      throw new InvalidDataError(
+        'You must use sorted keys to produce consistent hash',
+      );
+    }
     report = new ReportEntity();
     report.d = createReportDto;
     report.signature = signature;
-    report.user = user;
     await this.reportRepo.manager.save([
+      report.signature.block,
       report.signature.data,
       report.signature,
     ]);
@@ -226,5 +250,21 @@ export class ReportService {
       return { sql: sql.join(' AND '), params };
     }
     return undefined;
+  }
+
+  async getReport(id: string) {
+    return this.reportRepo.findOne({
+      where: { id },
+      relations: {
+        signature: {
+          user: true,
+          data: true,
+          block: true,
+          publicKey: {
+            block: true,
+          },
+        },
+      },
+    });
   }
 }

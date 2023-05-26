@@ -45,7 +45,7 @@ export default {
     ids: [],
     viewIds: [],
     filters: {
-      'user.nick': {
+      'signature.user.nick': {
         value: null,
         matchMode: 'equals',
       },

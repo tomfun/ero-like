@@ -35,9 +35,17 @@
       "import": "./dist/pagination-query.pipe.modern.js",
       "require": "./dist/pagination-query.pipe.cjs"
     },
+    "./dist/block.entity": {
+      "import": "./dist/block.entity.modern.js",
+      "require": "./dist/block.entity.cjs"
+    },
     "./dist/data.entity": {
       "import": "./dist/data.entity.modern.js",
       "require": "./dist/data.entity.cjs"
+    },
+    "./dist/public-key.entity": {
+      "import": "./dist/public-key.entity.modern.js",
+      "require": "./dist/public-key.entity.cjs"
     },
     "./dist/report.entity": {
       "import": "./dist/report.entity.modern.js",

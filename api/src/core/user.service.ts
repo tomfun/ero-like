@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ImportAndVerifyPayload } from './verify.payload';
 import { SignatureDataService } from './signature-data.service';
-import { SignatureEntity, UserEntity } from '../entity';
+import { PublicKeyEntity, SignatureEntity, UserEntity } from '../entity';
 
 export class NotAcceptAgreementError extends Error {}
 export class UserCreateError extends Error {}
@@ -21,8 +21,23 @@ export class UserService {
   @Inject()
   private signService: SignatureDataService;
 
+  async getUser(id: string) {
+    return this.userRepo.findOne({
+      where: { id },
+      relations: {
+        agreementSignature: {
+          data: true,
+          block: true,
+          publicKey: {
+            block: true,
+          },
+        },
+      },
+    });
+  }
+
   async createUserDryRun(importAndVerifyPayload: ImportAndVerifyPayload) {
-    const { agreementSignature, publicKeySignature, verifyData } =
+    const { agreementSignature, verifyData, publicKeys } =
       await this.signService.userRegistration(importAndVerifyPayload);
 
     if (
@@ -30,45 +45,49 @@ export class UserService {
         /^I read and agree with all terms of use of ero-like and confirm my registration on ero-like$/,
       )
     ) {
-      throw new NotAcceptAgreementError("Text doesn't match");
+      throw new NotAcceptAgreementError("Signed agreement text doesn't match");
     }
-
-    let u: UserEntity;
-    if (publicKeySignature.data.id) {
-      u = await this.userRepo.findOne({
-        where: {
-          firstUpdateSignature: {
-            data: publicKeySignature.data,
-            primaryKeyFingerprint: publicKeySignature.primaryKeyFingerprint,
-            signature: publicKeySignature.signature,
-          },
-        },
-        relations: { firstUpdateSignature: true },
-      });
-      if (u) {
-        u.lastUpdateSignature = u.firstUpdateSignature;
-        // not real change. data is undefined but the same
-        u.lastUpdateSignature.data = publicKeySignature.data;
-      } else {
-        u = await this.userRepo.findOne({
-          where: {
-            firstUpdateSignature: {
-              primaryKeyFingerprint: publicKeySignature.primaryKeyFingerprint,
-              signature: publicKeySignature.signature,
+    const publicKeyIds = publicKeys.map((p) => p.id).filter((id) => id);
+    const publicKeyUsers = publicKeyIds.length
+      ? await this.dataSource.manager
+          .createQueryBuilder(UserEntity, 'u')
+          .innerJoin(
+            PublicKeyEntity,
+            'pukey',
+            'u.id = pukey."userId" AND pukey.id in (:...ids)',
+            {
+              ids: publicKeyIds,
             },
-          },
-        });
-        if (u) {
-          throw new UserCreateError(
-            'User is already created with different public key',
-          );
-        }
-      }
+          )
+          .take(2)
+          .getMany()
+      : [];
+    if (publicKeyUsers.length > 1) {
+      throw new UserCreateError('There are many users with such public key');
     }
-    if (!u) {
+    const signatureCreatedUser =
+      agreementSignature.id &&
+      (await this.dataSource.manager
+        .createQueryBuilder(UserEntity, 'u')
+        .innerJoin(SignatureEntity, 's', 'u.id = s."userId" AND s.id = :id', {
+          id: agreementSignature.id,
+        })
+        .getOne());
+    if (
+      signatureCreatedUser &&
+      publicKeyUsers.length > 0 &&
+      signatureCreatedUser.id !== publicKeyUsers[0].id
+    ) {
+      throw new Error(
+        'There are signature with user not included in public key',
+      );
+    }
+    let u: UserEntity;
+    if (signatureCreatedUser) {
+      u = signatureCreatedUser;
+    } else {
       u = new UserEntity();
       u.createdAt = agreementSignature.createdAt;
-      u.firstUpdateSignature = u.lastUpdateSignature = publicKeySignature;
     }
 
     u.nick = verifyData.importedKeyUser.replace(/<.+@.+>/, '').trim();
@@ -76,6 +95,7 @@ export class UserService {
 
     return {
       user: u,
+      publicKeys,
       verifyData,
     };
   }
@@ -83,49 +103,20 @@ export class UserService {
   async createUser(
     importAndVerifyPayload: ImportAndVerifyPayload,
   ): Promise<UserEntity> {
-    const { user } = await this.createUserDryRun(importAndVerifyPayload);
-    await this.dataSource.manager.save([
-      user.firstUpdateSignature.data,
-      user.agreementSignature.data,
-    ]);
+    const { user, publicKeys } = await this.createUserDryRun(
+      importAndVerifyPayload,
+    );
+    await this.dataSource.manager.save(user.agreementSignature.data);
     return this.dataSource.transaction<UserEntity>(async (m) => {
-      const signatures = await m.save([
-        user.firstUpdateSignature,
-        user.agreementSignature,
-      ]);
-      user.firstUpdateSignature = signatures[0];
-      user.agreementSignature = signatures[1];
-      return m.save(user);
+      await m.save(Array.from(new Set(publicKeys.map((p) => p.block))));
+      await m.save(publicKeys);
+      await m.save(user.agreementSignature.block);
+      user.agreementSignature = await m.save(user.agreementSignature);
+      await m.save(user);
+      const userUpdateEntities = [user.agreementSignature, ...publicKeys];
+      userUpdateEntities.forEach((e) => (e.user = user));
+      await m.save(userUpdateEntities);
+      return user;
     });
-  }
-
-  async fidUser(signature: SignatureEntity): Promise<UserEntity> {
-    let users = await this.userRepo.findBy({
-      lastUpdateSignature: {
-        primaryKeyFingerprint: signature.primaryKeyFingerprint,
-        subkeyFingerprint: signature.subkeyFingerprint,
-        signature: '',
-      },
-    });
-    if (users.length === 1) {
-      return users[0];
-    }
-    if (users.length > 1) {
-      throw new Error('Not implemented search by fingerprint collision (o!)');
-    }
-    users = await this.userRepo.findBy({
-      lastUpdateSignature: {
-        primaryKeyFingerprint: signature.primaryKeyFingerprint,
-        signature: '',
-      },
-    });
-    if (users.length === 1) {
-      return users[0];
-    }
-    if (users.length > 1) {
-      throw new Error('Not implemented search by fingerprint collision');
-    }
-    // todo: collision
-    throw new UserNotFoundError('User not found');
   }
 }

@@ -27,7 +27,6 @@ import {
   TableInheritance,
 } from 'typeorm';
 import { SignatureEntity } from './signature.entity';
-import { UserEntity } from './user.entity';
 
 export class ReportDataSubstanceBodyPayload extends ReportDataSubstanceBodyPayloadInner {
   @ApiProperty()
@@ -167,10 +166,6 @@ export class ReportEntity extends ReportEntityInner {
   @ApiProperty()
   @PrimaryGeneratedColumn('uuid')
   declare id: string;
-
-  @ApiProperty()
-  @ManyToOne(() => UserEntity)
-  declare user: UserEntity;
 
   @ManyToOne(() => SignatureEntity)
   declare signature: SignatureEntity;

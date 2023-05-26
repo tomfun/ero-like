@@ -1,4 +1,14 @@
-import { BadRequestException, Controller, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+} from '@nestjs/common';
+import { instanceToPlain } from 'class-transformer';
+import { UUID_V4_REGEX } from '../consts';
 import { InvalidDataError } from './gpg.service';
 import { ImportAndVerifyPayload } from './verify.payload';
 import {
@@ -12,27 +22,46 @@ import { ValidBody } from '../validBodyPipe';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post('/dry-run')
-  async postReportDryRun(
+  @Get('/:id')
+  async getUser(@Param('id') id: string) {
+    if (!id) {
+      throw new BadRequestException('Find by parameter id not provided');
+    }
+    if (!id.match(UUID_V4_REGEX)) {
+      throw new BadRequestException(
+        'Find by parameter id contain special characters',
+      );
+    }
+    return instanceToPlain(await this.userService.getUser(id), {
+      groups: ['user'],
+    });
+  }
+
+  @Patch('/dry-run')
+  @HttpCode(HttpStatus.OK)
+  async postUserDryRun(
     @ValidBody
     importAndVerifyDto: ImportAndVerifyPayload,
   ) {
     try {
       const data = await this.userService.createUserDryRun(importAndVerifyDto);
-      return data.user;
+      return instanceToPlain(data.user, { groups: ['user'] });
     } catch (e) {
       this.convertUserRegisterError(e);
       throw e;
     }
   }
 
-  @Post()
-  async postReport(
+  @Patch()
+  async postUser(
     @ValidBody
     importAndVerifyDto: ImportAndVerifyPayload,
   ) {
     try {
-      return await this.userService.createUser(importAndVerifyDto);
+      return instanceToPlain(
+        await this.userService.createUser(importAndVerifyDto),
+        { groups: ['user'] },
+      );
     } catch (e) {
       this.convertUserRegisterError(e);
     }

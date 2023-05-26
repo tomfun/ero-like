@@ -5,10 +5,6 @@ export class UserEntity {
 
   agreementSignature: SignatureEntity;
 
-  firstUpdateSignature: SignatureEntity;
-
-  lastUpdateSignature: SignatureEntity;
-
   createdAt: Date;
 
   updatedAt: Date;

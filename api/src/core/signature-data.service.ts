@@ -1,11 +1,21 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { InjectDataSource } from '@nestjs/typeorm/dist/common/typeorm.decorators';
 import { createHash } from 'crypto';
 import { pick } from 'lodash';
-import { Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { DataEntity, SignatureEntity } from '../entity';
-import { GpgService, NoPublicKeyVerifyError } from './gpg.service';
+import {
+  BlockEntity,
+  BlockType,
+  DataEntity,
+  PublicKeyEntity,
+  SignatureEntity,
+} from '../entity';
+import {
+  GpgService,
+  InvalidDataError,
+  NoPublicKeyVerifyError,
+} from './gpg.service';
 import { ImportAndVerifyPayload } from './verify.payload';
 
 type UnwrapPromise<T> = T extends Promise<infer R> ? R : never;
@@ -15,8 +25,14 @@ export class SignatureDataService {
   @InjectDataSource()
   private dataSource: DataSource;
 
+  @InjectRepository(BlockEntity)
+  private blockRepo: Repository<BlockEntity>;
+
   @InjectRepository(DataEntity)
   private dataRepo: Repository<DataEntity>;
+
+  @InjectRepository(PublicKeyEntity)
+  private publicKeyRepo: Repository<PublicKeyEntity>;
 
   @InjectRepository(SignatureEntity)
   private signRepo: Repository<SignatureEntity>;
@@ -29,50 +45,91 @@ export class SignatureDataService {
     const data = await this.gpgService.temporaryImportAndVerify(
       importAndVerifyPayload,
     );
+    const { signatureData } = data;
 
-    let publicKey = new DataEntity();
-    publicKey.createdAt = now;
-    publicKey.type = 'text/gpg/public-key';
-    publicKey.mime = 'text/plain';
-    publicKey.clearSignDataPart = importAndVerifyPayload.publicKeyArmored;
-    publicKey.sha256 = await this.calculateSha256(publicKey.clearSignDataPart);
+    let publicKeyBlock = new BlockEntity();
+    publicKeyBlock.createdAt = now;
+    publicKeyBlock.type = BlockType.PUBLIC;
+    publicKeyBlock.blockArmored = importAndVerifyPayload.publicKeyArmored;
+    publicKeyBlock = await this.findOrDefaultBlock(publicKeyBlock);
+
+    const publicKeys = [] as Array<PublicKeyEntity>;
+    for (const keyData of data.publicKeys) {
+      let publicKey = new PublicKeyEntity();
+      publicKey.primaryKeyFingerprint = signatureData.primaryKeyFingerprint;
+      publicKey.publicKeyFingerprint = keyData.publicKeyFingerprint;
+      publicKey.type = keyData.type;
+      publicKey.keygrip = keyData.grp;
+      publicKey.publicKey = keyData.pkey.join('');
+      publicKey = await this.findOrDefaultPublicKey(publicKey);
+      if (publicKey.id) {
+        if (keyData.expires && keyData.expires > now) {
+          publicKey.invalidAt = keyData.expires;
+        } else if (!keyData.expires && publicKey.invalidAt > now) {
+          publicKey.invalidAt = null;
+        } else if (keyData.expires && keyData.expires < now) {
+          if (publicKey.invalidAt) {
+            publicKey.invalidAt =
+              publicKey.invalidAt < now ? publicKey.invalidAt : now;
+          } else {
+            publicKey.invalidAt = now;
+          }
+        }
+      } else {
+        publicKey.createdAt = keyData.created;
+        publicKey.invalidAt = keyData.expires;
+      }
+      publicKey.block = publicKeyBlock;
+      publicKeys.push(publicKey);
+    }
 
     let agreement = new DataEntity();
     agreement.createdAt = now;
     agreement.type = 'text';
     agreement.mime = 'text/plain';
-    agreement.clearSignDataPart = data.clearSignDataPart;
+    agreement.clearSignDataPart = signatureData.clearSignDataPart;
     agreement.sha256 = await this.calculateSha256(agreement.clearSignDataPart);
 
-    [publicKey, agreement] = await Promise.all([
-      this.findOrDefaultData(publicKey),
-      this.findOrDefaultData(agreement),
-    ]);
+    agreement = await this.findOrDefaultData(agreement);
 
-    const publicKeySignature = new SignatureEntity();
-    publicKeySignature.createdAt = now;
-    publicKeySignature.data = publicKey;
-    publicKeySignature.hash = [];
-    publicKeySignature.signature = ''; // :(
-    publicKeySignature.packet = ''; // 1 signature must have only 1 sign  :(
-    publicKeySignature.primaryKeyFingerprint = data.mainKey;
-    publicKeySignature.signedAt = data.signatureDate;
-    publicKeySignature.subkeyFingerprint = data.usedKeyFingerprint;
+    let agreementSignatureBlock = new BlockEntity();
+    agreementSignatureBlock.createdAt = now;
+    agreementSignatureBlock.type = BlockType.SIGNATURE;
+    agreementSignatureBlock.blockArmored = signatureData.clearSignSignaturePart;
+    agreementSignatureBlock = await this.findOrDefaultBlock(
+      agreementSignatureBlock,
+    );
 
-    const agreementSignature = new SignatureEntity();
+    let agreementSignature = new SignatureEntity();
     agreementSignature.createdAt = now;
     agreementSignature.data = agreement;
-    agreementSignature.hash = data.hash;
+    agreementSignature.hash = signatureData.hash;
     agreementSignature.signature = data.signature;
     agreementSignature.packet = await this.gpgService.armor(
-      data.clearSignSignaturePart,
+      signatureData.clearSignSignaturePart,
     );
-    agreementSignature.primaryKeyFingerprint = data.mainKey;
-    agreementSignature.signedAt = data.signatureDate;
-    agreementSignature.subkeyFingerprint = data.usedKeyFingerprint;
+    agreementSignature.primaryKeyFingerprint =
+      signatureData.primaryKeyFingerprint;
+    agreementSignature.signedAt = signatureData.signatureDate;
+    agreementSignature.usedKeyFingerprint = signatureData.usedKeyFingerprint;
+    agreementSignature = await this.findOrDefaultSignature(agreementSignature);
+    agreementSignature.publicKey = publicKeys.find(
+      (pk) =>
+        pk.publicKeyFingerprintString === signatureData.usedKeyFingerprint,
+    );
+    if (!agreementSignature.block) {
+      agreementSignature.block = agreementSignatureBlock;
+    }
+    if (!agreementSignature.publicKey) {
+      throw new Error(
+        'Cannot be ok registration agreement without known agreementSignature.publicKey',
+      );
+    }
 
     return {
-      publicKeySignature,
+      publicKeyBlock,
+      publicKeys,
+      agreementSignatureBlock,
       agreementSignature,
       verifyData: data,
     };
@@ -83,33 +140,25 @@ export class SignatureDataService {
     let verifyData: UnwrapPromise<
       ReturnType<typeof GpgService.prototype.verify>
     >;
-    let notFoundError;
+    let publicKey: PublicKeyEntity = null;
     try {
       verifyData = await this.gpgService.verify(data);
     } catch (e) {
       if (!(e instanceof NoPublicKeyVerifyError)) {
         throw e;
       }
-      notFoundError = e;
-      const publicKeysSignatures = await this.signRepo.find({
+      const publicKeys = await this.publicKeyRepo.find({
         where: {
-          signature: '',
-          packet: '',
-          subkeyFingerprint: e.keyFingerprint,
+          publicKeyFingerprint: e.keyFingerprint,
         },
         relations: {
-          data: true,
+          user: true,
+          block: true,
         },
       });
-      const dataObj = publicKeysSignatures.reduce((acc, s) => {
-        if (!(s.data.id in acc)) {
-          acc[s.data.id] = s.data;
-        }
-        return acc;
-      }, {} as Record<string, DataEntity>);
-      for (const id in dataObj) {
+      for (const key of publicKeys) {
         await this.gpgService.loadKey({
-          publicKeyArmored: dataObj[id].clearSignDataPart,
+          publicKeyArmored: key.block.blockArmored,
         });
         try {
           verifyData = await this.gpgService.verify(data);
@@ -119,11 +168,14 @@ export class SignatureDataService {
           }
         }
         if (verifyData) {
+          publicKey = key;
           break;
         }
       }
       if (!verifyData) {
-        throw notFoundError;
+        throw new InvalidDataError(
+          'verification failed: used unregistered key',
+        );
       }
     }
 
@@ -136,6 +188,12 @@ export class SignatureDataService {
       dataEntity.clearSignDataPart,
     );
 
+    let signatureBlock = new BlockEntity();
+    signatureBlock.createdAt = now;
+    signatureBlock.type = BlockType.SIGNATURE;
+    signatureBlock.blockArmored = verifyData.clearSignSignaturePart;
+    signatureBlock = await this.findOrDefaultBlock(signatureBlock);
+
     let packet: Buffer;
     // eslint-disable-next-line prefer-const
     [packet, dataEntity] = await Promise.all([
@@ -143,18 +201,32 @@ export class SignatureDataService {
       this.findOrDefaultData(dataEntity),
     ]);
 
-    const signature = new SignatureEntity();
+    let signature = new SignatureEntity();
     signature.createdAt = now;
     signature.data = dataEntity;
     signature.hash = verifyData.hash;
     signature.signature = verifyData.signature;
     signature.packet = packet;
-    signature.primaryKeyFingerprint = verifyData.mainKey;
+    signature.primaryKeyFingerprint = verifyData.primaryKeyFingerprint;
     signature.signedAt = verifyData.signatureDate;
-    signature.subkeyFingerprint = verifyData.usedKeyFingerprint;
+    signature.usedKeyFingerprint = verifyData.usedKeyFingerprint;
+    signature = await this.findOrDefaultSignature(signature);
+    signature.block = signatureBlock;
+    signature.publicKey =
+      publicKey ||
+      (await this.publicKeyRepo.findOne({
+        where: {
+          primaryKeyFingerprint: verifyData.primaryKeyFingerprint,
+          publicKeyFingerprint: verifyData.usedKeyFingerprint,
+        },
+        relations: {
+          user: true,
+        },
+      }));
+    signature.user = signature.publicKey.user;
 
     return {
-      signature: await this.findOrDefaultSignature(signature),
+      signature,
       verifyData,
     };
   }
@@ -165,11 +237,25 @@ export class SignatureDataService {
     return hash.digest('hex');
   }
 
+  private async findOrDefaultBlock(block: BlockEntity) {
+    const b = await this.blockRepo.findOneBy(
+      pick(block, ['blockArmored', 'type']),
+    );
+    return b || block;
+  }
+
   private async findOrDefaultData(data: DataEntity) {
     const d = await this.dataRepo.findOneBy(
       pick(data, ['clearSignDataPart', 'type', 'sha256']),
     );
     return d || data;
+  }
+
+  private async findOrDefaultPublicKey(key: PublicKeyEntity) {
+    const p = await this.publicKeyRepo.findOneBy(
+      pick(key, ['publicKeyFingerprint', 'publicKey', 'type']),
+    );
+    return p || key;
   }
 
   private async findOrDefaultSignature(signature: SignatureEntity) {
@@ -181,7 +267,7 @@ export class SignatureDataService {
         'packet', // important
         'primaryKeyFingerprint',
         'signedAt',
-        'subkeyFingerprint',
+        'usedKeyFingerprint',
       ]),
     );
     if (s) {
