@@ -13,6 +13,7 @@ import {
 } from './mutations';
 
 export const FETCH_REPORTS = 'load_reports';
+export const FETCH_REPORT = 'load_single_report';
 
 // type UnscopedPlainFilters<Type, K, FieldType, Prefix extends string> = {
 //   // [`${Prefix}${K}`]: FilterRecordPair<FieldType>;
@@ -221,5 +222,11 @@ export default {
       }
     }
   },
-
+  async [FETCH_REPORT](
+    { commit }: ActionContext<unknown, unknown>,
+    id: string,
+  ) {
+    const report = await api.fetchReport(id)
+    commit(ADD_DATA, [report]);
+  }
 };

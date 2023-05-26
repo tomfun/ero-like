@@ -88,4 +88,8 @@ export default {
       encodedQuery,
     };
   },
+  async fetchReport(id: string): Promise<Report> {
+    const res = await fetch(`/api/report/${id}`);
+    return await res.json();
+  }
 };

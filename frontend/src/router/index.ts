@@ -5,6 +5,7 @@ import {
   createRouter, createWebHistory,
 } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
+import ReportView from '../views/ReportView.vue';
 import SubmitView from '../views/SubmitView.vue';
 import ReportsView from '../views/ReportsView.vue';
 import UserView from '../views/UserView.vue';
@@ -29,6 +30,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/reports',
     name: 'Reports',
     component: ReportsView,
+  },
+  {
+    path: '/report/:id',
+    name: 'Report',
+    component: ReportView,
   },
   {
     path: '/about',

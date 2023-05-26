@@ -162,17 +162,17 @@
               cols="66"
               rows="6"
               placeholder="-----BEGIN PGP SIGNED MESSAGE-----
-                Hash: SHA256
-                { YOUR JSON }
-                -----BEGIN PGP SIGNATURE-----
-                iQIzBAABCgAdFiEEVUcfD9jeufsD1JVP3UX6TcUPhfEFAmC7Q2gACgkQ3UX6TcUP
-                ....
-                  .
-                  .
-                ....
-                TaVHnbJ8jErfklgnRTPibX8AdmEFJasONNMJ/7euoBoH+aAYG/k=
-                =B0/L
-                -----END PGP SIGNATURE-----"/>
+Hash: SHA256
+{ <<YOUR JSON>> }
+-----BEGIN PGP SIGNATURE-----
+iQIzBAABCgAdFiEEVUcfD9jeufsD1JVP3UX6TcUPhfEFAmC7Q2gACgkQ3UX6TcUP
+....
+  .
+  .
+....
+TaVHnbJ8jErfklgnRTPibX8AdmEFJasONNMJ/7euoBoH+aAYG/k=
+=B0/L
+-----END PGP SIGNATURE-----"/>
             <small :id="id('clearSignArmored')">Paste here your validated and signed report.</small>
           </div>
           <Button class="submitReportForm__add-sub-but" @click="submit" :disabled="!clearSignArmored.length">Submit</Button>
@@ -336,8 +336,7 @@ export default defineComponent({
 
       fetch('/api/report/validate', requestOptions)
         .then(async (res) => {
-          const statusStr = res.status.toString()
-          if (res.ok && statusStr.match(/(20[0-9])/)) {
+          if (res.ok && res.status === 200) {
             this.validJson = await res.text();
             this.errors = [];
             this.validReport = true;
@@ -358,7 +357,7 @@ export default defineComponent({
     },
     async submit() {
       const requestOptions = {
-        method: 'Put',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'text/plain'},
         body: this.clearSignArmored,
