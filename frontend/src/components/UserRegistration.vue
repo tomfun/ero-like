@@ -177,7 +177,7 @@ export default defineComponent({
         this.errors = typeof message === 'string' ? [message] : message;
         return;
       }
-      if (response.status !== 201) {
+      if (response.status !== 200) {
         this.errors = ['Unknown error'];
         return;
       }
