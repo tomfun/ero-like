@@ -1,33 +1,48 @@
 <template>
   <div id="nav">
-    <div class="centered-items">
-      <router-link :to="{ name: 'Home', params: { locale: routerLocale } }">Home</router-link>
+    <div class="centered-items" v-if="isLocaleLoaded">
+      <router-link :to="{ name: 'Home', params: { locale: routerLocale } }">
+        {{ $t('home') }}
+      </router-link>
       |
-      <router-link :to="{ name: 'Reports', params: { locale: routerLocale } }">Reports</router-link>
+      <router-link :to="{ name: 'Reports', params: { locale: routerLocale } }">
+        {{ $t('reports') }}
+      </router-link>
       |
-      <router-link :to="{ name: 'Submit', params: { locale: routerLocale }  }">Submit Report
+      <router-link :to="{ name: 'Submit', params: { locale: routerLocale }  }">
+        {{ $t('app_submit_report') }}
       </router-link>
     </div>
     <LocaleSelect/>
   </div>
   <router-view v-if="isLocaleLoaded"/>
-  <div id="nav-footer">
-    <router-link :to="{ name: 'Home', params: { locale: routerLocale } }">Home</router-link>
-    |
-    <router-link :to="{ name: 'Reports', params: { locale: routerLocale } }">Reports</router-link>
-    |
-    <router-link :to="{ name: 'UserRegistration', params: { locale: routerLocale } }">Register
+  <div id="nav-footer" v-if="isLocaleLoaded">
+    <router-link :to="{ name: 'Home', params: { locale: routerLocale } }">
+      {{ $t('home') }}
     </router-link>
     |
-    <router-link :to="{ name: 'Submit', params: { locale: routerLocale } }">Submit Report
+    <router-link :to="{ name: 'Reports', params: { locale: routerLocale } }">
+      {{ $t('reports') }}
     </router-link>
     |
-    <router-link :to="{ name: 'About', params: { locale: routerLocale } }">About</router-link>
+    <router-link :to="{ name: 'UserRegistration', params: { locale: routerLocale } }">
+      {{ $t('app_register') }}
+    </router-link>
     |
-    <router-link :to="{ name: 'Terms', params: { locale: routerLocale } }">Terms of Use Agreement
+    <router-link :to="{ name: 'Submit', params: { locale: routerLocale } }">
+      {{ $t('app_submit_report') }}
+    </router-link>
+    |
+    <router-link :to="{ name: 'About', params: { locale: routerLocale } }">
+      {{ $t('app_about') }}
+    </router-link>
+    |
+    <router-link :to="{ name: 'Terms', params: { locale: routerLocale } }">
+      {{ $t('app_terms_of_use') }}
     </router-link>
   </div>
 </template>
+
 <style lang="scss">
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

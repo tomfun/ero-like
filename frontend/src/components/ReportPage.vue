@@ -8,39 +8,39 @@
   </div>
   <template v-if="report?.d">
     <h3>{{ report.d.title }}</h3>
-    <Panel header="Substances" class="substance-cont" toggleable :collapsed="false">
+    <Panel :header="$t('substances')" class="substance-cont" toggleable :collapsed="false">
       <ul class="substance-full-data-list">
         <li v-for="sub in report.d.substances" :key="sub">
           <Panel :header="sub.namePsychonautWikiOrg" toggleable :collapsed="false">
             <p class="m-0">
-              Dose: {{ sub.dose }}<br/>
-              Dose Unit: {{ sub.doseUnit }} <br/>
-              Time: {{ sub.timeSecond }}<br/>
-<!--              Quality percent:{{ sub.surePercent }}<br/>-->
-              Name on Psychonaut Wiki Org: {{ sub.namePsychonautWikiOrg }}<br/>
-              Route of administration: {{ sub.routeOfAdministration }}<br/>
+              {{ $t('dose') }}: {{ sub.dose }}<br/>
+              {{ $t('dose_unit') }}: {{ sub.doseUnit }} <br/>
+              {{ $t('time') }}: {{ sub.timeSecond }}<br/>
+<!--              {{ $t('quality_percent') }}:{{ sub.surePercent }}<br/>-->
+              {{ $t('name_on_pwo') }}: {{ sub.namePsychonautWikiOrg }}<br/>
+              {{ $t('route_of_admin') }}: {{ sub.routeOfAdministration }}<br/>
             </p>
           </Panel>
         </li>
       </ul>
     </Panel>
-    <Panel header="Author Info" class="substance-cont" toggleable :collapsed="false">
+    <Panel :header="$t('author_info')" class="substance-cont" toggleable :collapsed="false">
       <p class="m-0">
-        Nick: {{  report.signature.user.nick }}<br/>
+        {{ $t('nick') }}: {{  report.signature.user.nick }}<br/>
       </p>
     </Panel>
-    <Panel header="Background" class="substance-cont" toggleable :collapsed="false">
+    <Panel :header="$t('background')" class="substance-cont" toggleable :collapsed="false">
       <p class="m-0">
         {{  report.d.background }}
       </p>
     </Panel>
-    <Panel header="Timeline" class="substance-cont" toggleable :collapsed="false">
+    <Panel :header="$t('timeline')" class="substance-cont" toggleable :collapsed="false">
       <ul class="substance-full-data-list">
         <li v-for="tl in report.d.timeLineReport" :key="tl">
           <Panel :header="tl.timeSecond.toString()" toggleable :collapsed="false">
             <p class="m-0">
-              Time: {{ tl.timeSecond }}<br/>
-              Description: {{ tl.report }}<br/>
+              {{ $t('time') }}: {{ tl.timeSecond }}<br/>
+              {{ $t('description') }}: {{ tl.report }}<br/>
             </p>
           </Panel>
         </li>

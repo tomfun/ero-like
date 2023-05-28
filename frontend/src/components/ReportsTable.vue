@@ -29,7 +29,7 @@
         />
       </template>
       <template #body="{data}">
-        <span :title="formatDate(new Date(data.signature.user.createdAt))">
+        <span :title="$d(new Date((data as Report).signature.user.createdAt))">
           {{ data.signature.user.nick }}
         </span>
       </template>
@@ -306,14 +306,6 @@ export default defineComponent({
         .map((r) => get(r, path))
         .filter((f) => f.startsWith(query));
       filter.suggestions = Array.from(new Set(suggestions));
-    },
-    formatDate(value: number | Date) {
-      const date = (typeof value === 'number' ? new Date(value * 1000) : value);
-      return date.toLocaleDateString('en-US', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      });
     },
   },
   computed: {

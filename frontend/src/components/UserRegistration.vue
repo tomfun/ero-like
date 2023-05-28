@@ -1,137 +1,62 @@
 <template>
-
   <form class="card">
     <h1 class="flex align-items-center">
-      <span class="pi pi-user mr-2"></span>User Registration
+      <span class="pi pi-user mr-2"></span>{{ $t('user_registration') }}
     </h1>
     <div class="formgrid grid">
       <div class="field col">
-        <label for="publicKeyArmored">Public key (gpg public key block)</label>
+        <label for="publicKeyArmored">{{ $t('public_key_label') }}</label>
         <Textarea v-model="publicKeyArmored"
                   cols="66"
                   :autoResize="true"
                   id="publicKeyArmored"
                   name="publicKeyArmored"
-                  placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----
-
-mQINBF//CqwBEADQ622oqnAs9qFAH8sM0rXo+U8BOg95G8/16awsPsOPjdV1kxNs
-nAoFL1Xt5HCELslo4S6vjNMtIHLm6Jw3Hu0sUlfW81lu+q53XhFZcP22HB/MIRhD
-....
-   .
-   .
-....
-1Rzrx1yFHF7oKiNmI8TLejQ=
-=O9gO
------END PGP PUBLIC KEY BLOCK-----"/>
+                  :placeholder="$t('public_key_placeholder')"/>
         <p>
-          ! This information is public! When you upload your public key it's irreversible
+          {{ $t('public_key_warning') }}
         </p>
-        <Panel header="How to get keys" toggleable :collapsed="true">
-          <p class="m-0">
-            You need to know id of key or user:<br/>
-            <code>gpg --list-keys</code><br/>
-            <a
-              href="https://docs.github.com/en/authentication/managing-commit-signature-verification/checking-for-existing-gpg-keys">
-              Detailed instructions
-            </a>. If you <a
-            href="https://docs.github.com/en/authentication/managing-commit-signature-verification/generating-a-new-gpg-key">
-            don't have yet keys you can <b>create</b>
-          </a> them after you have decided which user to use you need to print you public keys and
-            user data:<br/>
-            <code>gpg --armor --export </code><b>$user</b><br/>
-            For example if your key is <code>DD45FA4DC50F85F1</code>:<br/>
-            <code>gpg --armor --export DD45FA4DC50F85F1</code><br/>
-            For example if your user is "<code>user</code>":<br/>
-            <code>gpg --armor --export user</code><br/>
-            After that you have to select all text result, copy, and paste it in the field above.
-            <br/>
-          </p>
+        <Panel :header="$t('how_to_get_keys')" toggleable :collapsed="true">
+          <p class="m-0" v-html="$t('how_to_get_keys_details')"></p>
         </Panel>
-        <Panel header="How to set public user" toggleable :collapsed="true">
-          <p class="m-0">
-            gpg and ero-like needs username. However we don't need email and there is no
-            verification for a moment. You may add new name for your secret key and hide other names
-            and emails.
-            Edit your user names you can with:<br/>
-            <code>gpg --edit-key </code><b>$user</b><br/>
-            <a
-              href="https://github.com/tomfun/ero-like/blob/ff66d8a21689ae5393a65c0b9e8c990649c7a73b/README-gpg.md#edit-names-and-email">
-              more details here
-            </a>.
-            To filter out any user containing @ (email):<br/>
-            <code>gpg --export-filter keep-uid='uid!~@' --armor --export </code><b>$user</b>
-            <br/>
-            <a
-              href="https://github.com/tomfun/ero-like/blob/ff66d8a21689ae5393a65c0b9e8c990649c7a73b/README-gpg.md#export-your-key">
-              details here
-            </a>.
-          </p>
+        <Panel :header="$t('how_to_set_public_user')" toggleable :collapsed="true">
+          <p class="m-0" v-html="$t('how_to_set_public_user_details')"></p>
         </Panel>
-        <p>
-          ! Before sending information you may see all data you will send:
-          <code>gpg --armor --export DD45FA4DC50F85F1 | gpg --list-packets</code><br/>
+        <p v-html="$t('check_before_sending')">
         </p>
       </div>
       <div class="field col">
-        <label for="clearSignArmored">Signature (gpg clear-sign output)</label>
+        <label for="clearSignArmored">{{ $t('signature_label') }}</label>
         <Textarea v-model="clearSignArmored"
                   name="clearSignArmored"
                   id="clearSignArmored"
                   cols="66"
                   :auto-resize="true"
-                  placeholder="-----BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
-
-I read and agree with all terms of use of ero-like and confirm my registration on ero-like
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEVUcfD9jeufsD1JVP3UX6TcUPhfEFAmC7Q2gACgkQ3UX6TcUP
-....
-   .
-   .
-....
-TaVHnbJ8jErfklgnRTPibX8AdmEFJasONNMJ/7euoBoH+aAYG/k=
-=B0/L
------END PGP SIGNATURE-----"/>
-        <Panel header="How do clear sign" toggleable :collapsed="true">
-          <p class="m-0">
-            You need to know public key id or your local user which was used to export public key.
-            Follow for instructions for the another field [gpg public key]<br/>
-            <code>gpg --list-keys</code><br/>
-            <a
-              href="https://docs.github.com/en/authentication/managing-commit-signature-verification/checking-for-existing-gpg-keys">
-              Detailed instructions
-            </a>. After you had decided which user to use you need to use it instead of $user:<br/>
-            <code>echo -e 'I read and agree with all terms of use of ero-like and confirm my
-              registration on ero-like' | gpg --clear-sign --disable-signer-uid --local-user </code>
-            <b>$user</b>
-            <code>
-              - </code><br/>
-            After that you have to select all text result, copy, and paste it in the field above.
-          </p>
+                  :placeholder="$t('signature_placeholder')"/>
+        <Panel :header="$t('how_to_clear_sign')" toggleable :collapsed="true">
+          <p class="m-0" v-html="$t('how_to_clear_sign_details')"></p>
         </Panel>
       </div>
       <div class="col-12">
         <div class="card flex justify-content-center flex-wrap gap-3">
-          <Button @click="submit(true)" severity="secondary">Check</Button>
-          <Button @click="submit(false)">Submit</Button>
+          <Button @click="submit(true)">{{ $t('check_button') }}</Button>
+          <Button @click="submit(false)">{{ $t('submit_button') }}</Button>
         </div>
         <Message severity="error" v-for="(error) in errors" :key="error">
           {{ error }}
         </Message>
         <Message severity="success" v-if="user.id">
-          user created!
+          {{ $t('user_created') }}
         </Message>
         <Message severity="info" v-if="user.agreementSignature.primaryKeyFingerprint">
-          user: {{ user.nick }}<br>
-          private key id: {{ user.agreementSignature.primaryKeyFingerprint }}<br>
           <span
-v-if="user.agreementSignature.primaryKeyFingerprint === user.agreementSignature.usedKeyFingerprint"
-          >
-            signature made by private key
+            v-html="$t('user_info_message', { nick: user.nick, primaryKeyFingerprint: user.agreementSignature.primaryKeyFingerprint })" />
+          <span
+            v-if="user.agreementSignature.primaryKeyFingerprint === user.agreementSignature.usedKeyFingerprint">
+            {{ $t('signature_made_directly') }}
           </span>
-          <span
-            v-else>sub key id: {{ user.agreementSignature.usedKeyFingerprint }}</span>
+          <span v-else>{{
+              $t('sub_key_id', { usedKeyFingerprint: user.agreementSignature.usedKeyFingerprint })
+            }}</span>
         </Message>
       </div>
     </div>
@@ -148,13 +73,13 @@ export default defineComponent({
       errors: [] as string[],
       user: {
         id: undefined,
-        nick: undefined,
+        nick: '',
         agreementSignature: {
           block: {},
           data: {},
           publicKey: {},
-          primaryKeyFingerprint: undefined,
-          usedKeyFingerprint: undefined,
+          primaryKeyFingerprint: '',
+          usedKeyFingerprint: '',
         },
       },
       publicKeyArmored: '',
@@ -177,7 +102,7 @@ export default defineComponent({
         this.errors = typeof message === 'string' ? [message] : message;
         return;
       }
-      if (response.status !== 201) {
+      if (response.status !== 200) {
         this.errors = ['Unknown error'];
         return;
       }
