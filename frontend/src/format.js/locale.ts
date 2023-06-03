@@ -5,7 +5,13 @@ import { negotiateLanguages } from "@fluent/langneg";
 import type { FluentBundle } from "@fluent/bundle";
 import type { FormatJs } from './types';
 
-export interface FormatJsOptions { defaultLocale: string, isShowNotFoundTranslationsWarning?: boolean, availableLocales: string[], load: (locale: string) => Promise<FluentBundle> }
+export interface FormatJsOptions {
+  defaultLocale: string,
+  isShowNotFoundTranslationsWarning?: boolean,
+  isFallback?: boolean,
+  availableLocales: string[],
+  load: (locale: string) => Promise<FluentBundle>
+}
 
 export class Locale {
   public localeRef: ShallowRef<string>;
@@ -19,6 +25,7 @@ export class Locale {
       { defaultLocale: options.defaultLocale, strategy: "lookup", }
     )[0]
     this.localeRef = shallowRef(locale);
+    this.loadTranslations(this.options.defaultLocale)
     this.loadTranslations(this.locale)
   }
   get locale() {
@@ -44,15 +51,28 @@ export class Locale {
   }
 
   formatString(id: string, args: Record<string, FluentVariable>|null = null) {
-    const ctx = this.bundles.get(this.locale);
+    let ctx = this.bundles.get(this.locale);
     if (!ctx) {
       this.warn(`locale ${this.locale} not found`)
+      if (this.options.isFallback) {
+        ctx = this.bundles.get(this.options.defaultLocale);
+      }
+    }
+    if (!ctx) {
       return id;
     }
 
-    const msg = ctx.getMessage(id);
+    let msg = ctx.getMessage(id);
     if (!msg?.value) {
       this.warn(`locale ${this.locale} translation message ${id} not found`);
+      if (
+        this.options.isFallback
+        && !ctx.locales.includes(this.options.defaultLocale)
+        && (ctx = this.bundles.get(this.options.defaultLocale))) {
+        msg = ctx.getMessage(id);
+      }
+    }
+    if (!ctx || !msg?.value) {
       return id;
     }
     return ctx.formatPattern(msg?.value, args);

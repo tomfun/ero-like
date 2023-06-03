@@ -48,6 +48,7 @@ export const app = createApp(App)
     defaultLocale: 'en',
     availableLocales: ['en', 'ru', 'he', 'uk'],
     isShowNotFoundTranslationsWarning: import.meta.env.DEV,
+    isFallback: !import.meta.env.DEV,
     async load(locale) {
       const messages = locale === 'en'
         ? { default: englishMessages }

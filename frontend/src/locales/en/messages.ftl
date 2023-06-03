@@ -21,6 +21,7 @@ app_submit_report = Submit Report
 app_register = Register
 app_about = About
 app_terms_of_use = Terms of Use Agreement
+app_add_translations = Add translations
 user_registration = User Registration
 public_key_label = Public key (gpg public key block)
 public_key_placeholder = 
