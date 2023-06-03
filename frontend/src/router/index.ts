@@ -4,10 +4,12 @@ import type {
 import {
   createRouter, createWebHistory,
 } from 'vue-router';
+import AboutView from '../views/AboutView.vue';
 import HomeView from '../views/HomeView.vue';
 import ReportView from '../views/ReportView.vue';
 import SubmitView from '../views/SubmitView.vue';
 import ReportsView from '../views/ReportsView.vue';
+import TermsView from '../views/TermsView.vue';
 import UserView from '../views/UserView.vue';
 
 const routes: Array<RouteRecordRaw> = [
@@ -39,15 +41,12 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/:locale?/about',
     name: 'About',
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue'),
+    component: AboutView,
   },
   {
     path: '/:locale?/terms',
     name: 'Terms',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "terms" */ '../views/TermsView.vue'),
+    component: TermsView,
   },
 ];
 

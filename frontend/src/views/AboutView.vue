@@ -18,5 +18,4 @@
   }
 }
 </style>
-<script setup>
-</script>
+
