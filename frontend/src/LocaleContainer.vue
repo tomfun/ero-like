@@ -1,23 +1,27 @@
 <template>
-  <div id="nav">
-    <div class="centered-items" v-if="isLocaleLoaded">
-      <router-link :to="{ name: 'Home', params: { locale: routerLocale } }">
-        {{ $t('home') }}
-      </router-link>
-      |
-      <router-link :to="{ name: 'Reports', params: { locale: routerLocale } }">
-        {{ $t('reports') }}
-      </router-link>
-      |
-      <router-link :to="{ name: 'Submit', params: { locale: routerLocale }  }">
-        {{ $t('app_submit_report') }}
-      </router-link>
+  <div id="nav-wrapper">
+    <header id="nav">
+      <nav class="centered-items" v-if="isLocaleLoaded">
+        <router-link :to="{ name: 'Home', params: { locale: routerLocale } }">
+          {{ $t('home') }}
+        </router-link>
+        |
+        <router-link :to="{ name: 'Reports', params: { locale: routerLocale } }">
+          {{ $t('reports') }}
+        </router-link>
+        |
+        <router-link :to="{ name: 'Submit', params: { locale: routerLocale }  }">
+          {{ $t('app_submit_report') }}
+        </router-link>
+      </nav>
+      <LocaleSelect/>
+    </header>
+    <div id="forkme">
+      <div class="forkme"><a href="https://github.com/tomfun/ero-like">Fork me on Github</a></div>
     </div>
-    <LocaleSelect/>
-    <div class="forkme"><a href="https://github.com/tomfun/ero-like">Fork me on Github</a></div>
   </div>
-  <router-view v-if="isLocaleLoaded"/>
-  <div id="nav-footer" v-if="isLocaleLoaded">
+  <main><router-view v-if="isLocaleLoaded"/></main>
+  <footer id="nav-footer" v-if="isLocaleLoaded">
     <router-link :to="{ name: 'Home', params: { locale: routerLocale } }">
       {{ $t('home') }}
     </router-link>
@@ -44,7 +48,7 @@
     <a href="https://pontoon.tomfun.co/projects/ero-like/">
       &#127987; {{ $t('app_add_translations') }}
     </a>
-  </div>
+  </footer>
 </template>
 
 <style lang="scss">
@@ -55,12 +59,23 @@
   color: #2c3e50;
 }
 
+body, #app, html {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+main {
+  padding: 0 5px;
+}
 div.center, #nav, #nav-footer {
   text-align: center;
 }
 
+$navPadding: 30px;
+
 #nav, #nav-footer {
-  padding: 30px;
+  padding: $navPadding;
 
   a {
     font-weight: bold;
@@ -93,26 +108,48 @@ div.center, #nav, #nav-footer {
   padding: 0;
 }
 
-.forkme {
-  transform: rotate(45deg);
-  background-color: #FFF;
-  overflow: hidden;
-  /* position: fixed; */
-  position: absolute;
-  z-index: 1;
-  width: 220px;
-  right: -104px;
-  top: 29px;
-  border-style: solid;
-  border-color: #7B7979;
-  a {
-    color: #404040;
-    display: block;
-    font: 13px Helvetica Neue, Arial, sans-serif;
-    margin: 0.05em 0px 0.075em;
-    padding: 0.6em;
-    text-align: center;
-    text-decoration: none
+$forkMeSizeMax: 80px;
+#nav-wrapper {
+  display: flex;
+  justify-content: end;
+  align-items: start;
+
+  #nav, #forkme {
+    display: flex;
+  }
+
+  #nav {
+    width: calc(100% - $forkMeSizeMax - $navPadding);
+    padding-right: 0;
+  }
+
+  #forkme {
+    position: relative;
+    overflow: hidden;
+    min-width: $forkMeSizeMax;
+    min-height: $forkMeSizeMax;
+    .forkme {
+      transform: rotate(45deg);
+      background-color: #FFF;
+      overflow: hidden;
+      /* position: fixed; */
+      position: absolute;
+      z-index: 1;
+      width: 220px;
+      right: -104px;
+      top: 29px;
+      border-style: solid;
+      border-color: #7B7979;
+      a {
+        color: #404040;
+        display: block;
+        font: 13px Helvetica Neue, Arial, sans-serif;
+        margin: 0.05em 0px 0.075em;
+        padding: 0.6em;
+        text-align: center;
+        text-decoration: none
+      }
+    }
   }
 }
 
