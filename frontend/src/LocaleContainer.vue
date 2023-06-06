@@ -13,6 +13,7 @@
         <router-link :to="{ name: 'Submit', params: { locale: routerLocale }  }">
           {{ $t('app_submit_report') }}
         </router-link>
+      &nbsp;
       </nav>
       <LocaleSelect/>
     </header>
@@ -46,7 +47,7 @@
       {{ $t('app_terms_of_use') }}
     </router-link>
     <a href="https://pontoon.tomfun.co/projects/ero-like/">
-      &#127987; {{ $t('app_add_translations') }}
+      &#127987;&nbsp;{{ $t('app_add_translations') }}
     </a>
   </footer>
 </template>
@@ -57,6 +58,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  min-width: 380px;
+  width: 100%;
 }
 
 body, #app, html {
@@ -108,10 +113,10 @@ $navPadding: 30px;
   padding: 0;
 }
 
-$forkMeSizeMax: 80px;
+$forkMeSizeMax: 40px;
 #nav-wrapper {
   display: flex;
-  justify-content: end;
+  justify-content: start;
   align-items: start;
 
   #nav, #forkme {
@@ -122,24 +127,30 @@ $forkMeSizeMax: 80px;
     width: calc(100% - $forkMeSizeMax - $navPadding);
     padding-right: 0;
   }
+  width: 100%;
+  overflow: hidden;
 
   #forkme {
     position: relative;
-    overflow: hidden;
     min-width: $forkMeSizeMax;
-    min-height: $forkMeSizeMax;
+    min-height: 28px;
     .forkme {
       transform: rotate(45deg);
       background-color: #FFF;
       overflow: hidden;
-      /* position: fixed; */
       position: absolute;
       z-index: 1;
       width: 220px;
-      right: -104px;
-      top: 29px;
+      right: -119px;
+      top: 18px;
       border-style: solid;
       border-color: #7B7979;
+      transition: 0.3s;
+      transition-property: right,top;
+      &:hover {
+        right: -114px;
+        top: 23px;
+      }
       a {
         color: #404040;
         display: block;
