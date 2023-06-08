@@ -8,8 +8,17 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { useMeta } from 'vue-meta'
+import { useLocale } from '../format.js/provider'
 
 export default defineComponent({
   name: 'HomeView',
+  setup () {
+    useMeta({
+      title: useLocale().formatString('home_page_title'),
+      description: useLocale().formatString('home_page_description'),
+      keywords: useLocale().formatString('home_page_keywords'),
+    })
+  }
 });
 </script>

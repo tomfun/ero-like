@@ -232,3 +232,15 @@ ero-like-about = <q>Explore the eroticism of discovering the truth - it's a jour
 
   Thank you for choosing Ero-Like, where we believe that knowledge is power and that understanding
   ourselves and the world around us is the key to personal growth and well-being.
+
+about_page_title = Discover Truth and Expand Your Horizons
+about_page_description = Dive into the compelling journey of self-discovery with Ero-Like. We are redefining the power of the digital age, helping individuals uncover truths about themselves and the world around them. Experience the thrill of the unknown as we navigate the unexplored paths of knowledge and wisdom together.
+about_page_keywords = Ero-Like, Self-Discovery, Uncover Truth, Digital Age, Knowledge, Wisdom, GnuPG, Digital Signatures, Innovation, Personal Growth, Well-being, I2P
+
+home_page_title = Home
+home_page_description = The ero-like website is a platform for creating and sharing reports, similar to tweets, but leveraging digital signatures and structured data. It ensures authenticity and data integrity while promoting open standards.
+home_page_keywords = Ero-Like, platform, reports, digital signatures, structured data, authenticity, data integrity, open standards, open source, sharing, downloading, digital resistance
+
+reports_page_title = The reports storage
+reports_page_description = Explore our reports storage on ero-like. With a wide array of filters available, finding and examining reports has never been easier. Each report is backed by digital signatures and structured data to ensure authenticity and data integrity.
+reports_page_keywords = ero-like, reports, storage, filters, digital signatures, structured data, authenticity, data integrity, user experience, insights, duality, sacrament, spirit stories

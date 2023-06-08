@@ -5,6 +5,22 @@
     <div v-html="$t('ero-like-about')"/>
   </div>
 </template>
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { useMeta } from 'vue-meta'
+import { useLocale } from '../format.js/provider'
+
+export default defineComponent({
+  name: 'AboutView',
+  setup () {
+    useMeta({
+      title: useLocale().formatString('about_page_title'),
+      description: useLocale().formatString('about_page_description'),
+      keywords: useLocale().formatString('about_page_keywords'),
+    })
+  }
+});
+</script>
 <style scoped lang="scss">
 .about {
   p {

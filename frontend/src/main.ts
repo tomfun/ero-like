@@ -13,8 +13,8 @@ import ProgressBar from 'primevue/progressbar';
 import Textarea from 'primevue/textarea';
 import InputNumber from 'primevue/inputnumber';
 import { createApp } from 'vue';
+import { createMetaManager } from 'vue-meta'
 import { FluentBundle } from '@fluent/bundle'
-
 import 'primeicons/primeicons.css';
 import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primevue/resources/primevue.min.css';
@@ -58,4 +58,5 @@ export const app = createApp(App)
       return translations;
     }
   }))
+  .use(createMetaManager(false))
   .mount('#app');

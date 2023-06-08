@@ -1,4 +1,7 @@
 <template>
+  <metainfo>
+    <template v-slot:title="{ content }" v-if="isLocaleLoaded">{{ content ? `${content} | Ero Like` : `Ero Like` }}</template>
+  </metainfo>
   <div id="nav-wrapper">
     <header id="nav">
       <nav class="centered-items" v-if="isLocaleLoaded">
@@ -173,6 +176,7 @@ $forkMeSizeMax: 40px;
 
 </style>
 <script lang="ts">
+import { useMeta } from 'vue-meta';
 import type {
   NavigationGuardNext,
   RouteLocationNormalized,
@@ -191,13 +195,6 @@ export default {
     implicitLocale() {
       return this.$locale.locale
     }
-  },
-  setup() {
-    const html = document.querySelector('html');
-    if (!html) {
-      throw new Error('Implement language changing')
-    }
-    return { html };
   },
   mounted() {
     this.$router.beforeEach(this.beforeEnter);
@@ -224,7 +221,11 @@ export default {
         await this.$locale.load
         if (this.$locale.locale === newLocale) {
           this.isLocaleLoaded = true;
-          this.html.setAttribute('lang', newLocale)
+          useMeta({
+            htmlAttrs: {
+              lang: newLocale,
+            }
+          })
         }
       },
     },
