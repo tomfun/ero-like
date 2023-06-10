@@ -49,6 +49,13 @@
     <a href="https://pontoon.tomfun.co/projects/ero-like/">
       &#127987;&nbsp;{{ $t('app_add_translations') }}
     </a>
+    <a title="copy address helper link to you i2p browser" href="http://ero-like.i2p/?i2paddresshelper=KacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKSmnDHUDkRKeWmmK-g5lOiQreBfQ294Hz2iL68GGD5cpKacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKSmnDHUDkRKeWmmK-g5lOiQreBfQ294Hz2iL68GGD5cpKacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKSmnDHUDkRKeWmmK-g5lOiQreBfQ294Hz2iL68GGD5cpKacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKaOfiDskfhZWWQzo82rc~cjnIqTN13o64vJsXdWdXpYkBQAEAAcAAA==">
+      📄ero-like.i2p
+    </a>
+    |
+    <a title="instructions for i2p" href="https://github.com/tomfun/ero-like/i2p.md">
+      i2p
+    </a>
   </footer>
 </template>
 
