@@ -1,0 +1,3 @@
+basepath = "."
+[[includes]]
+    path = "frontend/src/locales/l10n.toml"

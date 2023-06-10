@@ -1,8 +1,7 @@
 <template>
   <div>
-    <h1>This is report storage</h1>
+    <h1>{{ $t('reports_title') }}</h1>
     <ReportsTable/>
-
   </div>
 </template>
 

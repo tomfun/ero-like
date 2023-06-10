@@ -7,6 +7,7 @@ interface ReportAlpha1 {
     user: {
       id: string;
       nick: string;
+      createdAt: string;
     };
   };
   d: {

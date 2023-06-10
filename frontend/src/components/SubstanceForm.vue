@@ -54,6 +54,9 @@
           <span class=" substanceForm__cont-block_small p-float-label">
             <InputNumber
               v-model:modelValue="item.dose"
+              :locale="$locale.locale"
+              :minFractionDigits="2"
+              :min="0"
             />
             <label :for="id('dose')">Amount</label>
           </span>

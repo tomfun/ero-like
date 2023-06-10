@@ -14,7 +14,7 @@
     :globalFilterFields="[
       'signature.user.nick', 'd.title', 'd.substances.*.namePsychonautWikiOrg', 'd.dateTimestamp']"
     >
-    <Column field="signature.user.nick" filter-field="signature.user.nick" header="Nick" style="min-width: 14rem"
+    <Column field="signature.user.nick" filter-field="signature.user.nick" :header="$t('nick')" style="min-width: 14rem"
             filterMatchMode="startsWith"
             :filterMatchModeOptions="configFilterMatchModeOptions.text.slice(0, 2)"
             ref="nick">
@@ -29,12 +29,12 @@
         />
       </template>
       <template #body="{data}">
-        <span :title="formatDate(new Date(data.signature.user.createdAt))">
+        <span :title="$d(new Date((data as Report).signature.user.createdAt))">
           {{ data.signature.user.nick }}
         </span>
       </template>
     </Column>
-    <Column field="d.title" filterField="d.title" header="Title" style="min-width: 16rem"
+    <Column field="d.title" filterField="d.title" :header="$t('title')" style="min-width: 16rem"
             :filterMatchModeOptions="configFilterMatchModeOptions.text"
             ref="title">
       <template #filter="{filterModel,filterCallback}">
@@ -52,7 +52,7 @@
     </Column>
     <Column field="d.substances.*.namePsychonautWikiOrg"
             filterField="d.substances.*.namePsychonautWikiOrg"
-            header="Substances"
+            :header="$t('substances')"
             filterMatchMode="contains"
             :showFilterMenu="false"
             ref="substances">
@@ -81,16 +81,17 @@
       </template>
     </Column>
     <Column filterField="date"
-            header="Date"
+            :header="$t('date')"
             :filterMatchModeOptions="configFilterMatchModeOptions.date"
             ref="date">
       <template #filter="{filterModel,filterCallback}">
         <Calendar v-model="filterModel.value"
                   @update:modelValue="filterCallback()"
-                  dateFormat="mm/dd/yy" placeholder="mm/dd/yyyy" />
+                  :dateFormat="dateFormatShort" :placeholder="dateFormatShort"
+        />
       </template>
       <template #body="{data}">
-        {{ formatDate(data.d.dateTimestamp) }}
+        {{ $dx(data.d.dateTimestamp) }}
       </template>
     </Column>
   </DataTable>
@@ -221,6 +222,11 @@ export default defineComponent({
       if (this.getCurrentDesiredRoute() === this.$route.fullPath) {
         return;
       }
+      this.setDataFromRouter();
+      this.onFilter();
+      this.fetchDebounced.flush();
+    },
+    setDataFromRouter() {
       const convert = (operator: string, values: Record<string, number | string>) => ({
         value: values[operator],
         matchMode: operator,
@@ -279,8 +285,6 @@ export default defineComponent({
           return true;
         });
       });
-      this.onFilter();
-      this.fetchDebounced.flush();
     },
     onApiFinalResponse() {
       if (this.isLoading || this.isDebouncedFetch) {
@@ -302,14 +306,6 @@ export default defineComponent({
         .map((r) => get(r, path))
         .filter((f) => f.startsWith(query));
       filter.suggestions = Array.from(new Set(suggestions));
-    },
-    formatDate(value: number | Date) {
-      const date = (typeof value === 'number' ? new Date(value * 1000) : value);
-      return date.toLocaleDateString('en-US', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      });
     },
   },
   computed: {
@@ -344,20 +340,40 @@ export default defineComponent({
         return (this as unknown as ReportsTableThis).pagination.encodedQuery;
       },
     }),
+    dateFormatShort() {
+      const locale = this.$locale.locale;
+      const options = { day: '2-digit' as const, month: '2-digit' as const, year: '2-digit' as const };
+
+      const sampleDate = new Date(2000, 3, 1); // Note: JavaScript counts months from 0
+      const dateParts = new Intl.DateTimeFormat(locale, options).formatToParts(sampleDate);
+
+      let format = '';
+      for (const part of dateParts) {
+        if (part.type === 'day') {
+          format += 'dd';
+        } else if (part.type === 'month') {
+          format += 'mm';
+        } else if (part.type === 'year') {
+          format += 'yy';
+        } else if (part.type === 'literal') {
+          format += part.value;
+        }
+      }
+
+      return format;
+    },
   },
   watch: {
     encodedQuery() {
       this.onApiFinalResponse();
     },
+    '$route.fullPath'() {
+      this.onRouteUpdate();
+    }
   },
   beforeMount() {
+    this.setDataFromRouter();
     this.onRouteUpdate();
-    this.$watch(
-      () => this.$route.fullPath,
-      () => {
-        this.onRouteUpdate();
-      },
-    );
   },
 });
 
