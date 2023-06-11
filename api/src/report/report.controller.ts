@@ -73,7 +73,7 @@ curl -X 'GET' 'http://....../api/report/....' \\
       );
     }
     return instanceToPlain(await this.reportService.getReport(id), {
-      groups: ['report', 'entity'],
+      groups: ['report', 'entity', 'user'],
     });
   }
 
