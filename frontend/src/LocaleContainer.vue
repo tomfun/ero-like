@@ -53,8 +53,8 @@
       📄ero-like.i2p
     </a>
     |
-    <a title="instructions for i2p" href="https://github.com/tomfun/ero-like/i2p.md">
-      i2p
+    <a title="instructions for i2p" href="https://github.com/tomfun/ero-like/blob/main/i2p.md">
+      i2p usage
     </a>
   </footer>
 </template>

@@ -20,8 +20,9 @@ Same API idea is for report creating: instead of pure validation `/api/report/va
 `/api/report` should be used.
 
 ## proxy
-I2P router has defaults as I2Pd but [listed here](http://127.0.0.1:7657/help#reachabilityhelp)
-I2Pd is highly configurable and you can have SOCKS and HTTP proxy. Usually both enabled.
+I2P router has by default only http proxy on the same port as I2Pd by defaults. See "I2P
+HTTPS/SOCKS/HTTP Proxy" at page [i2ptunnelmgr console page](http://127.0.0.1:7657/i2ptunnelmgr)
+I2Pd is highly configurable and you can have SOCKS and HTTP proxy - both enabled by default. 
 Default HTTP proxy is : port 4444 and host 127.0.0.1.
 
 ```shell
@@ -59,6 +60,9 @@ curl -k -x socks5h://127.0.0.1:4447 \
 ```
 
 #### CA
+
+> Within I2P, there is no requirement to use HTTPS. All traffic is encrypted end-to-end, any further encryption, e.g. with the use of HTTPS, doesn't create any further anonymity-related benefits. However, if one would like to use HTTPS or has a requirement to do so, the existing default I2P HTTP Proxy has support for HTTPS traffic. Any hidden service operator would have to specifically set up and enable HTTPS access.
+[from i2p.net](https://geti2p.net/en/faq#https)
 
 You can save self signed CA to file if you want to verify HTTPS connection 
 ```
