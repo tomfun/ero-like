@@ -1,6 +1,9 @@
 <template>
   <metainfo>
-    <template v-slot:title="{ content }">{{ content ? `${content} | Ero Like` : `Ero Like` }}</template>
+    <!--suppress VueUnrecognizedSlot -->
+    <template v-slot:title="{ content = '' }">
+      {{ content ? `${content} | Ero Like` : `Ero Like` }}
+    </template>
   </metainfo>
   <LocaleContainer />
 </template>
