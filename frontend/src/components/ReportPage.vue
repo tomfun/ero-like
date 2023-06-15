@@ -6,7 +6,7 @@
     style="height: .5em"
   />
   </div>
-  <template v-if="report?.d">
+  <article v-if="report?.d">
     <h3>{{ report.d.title }}</h3>
     <Panel :header="$t('substances')" class="substance-cont" toggleable :collapsed="false">
       <ul class="substance-full-data-list">
@@ -46,11 +46,19 @@
         </li>
       </ul>
     </Panel>
-  </template>
+    <address>
+      {{ report?.signature.user.nick }}
+    </address>
+    <time itemprop="startDate" :datetime="new Date(report?.d.dateTimestamp * 1000).toISOString()">
+      {{ formatDate(report?.d.dateTimestamp) }}
+    </time>
+
+  </article>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { useMeta } from 'vue-meta';
 import { mapActions, mapState } from 'vuex';
 import type {
   State as ReportsState,
@@ -65,6 +73,12 @@ export default defineComponent({
   name: 'ReportPage',
   data() {
     return { loading: 0 };
+  },
+  setup () {
+    const { meta } = useMeta({
+      title: '...',
+    })
+    return { meta }
   },
   methods: {
     ...mapActions(REPORTS_MODULE, {
@@ -82,9 +96,8 @@ export default defineComponent({
       }
     },
     formatDate(value: number | Date) {
-      // todo: localization
       const date = (typeof value === 'number' ? new Date(value * 1000) : value);
-      return date.toLocaleDateString('en-US', {
+      return date.toLocaleDateString(this.$locale.locale, {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -110,6 +123,29 @@ export default defineComponent({
       immediate: true,
       handler() {
         this.onRouteUpdate();
+      },
+    },
+    'report': {
+      immediate: true,
+      handler() {
+        const { report } = this;
+        if (!report || !report.d) {
+          return;
+        }
+        const newMeta = {
+          title: report?.d?.title,
+          og: {
+            title: report?.d?.title
+          },
+          'DC.title': report?.d?.title,
+          author: report?.signature.user.nick,
+          'DC.creator': report?.signature.user.nick,
+          'DCTERMS.creator': report?.signature.user.nick,
+          'DCTERMS.date': new Date(report?.d.dateTimestamp * 1000).toISOString(),
+          'DCTERMS.dateSubmitted': new Date(report?.createdAt).toISOString(),
+          'DCTERMS.created': new Date(report?.signature.signedAt as string).toISOString(),
+        };
+        Object.assign(this.meta, newMeta)
       },
     },
   },

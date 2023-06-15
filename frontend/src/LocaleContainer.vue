@@ -1,7 +1,4 @@
 <template>
-  <metainfo>
-    <template v-slot:title="{ content }" v-if="isLocaleLoaded">{{ content ? `${content} | Ero Like` : `Ero Like` }}</template>
-  </metainfo>
   <div id="nav-wrapper">
     <header id="nav">
       <nav class="centered-items" v-if="isLocaleLoaded">
@@ -191,6 +188,10 @@ export default {
   data() {
     return { isLocaleLoaded: false, routerLocale: '' };
   },
+  setup () {
+    const { meta } = useMeta({})
+    return { meta }
+  },
   computed: {
     implicitLocale() {
       return this.$locale.locale
@@ -221,11 +222,9 @@ export default {
         await this.$locale.load
         if (this.$locale.locale === newLocale) {
           this.isLocaleLoaded = true;
-          useMeta({
-            htmlAttrs: {
-              lang: newLocale,
-            }
-          })
+          this.meta.htmlAttrs = {
+            lang: newLocale,
+          }
         }
       },
     },

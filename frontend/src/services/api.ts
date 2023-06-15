@@ -4,6 +4,7 @@ interface ReportAlpha1 {
   id: string;
   signature: {
     id: string;
+    signedAt?: string;
     user: {
       id: string;
       nick: string;
