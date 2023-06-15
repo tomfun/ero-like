@@ -1,62 +1,68 @@
 <template>
-  <div id="nav-wrapper">
-    <header id="nav">
-      <nav class="centered-items" v-if="isLocaleLoaded">
-        <router-link :to="{ name: 'Home', params: { locale: routerLocale } }">
+  <LocaleContainer>
+    <template v-slot:header="{ isLocaleLoaded, locale }">
+      <div id="nav-wrapper">
+        <header id="nav">
+          <nav class="centered-items" v-if="isLocaleLoaded">
+            <router-link :to="{ name: 'Home', params: { locale } }">
+              {{ $t('home') }}
+            </router-link>
+            |
+            <router-link :to="{ name: 'Reports', params: { locale } }">
+              {{ $t('reports') }}
+            </router-link>
+            |
+            <router-link :to="{ name: 'Submit', params: { locale }  }">
+              {{ $t('app_submit_report') }}
+            </router-link>
+            &nbsp;<!-- <-~ я верстальщик от бога -->
+          </nav>
+          <LocaleSelect/>
+        </header>
+        <div id="forkme">
+          <div class="forkme"><a href="https://github.com/tomfun/ero-like">Fork me on Github</a></div>
+        </div>
+      </div>
+    </template>
+    <template v-slot:default="{ isLocaleLoaded, locale }">
+      <main><router-view v-if="isLocaleLoaded"/></main>
+      <footer id="nav-footer" v-if="isLocaleLoaded">
+        <router-link :to="{ name: 'Home', params: { locale } }">
           {{ $t('home') }}
         </router-link>
         |
-        <router-link :to="{ name: 'Reports', params: { locale: routerLocale } }">
+        <router-link :to="{ name: 'Reports', params: { locale } }">
           {{ $t('reports') }}
         </router-link>
         |
-        <router-link :to="{ name: 'Submit', params: { locale: routerLocale }  }">
+        <router-link :to="{ name: 'UserRegistration', params: { locale } }">
+          {{ $t('app_register') }}
+        </router-link>
+        |
+        <router-link :to="{ name: 'Submit', params: { locale } }">
           {{ $t('app_submit_report') }}
         </router-link>
-      &nbsp;
-      </nav>
-      <LocaleSelect/>
-    </header>
-    <div id="forkme">
-      <div class="forkme"><a href="https://github.com/tomfun/ero-like">Fork me on Github</a></div>
-    </div>
-  </div>
-  <main><router-view v-if="isLocaleLoaded"/></main>
-  <footer id="nav-footer" v-if="isLocaleLoaded">
-    <router-link :to="{ name: 'Home', params: { locale: routerLocale } }">
-      {{ $t('home') }}
-    </router-link>
-    |
-    <router-link :to="{ name: 'Reports', params: { locale: routerLocale } }">
-      {{ $t('reports') }}
-    </router-link>
-    |
-    <router-link :to="{ name: 'UserRegistration', params: { locale: routerLocale } }">
-      {{ $t('app_register') }}
-    </router-link>
-    |
-    <router-link :to="{ name: 'Submit', params: { locale: routerLocale } }">
-      {{ $t('app_submit_report') }}
-    </router-link>
-    |
-    <router-link :to="{ name: 'About', params: { locale: routerLocale } }">
-      {{ $t('app_about') }}
-    </router-link>
-    |
-    <router-link :to="{ name: 'Terms', params: { locale: routerLocale } }">
-      {{ $t('app_terms_of_use') }}
-    </router-link>
-    <a href="https://pontoon.tomfun.co/projects/ero-like/">
-      &#127987;&nbsp;{{ $t('app_add_translations') }}
-    </a>
-    <a title="copy address helper link to you i2p browser" href="http://ero-like.i2p/?i2paddresshelper=KacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKSmnDHUDkRKeWmmK-g5lOiQreBfQ294Hz2iL68GGD5cpKacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKSmnDHUDkRKeWmmK-g5lOiQreBfQ294Hz2iL68GGD5cpKacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKSmnDHUDkRKeWmmK-g5lOiQreBfQ294Hz2iL68GGD5cpKacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKaOfiDskfhZWWQzo82rc~cjnIqTN13o64vJsXdWdXpYkBQAEAAcAAA==">
-      📄ero-like.i2p
-    </a>
-    |
-    <a title="instructions for i2p" href="https://github.com/tomfun/ero-like/blob/main/i2p.md">
-      i2p usage
-    </a>
-  </footer>
+        |
+        <router-link :to="{ name: 'About', params: { locale } }">
+          {{ $t('app_about') }}
+        </router-link>
+        |
+        <router-link :to="{ name: 'Terms', params: { locale } }">
+          {{ $t('app_terms_of_use') }}
+        </router-link>
+        <a href="https://pontoon.tomfun.co/projects/ero-like/">
+          &#127987;&nbsp;{{ $t('app_add_translations') }}
+        </a>
+        <a title="copy address helper link to you i2p browser" href="http://ero-like.i2p/?i2paddresshelper=KacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKSmnDHUDkRKeWmmK-g5lOiQreBfQ294Hz2iL68GGD5cpKacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKSmnDHUDkRKeWmmK-g5lOiQreBfQ294Hz2iL68GGD5cpKacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKSmnDHUDkRKeWmmK-g5lOiQreBfQ294Hz2iL68GGD5cpKacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKaOfiDskfhZWWQzo82rc~cjnIqTN13o64vJsXdWdXpYkBQAEAAcAAA==">
+          📄ero-like.i2p
+        </a>
+        |
+        <a title="instructions for i2p" href="https://github.com/tomfun/ero-like/blob/main/i2p.md">
+          i2p usage
+        </a>
+      </footer>
+    </template>
+  </LocaleContainer>
 </template>
 
 <style lang="scss">
@@ -173,80 +179,14 @@ $forkMeSizeMax: 40px;
 
 </style>
 <script lang="ts">
-import { useMeta } from 'vue-meta';
-import type {
-  NavigationGuardNext,
-  RouteLocationNormalized,
-} from 'vue-router';
-import LocaleSelect from './components/LocaleSelect.vue';
+import LocaleSelect from './format.js/LocaleSelect.vue';
+import LocaleContainer from './format.js/LocaleContainer.vue';
 
 export default {
-  name: 'LocaleContainer',
+  name: 'AppContainer',
   components: {
     LocaleSelect,
+    LocaleContainer,
   },
-  data() {
-    return { isLocaleLoaded: false, routerLocale: '' };
-  },
-  setup () {
-    const { meta } = useMeta({})
-    return { meta }
-  },
-  computed: {
-    implicitLocale() {
-      return this.$locale.locale
-    }
-  },
-  mounted() {
-    this.$router.beforeEach(this.beforeEnter);
-  },
-  watch: {
-    '$route.params.locale': {
-      async handler(locale: string) {
-        if (!this.$locale.options.availableLocales.includes(locale)) {
-          return;
-        }
-        this.routerLocale = locale || '';
-        if (!locale) {
-          return;
-        }
-        await this.$locale.loadTranslations(locale)
-        this.$locale.localeRef.value = locale;
-      },
-    },
-    'implicitLocale': {
-      immediate: true,
-      async handler(locale: string) {
-        const newLocale = locale || this.implicitLocale
-        this.isLocaleLoaded = false;
-        await this.$locale.load
-        if (this.$locale.locale === newLocale) {
-          this.isLocaleLoaded = true;
-          this.meta.htmlAttrs = {
-            lang: newLocale,
-          }
-        }
-      },
-    },
-  },
-  methods: {
-    async beforeEnter(to: RouteLocationNormalized, _from: unknown, next: NavigationGuardNext) {
-      const { locale } = to.params
-      if (!locale) {
-        return next()
-      }
-      if (locale instanceof Array || !this.$locale.options.availableLocales.includes(locale)) {
-        return next({
-          ...to,
-          params: {
-            ...to.params,
-            locale: this.routerLocale, // current optional explicit locale
-          }
-        })
-      }
-      await this.$locale.loadTranslations(locale)
-      return next()
-    }
-  }
 };
 </script>
