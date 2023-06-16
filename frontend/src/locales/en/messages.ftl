@@ -244,3 +244,7 @@ home_page_keywords = Ero-Like, platform, reports, digital signatures, structured
 reports_page_title = The reports storage
 reports_page_description = Explore our reports storage on ero-like. With a wide array of filters available, finding and examining reports has never been easier. Each report is backed by digital signatures and structured data to ensure authenticity and data integrity.
 reports_page_keywords = ero-like, reports, storage, filters, digital signatures, structured data, authenticity, data integrity, user experience, insights, duality, sacrament, spirit stories
+
+submit_page_title = Submit Report
+submit_page_description = Submit your report on ero-like. Our submission form allows both simple and timelined reports. Define your substance, route of administration, dosage, quality, and timeline to share your experience. Note: Only registered users can submit reports.
+submit_page_keywords = ero-like, report submission, simple report, timelined report, substance, dosage, quality, timeline, register

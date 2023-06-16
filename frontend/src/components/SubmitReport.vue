@@ -1,7 +1,7 @@
 <template>
   <div class="submitReportForm">
     <div class="submitReportForm__main-cont">
-      <h1 class="submitReportForm__title">Submit Form</h1>
+      <h1 class="submitReportForm__title">{{ $t('submit_page_title') }}</h1>
       <div class="submitForm__registr-cont">
         <Message severity="warn">
           Only registered users can submit reports

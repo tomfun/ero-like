@@ -9,8 +9,15 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { useMeta } from 'vue-meta';
+import { useLocale } from '../format.js/provider';
 
 export default defineComponent({
   name: 'TermsView',
+  setup () {
+    useMeta({
+      title: useLocale().formatString('app_terms_of_use'),
+    })
+  }
 });
 </script>
