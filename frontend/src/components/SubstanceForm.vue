@@ -6,24 +6,26 @@
       <div class="substanceForm__row-block">
         <div class="substanceForm__cont-block">
           <div class="p-float-label">
-            <Dropdown
+            <AutoComplete
               :inputId="id('name-sub')"
+              dropdown
+              placeholder="Substance, e.g. 'MDMA'"
+              optionLabel="name"
+              dataKey="name"
+              v-model:modelValue="namePsychonautWikiOrg"
+              :suggestions="suggestions"
+              :disabled="!loaded"
+              @complete="onComplete('namePsychonautWikiOrg', $event)"
               class="substanceForm__select"
-              v-model:modelValue="item.namePsychonautWikiOrg"
-              :options="namePsychonautWikiOrgOptions"
-            />
+            >
+              <template #option="{option}">
+                <div>
+                  {{ option.name }}
+                  <small>{{ (option.commonNames || []).join(', ') }}</small>
+                </div>
+              </template>
+            </AutoComplete>
             <label :for="id('name-sub')">Substance name</label>
-          </div>
-        </div>
-        <div class="substanceForm__cont-block">
-          <div class="p-float-label">
-            <Dropdown
-              :inputId="id('active-sub')"
-              class="substanceForm__select"
-              v-model:modelValue="item.activeSubstance"
-              :options="namePsychonautWikiOrgOptions"
-            />
-            <label :for="id('active-sub')">Active substance</label>
           </div>
         </div>
       </div>
@@ -98,6 +100,8 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import type { PropType } from 'vue';
+import type { PsychonautWikiSubstance } from '../services/api';
+import { fetchPsychonautWikiSubstanceList } from '../services/api';
 
 type SubstanceData = {
   timeSecond: number;
@@ -105,7 +109,6 @@ type SubstanceData = {
   doseUnit: string;
   namePsychonautWikiOrg: string;
   routeOfAdministration: string;
-  activeSubstance: string;
   surePercent: number;
   dataCompleted: Function;
 };
@@ -118,15 +121,38 @@ export default defineComponent({
       default: () => ({})
     },
   },
+  async mounted() {
+    this.psychonautWikiSubstanceList = await fetchPsychonautWikiSubstanceList()
+    this.loaded = true
+  },
   data() {
+    const builtInSubstances = ["Heroin", "2C-B", "2C-I", "DOB", "LSA", "LSD", "MDMA"]
+      .map((s) => ({ name: s, commonNames: null } as PsychonautWikiSubstance));
     return {
+      loaded: false,
       uid: Math.random().toString(27).slice(2),
-      namePsychonautWikiOrgOptions: ["heroin", "2C-B", "2C-I", "DOB", "LSA", "LSD", "MDMA"],
-      activeSubstanceOptions: ["heroin", "2C-B", "2C-I", "DOB", "LSA", "LSD", "MDMA"],
+      suggestions: builtInSubstances,
+      psychonautWikiSubstanceList: builtInSubstances,
       doseUnitOptions: ["mg", "µg", "g"],
       routeOfAdministrationOptions: ["oral", "sublingual", "insufflated", "intravenous", "smoked", "rectal", "transdermal", "intramuscular"],
-      percentOptions: [10, 20, 30, 40, 50, 60, 70, 80, 90, 99]
+      percentOptions: [10, 20, 30, 40, 50, 60, 70, 80, 90, 99, 99.9]
     };
+  },
+  computed: {
+    namePsychonautWikiOrg: {
+      get(): PsychonautWikiSubstance {
+        return this.psychonautWikiSubstanceList
+            .find(({name}) => name === this.item.namePsychonautWikiOrg)
+          || this.item.namePsychonautWikiOrg
+          && { name: this.item.namePsychonautWikiOrg } as PsychonautWikiSubstance;
+      },
+      set(value: PsychonautWikiSubstance | string) {
+        // use this rule because we are too lazy to not mutate "item" prop which is designed to be mutated
+        // eslint-disable-next-line vue/no-mutating-props
+        this.item.namePsychonautWikiOrg = value && (value as PsychonautWikiSubstance).name
+          || (value as string)
+      }
+    },
   },
   methods: {
     id(id: string) {
@@ -136,6 +162,17 @@ export default defineComponent({
       if (this.item) {
         this.item.dataCompleted();
       }
+    },
+    onComplete(
+      name: string,
+      { query }: { query: string },
+    ) {
+      const q = query.toLowerCase();
+      const suggestions = this.psychonautWikiSubstanceList
+        .filter((s) =>
+          s.name.toLowerCase().startsWith(q)
+          || (s.commonNames || []).some((s) => s.toLowerCase().startsWith(query)))
+      this.suggestions = suggestions;
     },
   },
 });

@@ -1,5 +1,14 @@
 // should be imported from API or somewhere else
 
+export interface PsychonautWikiSubstance {
+  name: string;
+  summary: string;
+  addictionPotential: string;
+  toxicity: string[];
+  crossTolerances: string[];
+  commonNames: string[] | null;
+}
+
 interface ReportAlpha1 {
   id: string;
   signature: {
@@ -95,3 +104,12 @@ export default {
     return await res.json();
   }
 };
+
+export async function fetchPsychonautWikiSubstanceList(): Promise<PsychonautWikiSubstance[]> {
+    const res = await fetch('/api/psychonautwiki/substance');
+    const body = await res.json();
+    if (res.status > 400) {
+      throw new Error(`API error: ${body.message || 'unknown'}`);
+    }
+    return body;
+}
