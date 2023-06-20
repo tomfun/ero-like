@@ -94,10 +94,11 @@ curl -X 'GET' 'http://....../api/report/....' \\
   })
   @HttpCode(HttpStatus.OK)
   @Header('content-type', 'application/json; charset=utf-8')
-  validateReport(
+  async validateReport(
     @ValidBody
     createReportDto: ReportDataBodyPayload,
-  ): ReportDataBodyPayload {
+  ): Promise<ReportDataBodyPayload> {
+    await this.reportService.extraValidation(createReportDto);
     return stringify(createReportDto);
   }
 
@@ -113,7 +114,7 @@ curl -X 'GET' 'http://....../api/report/....' \\
       }) as ReportForList;
     } catch (e) {
       if (e instanceof InvalidDataError || e instanceof UserNotFoundError) {
-        throw new BadRequestException(e.message);
+        throw new BadRequestException([e.message]);
       }
       throw e;
     }

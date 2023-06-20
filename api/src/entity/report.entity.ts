@@ -35,9 +35,8 @@ export class ReportDataSubstanceBodyPayload extends ReportDataSubstanceBodyPaylo
   @Max(7 * 24 * 3600)
   declare timeSecond: number;
 
-  // todo
   @ApiProperty()
-  @IsIn(['heroin', '2C-B', '2C-I', 'DOB', 'LSA', 'LSD', 'MDMA'])
+  @Length(2, 250)
   declare namePsychonautWikiOrg: string;
 
   @ApiProperty()

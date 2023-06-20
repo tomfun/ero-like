@@ -304,7 +304,7 @@ EWJ4a7iMkXHQ4gXamxtdcDTeFjUAVpPxfjzPyG0bkLRGTmV8fBQ=
       expect(result.statusCode).toEqual(400);
       const json = result.json();
       expect(json).toMatchObject({
-        message: 'You must use sorted keys to produce consistent hash',
+        message: ['You must use sorted keys to produce consistent hash'],
       });
     });
 

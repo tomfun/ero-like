@@ -1,4 +1,9 @@
-import { Inject, Injectable, ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  ValidationPipe,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as stringify from 'json-stable-stringify';
 import * as _ from 'lodash';
@@ -16,6 +21,7 @@ import { Paginable, PaginationQueryDto } from '../core/pagination-query.pipe';
 import { ReportDataBodyPayload, ReportEntity } from '../entity';
 import { SignatureDataService } from '../core/signature-data.service';
 import { UserService } from '../core/user.service';
+import { PsychonautWikiService } from './psychonaut-wiki.service';
 
 export { ReportDataBodyPayload, ReportEntity } from '../entity';
 
@@ -30,6 +36,9 @@ export class ReportService {
 
   @Inject()
   private signService: SignatureDataService;
+
+  @Inject()
+  private psychonautWikiService: PsychonautWikiService;
 
   @Inject()
   private userService: UserService;
@@ -127,6 +136,18 @@ export class ReportService {
     };
   }
 
+  async extraValidation(obj: ReportDataBodyPayload) {
+    const list = await this.psychonautWikiService.getShortList();
+    const invalidNameIndex = obj.substances.findIndex(
+      (s) => !list.find(({ name }) => name === s.namePsychonautWikiOrg),
+    );
+    if (invalidNameIndex !== -1) {
+      throw new BadRequestException([
+        `substances.${invalidNameIndex}.namePsychonautWikiOrg must be known psychonautWiki.org substance`,
+      ]);
+    }
+  }
+
   async create(clearSignArmored: string): Promise<ReportForList> {
     const { signature } = await this.signService.createEntity({
       clearSignArmored,
@@ -147,13 +168,14 @@ export class ReportService {
       }
     }
     // throw http bad request error
-    const createReportDto = await this.validationPipe.transform(
+    const createReportDto = (await this.validationPipe.transform(
       JSON.parse(signature.data.clearSignDataPart),
       {
         type: 'body',
         metatype: ReportDataBodyPayload,
       },
-    );
+    )) as ReportDataBodyPayload;
+    await this.extraValidation(createReportDto);
     if (stringify(createReportDto) !== signature.data.clearSignDataPart) {
       throw new InvalidDataError(
         'You must use sorted keys to produce consistent hash',
