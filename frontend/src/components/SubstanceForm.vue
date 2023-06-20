@@ -140,11 +140,12 @@ export default defineComponent({
   },
   computed: {
     namePsychonautWikiOrg: {
-      get(): PsychonautWikiSubstance {
+      get(): PsychonautWikiSubstance|null {
         return this.psychonautWikiSubstanceList
             .find(({name}) => name === this.item.namePsychonautWikiOrg)
           || this.item.namePsychonautWikiOrg
-          && { name: this.item.namePsychonautWikiOrg } as PsychonautWikiSubstance;
+          ? { name: this.item.namePsychonautWikiOrg } as PsychonautWikiSubstance
+          : null;
       },
       set(value: PsychonautWikiSubstance | string) {
         // use this rule because we are too lazy to not mutate "item" prop which is designed to be mutated

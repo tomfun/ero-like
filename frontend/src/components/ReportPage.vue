@@ -10,7 +10,7 @@
     <h3>{{ report.d.title }}</h3>
     <Panel :header="$t('substances')" class="substance-cont" toggleable :collapsed="false">
       <ul class="substance-full-data-list">
-        <li v-for="sub in report.d.substances" :key="sub">
+        <li v-for="sub in report.d.substances" :key="sub.timeSecond">
           <Panel :header="sub.namePsychonautWikiOrg" toggleable :collapsed="false">
             <p class="m-0">
               {{ $t('dose') }}: {{ sub.dose }}<br/>
@@ -36,7 +36,7 @@
     </Panel>
     <Panel :header="$t('timeline')" class="substance-cont" toggleable :collapsed="false">
       <ul class="substance-full-data-list">
-        <li v-for="tl in report.d.timeLineReport" :key="tl">
+        <li v-for="tl in report.d.timeLineReport" :key="tl.timeSecond">
           <Panel :header="tl.timeSecond.toString()" toggleable :collapsed="false">
             <p class="m-0">
               {{ $t('time') }}: {{ tl.timeSecond }}<br/>
