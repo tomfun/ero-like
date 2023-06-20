@@ -20,7 +20,12 @@
       <TabView v-on:tab-change="handleTabChange" class="reportForm__tab-panel">
         <TabPanel header="Simple">
           <div class="submitReportForm__simpleRep-cont">
-            <Button label="Autofill" class="submitReportForm__add-sub-but" @click="handleFormFill"/>
+            <Button
+              v-if="isDev"
+              label="Autofill"
+              class="submitReportForm__add-sub-but"
+              @click="handleFormFill"
+            />
             <div class="submitForm__title-inner-cont">
               <span class="p-float-label">
                 <InputText class="p-inputtext-lg" :id="id('title')" v-model="reportData.title" aria-describedby="title-help" />
@@ -242,6 +247,7 @@ export default defineComponent({
   data() {
     return {
       uid: Math.random().toString(27).slice(2),
+      isDev: import.meta.env.DEV,
       reportData: {
         substances: [],
         timeLineReport: [],
@@ -286,9 +292,9 @@ export default defineComponent({
         timeSecond: 0,
         dose: 10,
         doseUnit: 'mg',
-        namePsychonautWikiOrg: 'heroin',
+        namePsychonautWikiOrg: 'Heroin',
         routeOfAdministration: 'intravenous',
-        activeSubstance: 'heroin',
+        activeSubstance: 'Heroin',
         surePercent: 30,
         dataCompleted: () => {
           this.staged = false;
@@ -300,6 +306,7 @@ export default defineComponent({
       this.simpleReportText = 'Repppoopoo'
       this.reportData.title = 'Title';
       this.reportData.background = 'Backgroundd';
+      this.reportData.dateTimestamp = Date.now() / 1000;
     },
     handleTabChange(event: TabViewClickEvent) {
       if (event.index === 0 && this.reportData.timeLineReport.length > 0) {
