@@ -165,6 +165,8 @@ export class PsychonautWikiService {
     }
     const newRequest = new Promise<CacheItem>((res, rej) => {
       const cached = this.cache.get(key);
+      // I cannot use const without initialization
+      // eslint-disable-next-line prefer-const
       let cachePolicyRequest: CachePolicy.Request;
       const request = https.request(
         {
