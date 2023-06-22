@@ -65,6 +65,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { BadRequestError, userRegister } from '../services/api';
 
 export default defineComponent({
   name: 'UserRegistration',
@@ -88,26 +89,16 @@ export default defineComponent({
   },
   methods: {
     async submit(check?: boolean) {
-      const requestOptions = {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          publicKeyArmored: this.publicKeyArmored,
-          clearSignArmored: this.clearSignArmored,
-        }),
-      };
-      const response = await fetch(`/api/user${check ? '/dry-run' : ''}`, requestOptions);
-      if (response.status === 400) {
-        const { message } = await response.json();
-        this.errors = typeof message === 'string' ? [message] : message;
-        return;
+      try {
+        this.user = await userRegister(this, check)
+        this.errors.length = 0;
+      } catch (e) {
+        if (e instanceof BadRequestError) {
+          this.errors = e.errors;
+        } else {
+          this.errors = [(e as Error).message];
+        }
       }
-      if (response.status !== 200) {
-        this.errors = ['Unknown error'];
-        return;
-      }
-      this.user = await response.json();
-      this.errors.length = 0;
     },
   },
 });

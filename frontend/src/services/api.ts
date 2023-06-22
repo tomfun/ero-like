@@ -9,6 +9,20 @@ export interface PsychonautWikiSubstance {
   commonNames: string[] | null;
 }
 
+interface ReportDataAlpha1 {
+  dateTimestamp: number;
+  title: string;
+  background: string;
+  substances: Array<{
+    timeSecond: number;
+    namePsychonautWikiOrg: string;
+    routeOfAdministration: string;
+    doseUnit: string;
+    dose: number;
+  }>;
+  timeLineReport: Array<{timeSecond: number; report: string}>;
+}
+
 interface ReportAlpha1 {
   id: string;
   signature: {
@@ -20,19 +34,7 @@ interface ReportAlpha1 {
       createdAt: string;
     };
   };
-  d: {
-    dateTimestamp: number;
-    title: string;
-    background: string;
-    substances: Array<{
-      timeSecond: number;
-      namePsychonautWikiOrg: string;
-      routeOfAdministration: string;
-      doseUnit: string;
-      dose: number;
-    }>;
-    timeLineReport: Array<{timeSecond: number; report: string}>;
-  };
+  d: ReportDataAlpha1;
   gpgSignature: string;
   createdAt: string;
 }
@@ -112,4 +114,44 @@ export async function fetchPsychonautWikiSubstanceList(): Promise<PsychonautWiki
       throw new Error(`API error: ${body.message || 'unknown'}`);
     }
     return body;
+}
+
+export class ApiError extends Error {}
+
+export class BadRequestError extends ApiError {
+  constructor(public readonly errors: string[]) {
+    super();
+  }
+}
+
+export async function reportDataValidation(report: ReportDataAlpha1) {
+  const res = await fetch('/api/report/validate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(report),
+  })
+  if (res.ok && res.status === 200) {
+    return await res.text();
+  }
+  if (res.status === 400) {
+    const { message } = await res.json();
+    throw new BadRequestError(typeof message === 'string' ? [message] : message)
+  }
+  throw new ApiError(`Invalid API response status (${res.status})`)
+}
+
+export async function userRegister({ publicKeyArmored, clearSignArmored}: { publicKeyArmored: string, clearSignArmored: string },check?: boolean) {
+  const res = await fetch(`/api/user${check ? '/dry-run' : ''}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ publicKeyArmored, clearSignArmored}),
+  });
+  if (res.status === 400) {
+    const { message } = await res.json();
+    throw new BadRequestError(typeof message === 'string' ? [message] : message)
+  }
+  if (res.status !== 200) {
+    throw new ApiError(`Invalid API response status (${res.status})`) // todo: localization
+  }
+  return await res.json();
 }

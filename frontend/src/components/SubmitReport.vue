@@ -26,12 +26,19 @@
               class="submitReportForm__add-sub-but"
               @click="handleFormFill"
             />
-            <div class="submitForm__title-inner-cont">
+            <div class="col-8">
               <span class="p-float-label">
-                <InputText class="p-inputtext-lg" :id="id('title')" v-model="reportData.title" aria-describedby="title-help" />
+                <InputText class="col-12" :id="id('title')"
+                           v-model="reportData.title" aria-describedby="title-help" />
                 <label :for="id('title')">Title</label>
               </span>
               <small :id="id('title-help')">Enter a title the best describes your journey.</small>
+            </div>
+            <div class="col-4">
+              <Calendar v-model="dateTimestampDate"
+                        :dateFormat="dateFormatShort"
+                        :placeholder="dateFormatShort"
+              />
             </div>
             <SubmitSubstanceData
               v-bind:substancesArray="reportData.substances"
@@ -62,9 +69,10 @@
         </TabPanel>
         <TabPanel header="Timelined">
           <div class="submitReportForm__time-line-cont">
-            <div class="submitForm__title-inner-cont">
+            <div class="col-12">
               <span class="p-float-label">
-                <InputText class="p-inputtext-lg" :id="id('title')" v-model="reportData.title" aria-describedby="title-help" />
+                <InputText class="col-12" :id="id('title')"
+                           v-model="reportData.title" aria-describedby="title-help" />
                 <label :for="id('title')">Title</label>
               </span>
               <small :id="id('title-help')">Enter a title the best describes your journey.</small>
@@ -199,6 +207,8 @@ TaVHnbJ8jErfklgnRTPibX8AdmEFJasONNMJ/7euoBoH+aAYG/k=
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { useFormat } from '../format.js/useFormat';
+import { BadRequestError, reportDataValidation } from '../services/api';
 import SubstanceForm from './SubstanceForm.vue';
 import TimeLineReportForm from './TimeLineReportForm.vue';
 import SubmitSubstanceData from './SubmitSubstanceData.vue';
@@ -238,8 +248,14 @@ export default defineComponent({
     TimeLineReportForm,
     SubmitSubstanceData,
     TabPanel,
-    TabView
-},
+    TabView,
+  },
+  setup() {
+    const { dateFormatShort } = useFormat();
+    return {
+      dateFormatShort,
+    };
+  },
   mounted() {
     this.handleAddSubstance();
     this.handleAddTimeLineReport();
@@ -270,17 +286,22 @@ export default defineComponent({
     };
   },
   computed: {
+    dateTimestampDate: {
+      get(): Date {
+        return new Date(this.reportData.dateTimestamp * 1000)
+      },
+      set(v: Date) {
+        this.reportData.dateTimestamp = Math.floor(v.getTime() / 10000) * 10;
+      },
+    },
     addSubstanceButtonDisable() {
       return this.staged;
-
     },
     addReportButtonDisable() {
       return this.stagedRep;
-
     },
     validationButtonDisable() {
       return this.reportData.title.length < 4 || this.reportData.background.length < 4;
-
     }
   },
   methods: {
@@ -306,7 +327,7 @@ export default defineComponent({
       this.simpleReportText = 'Repppoopoo'
       this.reportData.title = 'Title';
       this.reportData.background = 'Backgroundd';
-      this.reportData.dateTimestamp = Date.now() / 1000;
+      this.reportData.dateTimestamp = Math.round(Date.now() / 10000) * 10;
     },
     handleTabChange(event: TabViewClickEvent) {
       if (event.index === 0 && this.reportData.timeLineReport.length > 0) {
@@ -326,10 +347,8 @@ export default defineComponent({
       }
     },
     async handleValidation() {
-      const requestOptions = {
-        method: 'Post',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      try {
+        this.validJson = await reportDataValidation({
           substances: [...this.reportData.substances],
           timeLineReport: this.simple ? [{
             timeSecond: 0,
@@ -337,36 +356,22 @@ export default defineComponent({
           }] : [...this.reportData.timeLineReport],
           title: this.reportData.title,
           background: this.reportData.background,
-          dateTimestamp: Date.now(),
-        }),
-      };
-
-      fetch('/api/report/validate', requestOptions)
-        .then(async (res) => {
-          if (res.ok && res.status === 200) {
-            this.validJson = await res.text();
-            this.errors = [];
-            this.validReport = true;
-            return;
-          }
-          this.validReport = false;
-          if (res.status === 400) {
-            this.errors = (await res.json()).message;
-          } else {
-            this.errors = ['Unknown error'];
-          }
+          dateTimestamp: this.reportData.dateTimestamp,
         })
-        .catch(err => {
-          const msg = `Request failed with error: ${err.message}`;
-          this.errors = [msg];
-          this.validReport = false;
-        })
+        this.validReport = true;
+        this.errors.length = 0;
+      } catch (e) {
+        if (e instanceof BadRequestError) {
+          this.errors = e.errors;
+        } else {
+          this.errors = [(e as Error).message];
+        }
+      }
     },
     async submit() {
       const requestOptions = {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'text/plain'},
+        headers: { 'Content-Type': 'text/plain' },
         body: this.clearSignArmored,
       };
       const response = await fetch('/api/report', requestOptions);

@@ -103,6 +103,7 @@ import { mapActions, mapState } from 'vuex';
 import Column from 'primevue/column';
 import DataTable from 'primevue/datatable';
 import { debounce, get } from 'lodash-es';
+import { useFormat } from '../format.js/useFormat';
 import type {
   State as ReportsState,
 } from '../store/reports';
@@ -138,6 +139,12 @@ type ReportsTableThis = {
 export default defineComponent({
   name: 'ReportsTable',
   components: { DataTable, Column },
+  setup() {
+    const { dateFormatShort } = useFormat();
+    return {
+      dateFormatShort,
+    };
+  },
   data() {
     const filters: ModelReportFilters = {
       'signature.user.nick': {
@@ -340,28 +347,6 @@ export default defineComponent({
         return (this as unknown as ReportsTableThis).pagination.encodedQuery;
       },
     }),
-    dateFormatShort() {
-      const locale = this.$locale.locale;
-      const options = { day: '2-digit' as const, month: '2-digit' as const, year: '2-digit' as const };
-
-      const sampleDate = new Date(2000, 3, 1); // Note: JavaScript counts months from 0
-      const dateParts = new Intl.DateTimeFormat(locale, options).formatToParts(sampleDate);
-
-      let format = '';
-      for (const part of dateParts) {
-        if (part.type === 'day') {
-          format += 'dd';
-        } else if (part.type === 'month') {
-          format += 'mm';
-        } else if (part.type === 'year') {
-          format += 'yy';
-        } else if (part.type === 'literal') {
-          format += part.value;
-        }
-      }
-
-      return format;
-    },
   },
   watch: {
     encodedQuery() {
