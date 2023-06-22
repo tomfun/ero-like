@@ -1,7 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import * as CachePolicy from 'http-cache-semantics';
 import http from 'node:http';
 import * as https from 'node:https';
+
+import { Injectable } from '@nestjs/common';
+import * as CachePolicy from 'http-cache-semantics';
+import * as _ from 'lodash';
+
+import * as substances from '../psychonaut-wiki.substances.json';
 import { Substance } from './psychonaut-wiki.types';
 
 export { ReportDataBodyPayload, ReportEntity } from '../entity';
@@ -10,7 +14,7 @@ export type PsychonautWikiSubstanceForList = Pick<
   Substance,
   'name' | 'toxicity' | 'crossTolerances' | 'commonNames'
 >;
-type PsychonautWikiInteractionSubstance = Pick<Substance, 'name' | 'url'>;
+type PsychonautWikiInteractionSubstance = Pick<Substance, 'name' | 'url'>[];
 export type PsychonautWikiSubstance = Omit<
   Substance,
   | 'effects'
@@ -127,15 +131,27 @@ export const BODY_LIST = JSON.stringify({
 
 @Injectable()
 export class PsychonautWikiService {
+  public readonly defaultShortList = substances.map((s) =>
+    _.pick(s, 'name', 'toxicity', 'crossTolerances', 'commonNames'),
+  );
   private readonly cache = new Map<string, CacheItem>();
   private readonly requestAsyncCache = new Map<string, Promise<CacheItem>>();
 
   async getShortList(): Promise<PsychonautWikiSubstanceForList[]> {
-    return (await this.request('/', BODY_LIST, '__list__')).substances;
+    try {
+      return (await this.request('/', BODY_LIST, '__list__')).substances;
+    } catch {
+      return this.defaultShortList;
+    }
   }
 
-  async getSubstance(name: string) {
-    return (await this.request('/', BODY_SINGLE(name), name)).substances[0];
+  async getSubstance(name: string): Promise<PsychonautWikiSubstance> {
+    try {
+      return (await this.request('/', BODY_SINGLE(name), name))
+        .substances[0] as PsychonautWikiSubstance;
+    } catch {
+      return substances.find((s) => s.name === name);
+    }
   }
 
   private normalizeHeaders(
