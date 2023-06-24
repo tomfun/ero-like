@@ -11,6 +11,7 @@ import Paginator from 'primevue/paginator';
 import Panel from 'primevue/panel';
 import ProgressBar from 'primevue/progressbar';
 import Textarea from 'primevue/textarea';
+import Tooltip from 'primevue/tooltip';
 import InputNumber from 'primevue/inputnumber';
 import { createApp } from 'vue';
 import { FluentBundle } from '@fluent/bundle'
@@ -26,6 +27,8 @@ import router from './router';
 import store from './store';
 
 import englishMessages from './locales/en/messages.ftl';
+
+
 
 export const app = createApp(App)
   .use(PrimeVue)
@@ -59,4 +62,5 @@ export const app = createApp(App)
     }
   }))
   .use(metaManager)
+  .directive('tooltip', Tooltip)
   .mount('#app');

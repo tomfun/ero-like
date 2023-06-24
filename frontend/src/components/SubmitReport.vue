@@ -1,6 +1,5 @@
 <template>
   <div class="submitReportForm">
-    <div class="submitReportForm__main-cont">
       <h1 class="submitReportForm__title">{{ $t('submit_page_title') }}</h1>
       <div class="submitForm__registr-cont">
         <Message severity="warn">
@@ -26,20 +25,32 @@
               class="submitReportForm__add-sub-but"
               @click="handleFormFill"
             />
-            <div class="col-8">
-              <span class="p-float-label">
-                <InputText class="col-12" :id="id('title')"
-                           v-model="reportData.title" aria-describedby="title-help" />
-                <label :for="id('title')">Title</label>
-              </span>
-              <small :id="id('title-help')">Enter a title the best describes your journey.</small>
+            <div class="grid">
+              <div class="field col-9">
+                <span class="p-float-label">
+                  <InputText class="col-12" :id="id('title')"
+                             v-model="reportData.title" aria-describedby="title-help" />
+                  <label :for="id('title')">Title</label>
+                </span>
+                <small :id="id('title-help')">Enter a title the best describes your journey.</small>
+              </div>
+              <div class="field col-3">
+                <span class="p-float-label">
+                  <Calendar v-model="dateTimestampDate"
+                            :dateFormat="dateFormatShort"
+                            :placeholder="dateFormatShort"
+                            :id="id('dateTimestampDate')"
+                            aria-describedby="title-help" />
+                  <label :for="id('dateTimestampDate')">Date</label>
+                </span>
+                <small :id="id('dateTimestampDate-help')">Enter date of your journey.</small>
+              </div>
             </div>
-            <div class="col-4">
-              <Calendar v-model="dateTimestampDate"
-                        :dateFormat="dateFormatShort"
-                        :placeholder="dateFormatShort"
-              />
-            </div>
+            <hr/>
+            <SubstanceList
+              v-model="reportData.substances"
+            />
+            <hr/>
             <SubmitSubstanceData
               v-bind:substancesArray="reportData.substances"
               v-bind:editSubstance="editSubstance"
@@ -51,7 +62,7 @@
               class="submitReportForm__add-sub-but">
               Add substance form
             </Button>
-            <SubstanceForm v-show="staged" v-bind:item="stagedSubstance" />
+            <SubstanceForm v-if="staged" v-bind:modelValue="stagedSubstance" />
             <div class="submitForm__cont">
               <span class="p-float-label">
                 <Textarea
@@ -88,7 +99,7 @@
               class="submitReportForm__add-sub-but">
               Add substance form
             </Button>
-            <SubstanceForm v-show="staged" v-bind:item="stagedSubstance" />
+            <SubstanceForm v-if="staged" v-bind:modelValue="stagedSubstance" />
             <h3 class="submitReportForm__title_left">Tell us about your journey in details</h3>
             <div class="submitReportForm__ready-time-line-cont" v-if="reportData.timeLineReport.length">
               <ul>
@@ -132,38 +143,39 @@
         <Button
           :disabled="validationButtonDisable"
           class="submitReportForm__add-sub-but" v-on:click="handleValidation">Validate report</Button>
-        <div class="submitReportForm__valid-status-cont" >
-          <div class="submitReportForm__valid-status-err">
-
-          </div>
-          <Message v-show="errors.length" severity="error" v-for="(error) in errors" :key="error">
+        <template v-if="step === 'validating' || step === 'signing' ">
+          <Message severity="error" v-for="(error, i) in errors" :key="i">
             {{ error }}
           </Message>
-          <div class="submitReportForm__valid-status-err"></div>
-          <Message v-show="validReport" severity="success">
-            the report is valid!
+          <Message severity="success" key="success" v-if="!errors.length">
+            Your report is submitted successfully!
           </Message>
-        </div>
+        </template>
         <div class="submitForm__validation-success-cont">
-          <Panel header="Report segnification" toggleable :collapsed="true" class="reportForm__sign-cont">
-            <p class="m-0">
+          <Panel header="Report signature" toggleable :collapsed="step !== 'signing'"
+                 class="reportForm__sign-cont">
+          <p class="m-0">
               To sign your validated report, first select the user you want to sign the report with.
             </p>
             <p class="m-0">List all users:</p>
-            <div class="reportForm__code-block">
-              <code class="reportForm__json-text">
-                gpg --list-keys
-              </code>
-              <span class="reportForm__code-block-span">$your command line</span>
-            </div>
-            <p class="m-0"> Paste in your local CMD the next code replacing $user with your value:</p>
-            <div class="reportForm__code-block">
-              <code class="reportForm__json-text">
-                echo -e '{{ validJson }}' | gpg --clear-sign --disable-signer-uid --local-user
-                <b>$user</b>
-              </code>
-              <span class="reportForm__code-block-span">$your command line</span>
-            </div>
+            <Textarea
+              contenteditable="false"
+              rows="1"
+              class="copy-paste"
+              value="gpg --list-keys"
+              auto-resize
+              disabled
+            />
+            <p class="m-0"> Paste in your local CMD the next code replacing $user with your
+              value:</p>
+            <Textarea
+              contenteditable="false"
+              rows="1"
+              class="copy-paste"
+              :value="`echo '${validJson.replace(/'/g, `'\\''`)}' | gpg --clear-sign --disable-signer-uid --local-user `"
+              auto-resize
+              disabled
+            />
             <p class="m-0">Copy the result and paste it in the next window.</p>
           </Panel>
           <div class="flex flex-column gap-2 submitForm__clear-sign-text-input">
@@ -188,43 +200,31 @@ TaVHnbJ8jErfklgnRTPibX8AdmEFJasONNMJ/7euoBoH+aAYG/k=
 -----END PGP SIGNATURE-----"/>
             <small :id="id('clearSignArmored')">Paste here your validated and signed report.</small>
           </div>
-          <Button class="submitReportForm__add-sub-but" @click="submit" :disabled="!clearSignArmored.length">Submit</Button>
-          <div class="submitReportForm__errors-cont" v-if="submitError.length">
-            <Message severity="error">
-              {{ submitError }}
+          <Button class="submitReportForm__add-sub-but" @click="submit"
+                  :disabled="!clearSignArmored.length">Submit
+          </Button>
+          <template v-if="step === 'submitting'">
+            <Message severity="error" v-for="(error, i) in errors" :key="i">
+              {{ error }}
             </Message>
-          </div>
-          <div class="submitReportForm__validJson-cont" v-if="successSubmit">
-            <Message severity="success">
-              the report was sent successfully!
+            <Message severity="success" key="success" v-if="!errors.length">
+              Your report is submitted successfully!
             </Message>
-          </div>
+          </template>
         </div>
       </div>
-    </div>
   </div>
 </template>
 
 <script lang="ts">
+import type { Substance } from '../services/api';
 import { defineComponent } from 'vue';
 import { useFormat } from '../format.js/useFormat';
-import { BadRequestError, reportDataValidation } from '../services/api';
-import SubstanceForm from './SubstanceForm.vue';
+import { BadRequestError, reportDataValidation, reportSubmit } from '../services/api';
 import TimeLineReportForm from './TimeLineReportForm.vue';
-import SubmitSubstanceData from './SubmitSubstanceData.vue';
+import SubstanceList from './SubstanceList.vue';
 import TabView, { type TabViewClickEvent } from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
-
-type Substance = {
-  timeSecond: number;
-  dose: number;
-  doseUnit: string;
-  namePsychonautWikiOrg: string;
-  routeOfAdministration: string;
-  activeSubstance: string;
-  surePercent: number;
-  dataCompleted: () => void;
-};
 
 type TimeLineReport = {
   timeSecond: number;
@@ -241,12 +241,13 @@ type ReportData = {
   title: string;
 };
 
+const STORAGE_KEY = 'report-alpha1';
+
 export default defineComponent({
   name: 'SubmitReport',
   components: {
-    SubstanceForm,
     TimeLineReportForm,
-    SubmitSubstanceData,
+    SubstanceList,
     TabPanel,
     TabView,
   },
@@ -261,14 +262,20 @@ export default defineComponent({
     this.handleAddTimeLineReport();
   },
   data() {
+    let storedReport: ReportData|null = null;
+    try {
+      storedReport = localStorage && JSON.parse(localStorage.getItem(STORAGE_KEY) as string) || null;
+    } catch (e) {
+      // ignore
+    }
     return {
       uid: Math.random().toString(27).slice(2),
       isDev: import.meta.env.DEV,
-      reportData: {
+      reportData: storedReport || {
         substances: [],
         timeLineReport: [],
         background: '',
-        dateTimestamp: 0,
+        dateTimestamp: Math.round(Date.now() / 10000) * 10,
         title: '',
       } as ReportData,
       stagedSubstance: {} as Substance,
@@ -278,11 +285,9 @@ export default defineComponent({
       simpleReportText: '',
       simple: true,
       errors: [] as string[],
-      validReport: false,
-      validJson: {},
+      step: 'entering' as ('entering' | 'validating' | 'submitting' | 'signing'),
+      validJson: '',
       clearSignArmored: '',
-      submitError: '',
-      successSubmit: false,
     };
   },
   computed: {
@@ -347,6 +352,7 @@ export default defineComponent({
       }
     },
     async handleValidation() {
+      this.step = 'validating';
       try {
         this.validJson = await reportDataValidation({
           substances: [...this.reportData.substances],
@@ -358,8 +364,8 @@ export default defineComponent({
           background: this.reportData.background,
           dateTimestamp: this.reportData.dateTimestamp,
         })
-        this.validReport = true;
         this.errors.length = 0;
+        this.step = 'signing'
       } catch (e) {
         if (e instanceof BadRequestError) {
           this.errors = e.errors;
@@ -369,21 +375,21 @@ export default defineComponent({
       }
     },
     async submit() {
-      const requestOptions = {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'text/plain' },
-        body: this.clearSignArmored,
-      };
-      const response = await fetch('/api/report', requestOptions);
-      const data = await response.json();
-
-      if (data.statusCode && data.error) {
-        this.submitError = data.message;
-        this.successSubmit = false;
-      }
-      if (data.signature) {
-        this.successSubmit = true;
-        this.submitError = '';
+      this.step = 'submitting';
+      try {
+        this.validJson = await reportSubmit(this.clearSignArmored)
+        this.errors.length = 0;
+        try {
+          localStorage.removeItem(STORAGE_KEY)
+        } catch (e) {
+          // ignore
+        }
+      } catch (e) {
+        if (e instanceof BadRequestError) {
+          this.errors = e.errors;
+        } else {
+          this.errors = [(e as Error).message];
+        }
       }
     },
     handleAddTimeLineReport() {
@@ -439,6 +445,18 @@ export default defineComponent({
       this.reportData.timeLineReport.splice(index, 1);
     }
   },
+  watch: {
+    reportData: {
+      deep: true,
+      handler(reportData) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(reportData))
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+  }
 });
 </script>
 
@@ -493,10 +511,6 @@ a {
   margin: auto;
 }
 
-.submitReportForm__main-cont {
-  width: 85%;
-  margin: auto;
-}
 .submitForm__cont {
   width: 100%;
   margin: 2vh auto;
@@ -540,23 +554,12 @@ a {
 .submitReportForm__rep-cont {
   width: 100%;
 }
-.reportForm__json-text {
-  display: block;
-  overflow: scroll;
-  border: #42b983 2px solid;
-  padding: 1vh;
-  margin: 2vh 0;
-}
 .submitForm__clear-sign-text-input {
   margin-top: 5vh;
 }
-.reportForm__code-block-span {
-  position: absolute;
-  right: 0;
-  top: -1.5vh;
-}
-.reportForm__code-block {
-  position: relative;
+.copy-paste .p-inputtextarea {
+  width: 100%;
+  opacity: 0.94;
 }
 
 
@@ -567,12 +570,6 @@ $medium-width: 85%;
 
 $break-point-mobile: 480px;
 $mobile-width: 95%;
-
-@media (max-width: $break-point-large) {
-  .submitReportForm__main-cont {
-    width: 100%;
-  }
-}
 
 @media (max-width: $break-point-medium) {
   .submitReportForm__time-line-cont {

@@ -9,18 +9,21 @@ export interface PsychonautWikiSubstance {
   commonNames: string[] | null;
 }
 
+export interface Substance {
+  timeSecond: number;
+  namePsychonautWikiOrg: string;
+  routeOfAdministration: string;
+  doseUnit: string;
+  dose: number;
+  surePercent: number;
+}
+
 interface ReportDataAlpha1 {
   dateTimestamp: number;
   title: string;
   background: string;
-  substances: Array<{
-    timeSecond: number;
-    namePsychonautWikiOrg: string;
-    routeOfAdministration: string;
-    doseUnit: string;
-    dose: number;
-  }>;
-  timeLineReport: Array<{timeSecond: number; report: string}>;
+  substances: Substance[];
+  timeLineReport: Array<{ timeSecond: number; report: string }>;
 }
 
 interface ReportAlpha1 {
@@ -41,9 +44,10 @@ interface ReportAlpha1 {
 
 export type Report = ReportAlpha1
 export type FilterRecordPair<T> = {
-  value: T|null;
+  value: T | null;
   matchMode: 'startsWith' | 'contains' | 'notContains' | 'endsWith' | 'equals' | 'notEquals' | 'in' | 'lt' | 'lte' | 'gt' | 'gte' | 'between' | 'dateIs' | 'dateIsNot' | 'dateBefore' | 'dateAfter';
 }
+
 export interface ReportFilters {
   'signature.user.nick': FilterRecordPair<string>;
   'd.title': FilterRecordPair<string>;
@@ -54,19 +58,19 @@ export interface ReportFilters {
 export default {
   async fetchReports(
     { page, pageSize, filters }:
-    {
+      {
+        page: number;
+        pageSize: number;
+        filters: ReportFilters;
+      },
+  ):
+    Promise<{
       page: number;
       pageSize: number;
-      filters: ReportFilters;
-    },
-  ):
-  Promise<{
-    page: number;
-    pageSize: number;
-    itemsTotal: number;
-    items: Array<Report>;
-    encodedQuery: string;
-  }> {
+      itemsTotal: number;
+      items: Array<Report>;
+      encodedQuery: string;
+    }> {
     const queryStringParts = [];
     if (page !== undefined) {
       queryStringParts.push(`page=${page}`);
@@ -108,15 +112,16 @@ export default {
 };
 
 export async function fetchPsychonautWikiSubstanceList(): Promise<PsychonautWikiSubstance[]> {
-    const res = await fetch('/api/psychonautwiki/substance');
-    const body = await res.json();
-    if (res.status > 400) {
-      throw new Error(`API error: ${body.message || 'unknown'}`);
-    }
-    return body;
+  const res = await fetch('/api/psychonautwiki/substance');
+  const body = await res.json();
+  if (res.status > 400) {
+    throw new Error(`API error: ${body.message || 'unknown'}`);
+  }
+  return body;
 }
 
-export class ApiError extends Error {}
+export class ApiError extends Error {
+}
 
 export class BadRequestError extends ApiError {
   constructor(public readonly errors: string[]) {
@@ -140,11 +145,30 @@ export async function reportDataValidation(report: ReportDataAlpha1) {
   throw new ApiError(`Invalid API response status (${res.status})`)
 }
 
-export async function userRegister({ publicKeyArmored, clearSignArmored}: { publicKeyArmored: string, clearSignArmored: string },check?: boolean) {
+export async function reportSubmit(reportClearSignArmored: string) {
+  const res = await fetch('/api/report', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'text/plain' },
+    body: reportClearSignArmored,
+  })
+  if (res.ok && res.status === 200) {
+    return await res.json();
+  }
+  if (res.status === 400) {
+    const { message } = await res.json();
+    throw new BadRequestError(typeof message === 'string' ? [message] : message)
+  }
+  throw new ApiError(`Invalid API response status (${res.status})`)
+}
+
+export async function userRegister({ publicKeyArmored, clearSignArmored }: {
+  publicKeyArmored: string,
+  clearSignArmored: string
+}, check?: boolean) {
   const res = await fetch(`/api/user${check ? '/dry-run' : ''}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ publicKeyArmored, clearSignArmored}),
+    body: JSON.stringify({ publicKeyArmored, clearSignArmored }),
   });
   if (res.status === 400) {
     const { message } = await res.json();
