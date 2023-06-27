@@ -72,12 +72,32 @@ const CONFIGS = {
 
 export type TimeFormat = keyof typeof CONFIGS
 
+export function getter(this: {
+  modelValue: number,
+  timeFormat: TimeFormat,
+  prefix: string
+}): string | undefined {
+  const timeSecond = this.modelValue;
+  return CONFIGS[this.timeFormat].reduce((str, conf, i, configs) => {
+    const div = conf.div || 1;
+    const mod = (configs[i - 1] && configs[i - 1].div || Number.MAX_SAFE_INTEGER) / div;
+    const c = conf.c || '';
+    return str
+      + (Math.floor(timeSecond / div) % mod).toString().padStart(conf.length, '0')
+      + c
+  }, this.prefix)
+}
+
 export default defineComponent({
   name: 'InputMaskTime',
   props: {
     modelValue: {
       type: Number,
       required: true,
+    },
+    allow0: {
+      type: Boolean,
+      default: true,
     },
     inputId: {
       type: String,
@@ -118,23 +138,19 @@ export default defineComponent({
     };
   },
   computed: {
+    isEmpty() {
+      return [null, undefined].includes(this.modelValue as unknown as null)
+        || (!this.allow0 && this.modelValue === 0);
+    },
     isFill() {
-      return !!this.modelValue || this.timeSecondRaw
+      return !this.isEmpty || this.timeSecondRaw
     },
     timeSecond: {
       get(): string | undefined {
-        const timeSecond = this.modelValue;
-        if (!timeSecond) {
+        if (this.isEmpty) {
           return this.timeSecondRaw;
         }
-        return CONFIGS[this.timeFormat].reduce((str, conf, i, configs) => {
-          const div = conf.div || 1;
-          const mod = (configs[i - 1] && configs[i - 1].div || Number.MAX_SAFE_INTEGER) / div;
-          const c = conf.c || '';
-          return str
-            + (Math.floor(timeSecond / div) % mod).toString().padStart(conf.length, '0')
-            + c
-        }, this.prefix)
+        return getter.call(this)
       },
       set(value: string) {
         this.timeSecondRaw = value || undefined;

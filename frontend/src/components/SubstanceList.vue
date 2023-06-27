@@ -3,10 +3,12 @@
   <Message severity="info"> Both of the timelines(substance input, reporting) starts with the first substance input. </Message>
 
   <SubstanceItem
-    v-for="(s, i) in value"
-    :key="i"
-    v-model="value[i]"
+    v-for="(s, i) in props.modelValue"
+    :key="key(props.modelValue[i])"
+    :modelValue="props.modelValue[i]"
+    @update:modelValue="onChange($event, i)"
     :rm="rmFor(i)"
+    :isFirst="i === 0"
     timeFormat="short"
   />
   <div class="w-full" style="padding-top: 0.5em">
@@ -24,10 +26,9 @@
 
 <script setup lang="ts">
 import type { Substance } from '../services/api';
-import { computed } from 'vue';
 import SubstanceItem from './SubstanceItem.vue';
 
-type T = Substance;
+type T = Partial<Substance> & Pick<Substance, 'timeSecond' | 'namePsychonautWikiOrg'>;
 
 const props = defineProps({
   modelValue: {
@@ -52,14 +53,22 @@ const emits = defineEmits<{
   'update:modelValue': [array: T[]],
 }>()
 
-const value = computed({
-  get(): T[] {
-    return props.modelValue;
-  },
-  set(value: T[]) {
-    emits('update:modelValue', value);
+const vueKeys = new WeakMap<T, number>();
+let newKey = 0;
+function key(value: T) {
+  if (!vueKeys.has(value)) {
+    vueKeys.set(value, ++newKey);
   }
-})
+  return vueKeys.get(value)
+}
+
+function onChange(el: T, i: number) {
+  let newArray: T[] = props.modelValue;
+  newArray.splice(i, 1, el);
+  newArray.sort((a, b) => (a.timeSecond || 0) - (b.timeSecond || 0));
+  emits('update:modelValue', newArray);
+  console.log('updated', props.modelValue === newArray)
+}
 
 function addElement() {
   emits('update:modelValue', [...props.modelValue, props.empty]);

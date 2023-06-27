@@ -85,6 +85,7 @@
           :inputId="id('timeSecond')"
           :timeFormat="timeFormat"
           :modelValue="modelValue.timeSecond"
+          :allow0="isFirst"
           @update:modelValue="setSingleValue('timeSecond', $event)"
         />
         <label :for="id('timeSecond')">Time of input</label>
@@ -113,6 +114,10 @@
     <div class="grid col">
       <p class="col-3 min-w-min" :title="modelValue.routeOfAdministration">
         <span class="pi pi-user-plus"></span>
+        <ReportTime
+          :modelValue="modelValue.timeSecond"
+          :timeFormat="timeFormat"
+        />
         {{ roaSymbol }}
         <span :class="{ pi: true,
           'pi-apple': modelValue.routeOfAdministration === 'oral',
@@ -125,9 +130,8 @@
           'pi-arrow-circle-up': modelValue.routeOfAdministration === 'intramuscular',
           'pi-eye': modelValue.routeOfAdministration === 'ophthalmic',
         }"></span>
-        {{ modelValue.timeSecond }}
       </p>
-      <p class="col-5">
+      <p class="col-5 min-w-min">
         {{ modelValue.namePsychonautWikiOrg }}
       </p>
       <p class="col">
@@ -163,17 +167,25 @@
 import type { Substance, PsychonautWikiSubstance } from '../services/api';
 import { defineComponent } from 'vue';
 import { fetchPsychonautWikiSubstanceList } from '../services/api';
+import ReportTime from './ReportTime.vue';
 import InputMaskTime, { type TimeFormat } from './InputMaskTime.vue';
+
+export type T = Partial<Substance> & Pick<Substance, 'timeSecond' | 'namePsychonautWikiOrg'>;
 
 export default defineComponent({
   name: 'SubstanceItem',
-  components: { InputMaskTime },
+  components: { InputMaskTime, ReportTime },
   props: {
     modelValue: {
       default: function () {
         return {
           dose: 1,
-        } as Partial<Substance> & { timeSecond: number };
+        } as T;
+      },
+    },
+    isFirst: {
+      default: function () {
+        return false as boolean;
       },
     },
     rm: {
@@ -185,6 +197,11 @@ export default defineComponent({
       default: function () {
         return 'long' as TimeFormat;
       },
+    }
+  },
+  emits: {
+    'update:modelValue'(substance: T) {
+      return typeof substance === 'object' && typeof substance.timeSecond === 'number';
     }
   },
   async mounted() {
@@ -203,7 +220,6 @@ export default defineComponent({
       doseUnitOptions: ["mg", "µg", "g"],
       routeOfAdministrationOptions: ["oral", "sublingual", "insufflated", "intravenous", "smoked", "rectal", "transdermal", "intramuscular", "ophthalmic"],
       percentOptions: [10, 20, 30, 40, 50, 60, 70, 80, 90, 99],
-      updates: {} as { [K in keyof Substance]: (v: Substance[K]) => void },
     };
   },
   computed: {
@@ -244,26 +260,8 @@ export default defineComponent({
       this.setNewValue({ [key]: value })
     },
     setNewValue(value: Partial<Substance>) {
-      const newValue = {
-        ...this.modelValue,
-        ...value
-      };
+      const newValue: T = Object.assign(this.modelValue, value);
       this.$emit('update:modelValue', newValue);
-    },
-    edit(event: Event) {
-      if (!event.target) {
-        return;
-      }
-      const input = event.target as HTMLInputElement;
-      this.setNewValue({ [input.name]: input.value })
-    },
-    update<KK extends keyof Substance>(key: KK) {
-      if (!this.updates[key]) {
-        this.updates[key] = ((v: Substance[KK]) => this.setNewValue({ [key]: v })) as {
-          [K in keyof Substance]: (v: Substance[K]) => void
-        }[KK];
-      }
-      return this.updates[key]
     },
     editClick() {
       this.isEdit = !this.isEdit
