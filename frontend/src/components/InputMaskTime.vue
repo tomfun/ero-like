@@ -9,9 +9,12 @@
   }">
     <Button
       class="col-fixed"
-      severity="secondary"
-      outlined
-      @:click="minusHandler">
+      @:click="minusHandler"
+      @:touchstart="mouseHandler(true, false)"
+      @:touchend="mouseHandler(false, false)"
+      @:mousedown="mouseHandler(true, false)"
+      @:mouseup="mouseHandler(false, false)"
+    >
       <span class="pi pi-minus"></span>
     </Button>
     <InputMask
@@ -27,9 +30,12 @@
     />
     <Button
       class="col-fixed"
-      severity="secondary"
-      outlined
-      @:click="plusHandler">
+      @:click="plusHandler"
+      @:mousedown="mouseHandler(true, true)"
+      @:mouseup="mouseHandler(false, true)"
+      @:touchstart="mouseHandler(true, true)"
+      @:touchend="mouseHandler(false, true)"
+    >
       <span class="pi pi-plus"></span>
     </Button>
   </span>
@@ -93,13 +99,24 @@ export default defineComponent({
     }
   },
   emits: ['update:modelValue'],
+  mounted() {
+    window && window.addEventListener('mouseup', this.windowHandler);
+    window && window.addEventListener('touchend', this.windowHandler);
+  },
+  beforeUnmount() {
+    window && window.removeEventListener('mouseup', this.windowHandler);
+    window && window.removeEventListener('touchend', this.windowHandler);
+  },
   data() {
     return {
       timeSecondRaw: undefined as string | undefined,
       isFocus: false,
+      windowHandler: () => this.mouseHandler(),
+      interval: null as ReturnType<typeof setInterval>|null,
+      timeoutInitDelay: null as ReturnType<typeof setTimeout>|null,
+      timeoutWarpDelay: null as ReturnType<typeof setTimeout>|null,
     };
   },
-
   computed: {
     isFill() {
       return !!this.modelValue || this.timeSecondRaw
@@ -169,6 +186,41 @@ export default defineComponent({
     minusHandler() {
       this.setNewValue(this.modelValue - 60)
     },
+    mouseHandler(isDown = false, isPlus = false) {
+      if (this.interval) {
+        clearInterval(this.interval)
+        this.interval = null;
+      }
+      if (this.timeoutWarpDelay) {
+        clearTimeout(this.timeoutWarpDelay)
+        this.timeoutWarpDelay = null;
+      }
+      if (this.timeoutInitDelay) {
+        clearTimeout(this.timeoutInitDelay)
+        this.timeoutInitDelay = null;
+      }
+      if (isDown) {
+        this.timeoutInitDelay = setTimeout(() => {
+          this.interval = setInterval(
+            () => this.setNewValue(this.modelValue + (isPlus ? 1 : -1) * 60),
+            60,
+          )
+        }, 750);
+        let warp = 1
+        this.timeoutWarpDelay = setTimeout(() => {
+          this.interval && clearInterval(this.interval)
+          this.interval = setInterval(
+            () => {
+              warp += 0.1;
+              this.setNewValue(this.modelValue + (isPlus ? 1 : -1) * Math.floor(warp) * 60)
+            },
+            60,
+          )
+        }, 2000);
+
+        return;
+      }
+    },
     focusHandler() {
       this.isFocus = true
     },
@@ -176,7 +228,16 @@ export default defineComponent({
       this.isFocus = false
     },
     keydownHandler(event: KeyboardEvent) {
-      console.log(event.key, event)
+      if (event.altKey || event.metaKey || !event.isTrusted) {
+        return;
+      }
+      if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
+        return;
+      }
+      event.preventDefault();
+      let step = event.ctrlKey || event.shiftKey ? 3600 : 60
+      step *= event.key === 'ArrowDown' ? -1 : 1;
+      this.setNewValue(this.modelValue + step)
     },
     setNewValue(value: number) {
       this.$emit('update:modelValue', value);
