@@ -1,7 +1,7 @@
 <template>
-  <div class="substance">
-  <div class="substance formgrid grid" v-if="isEdit">
-    <div class="field col">
+  <div class="substance border-bluegray-100">
+  <div class="formgrid grid" v-if="isEdit">
+    <div class="field col-12 md:col-8">
       <div class="p-float-label">
         <AutoComplete
           :inputId="id('name-sub')"
@@ -13,7 +13,7 @@
           :suggestions="suggestions"
           :disabled="!loaded"
           @complete="onComplete('namePsychonautWikiOrg', $event)"
-          class="substanceForm__select"
+          class="w-full"
         >
           <template #option="{option}">
             <div>
@@ -37,10 +37,10 @@
         <label :for="id('route')">Route of administration</label>
       </div>
     </div>
-    <div class="field col">
+    <div class="field col-fixed" style="min-width: 8rem">
       <div class="p-float-label">
         <Dropdown
-          class="w-full md:w-18rem"
+          class="w-full min-w-min"
           :inputId="id('dose-unit')"
           :modelValue="modelValue.doseUnit"
           :options="doseUnitOptions"
@@ -49,10 +49,11 @@
         <label :for="id('dose-unit')">Dosage unit</label>
       </div>
     </div>
-    <div class="field col">
+    <div class="field col-fixed" style="min-width: 8rem">
       <div class="p-float-label">
         <InputNumber
-          class="w-full"
+          class="w-8rem"
+          :pt="{ input: { style: 'width: 8rem'} }"
           :inputId="id('dose')"
           :modelValue="modelValue.dose"
           :locale="$locale.locale"
@@ -66,7 +67,7 @@
     <div class="field col">
       <div class="p-float-label">
         <Dropdown
-          class="w-full md:w-18rem"
+          class="w-full"
           :inputId="id('qualityPercent')"
           :modelValue="modelValue.surePercent"
           :options="percentOptions"
@@ -78,15 +79,13 @@
         How much you sure about the quality of the substance?
       </small>
     </div>
-    <div class="field col">
-      <div class="p-float-label">
-        <InputNumber
-          class="w-full"
+    <div class="field col min-w-min">
+      <div class="p-float-label p-float-label-shift">
+        <InputMaskTime
           :inputId="id('timeSecond')"
+          :timeFormat="timeFormat"
           :modelValue="modelValue.timeSecond"
-          :locale="$locale.locale"
           @update:modelValue="setSingleValue('timeSecond', $event)"
-          :minFractionDigits="0"
         />
         <label :for="id('timeSecond')">Time of input</label>
       </div>
@@ -110,50 +109,51 @@
       </div>
     </div>
   </div>
-  <div class="substance grid" v-else>
-    <p class="col-3" :title="modelValue.routeOfAdministration">
-      <span class="pi pi-user-plus"></span>
-      {{ roaSymbol }}
-      <span :class="{ pi: true,
-        'pi-apple': modelValue.routeOfAdministration === 'oral',
-        'pi-power-off': modelValue.routeOfAdministration === 'sublingual',
-        'pi-caret-up': modelValue.routeOfAdministration === 'insufflated',
-        'pi-arrow-down-left': modelValue.routeOfAdministration === 'intravenous',
-        'pi-comment': modelValue.routeOfAdministration === 'smoked',
-        'pi-angle-double-up': modelValue.routeOfAdministration === 'rectal',
-        'pi-step-backward-alt': modelValue.routeOfAdministration === 'transdermal',
-        'pi-arrow-circle-up': modelValue.routeOfAdministration === 'intramuscular',
-        'pi-eye': modelValue.routeOfAdministration === 'ophthalmic',
-      }"></span>
-      {{ modelValue.timeSecond }}
-    </p>
-    <p class="col-5">
-      {{ modelValue.namePsychonautWikiOrg }}
-    </p>
-    <p class="col-1">
-      {{ modelValue.dose }}&nbsp;{{ modelValue.doseUnit }}
-    </p>
-    <p class="col-1">
-      {{ modelValue.surePercent }}
-    </p>
-    <div class="w-8rem">
-      <div class="card flex justify-content-center flex-wrap gap-3">
-
-        <Button
-          class="bg-transparent text-color-secondary"
-          severity="secondary"
-          v-tooltip="$t('Edit')"
-          v-on:click="editClick">
-          <span class="pi pi-pencil"></span>
-        </Button>
-        <Button
-          class="bg-transparent text-color-secondary"
-          severity="secondary"
-          v-tooltip="$t('Remove')"
-          v-on:click="rm">
-          <span class="pi pi-times"></span>
-        </Button>
-      </div>
+  <div class="grid" v-else>
+    <div class="grid col">
+      <p class="col-3 min-w-min" :title="modelValue.routeOfAdministration">
+        <span class="pi pi-user-plus"></span>
+        {{ roaSymbol }}
+        <span :class="{ pi: true,
+          'pi-apple': modelValue.routeOfAdministration === 'oral',
+          'pi-power-off': modelValue.routeOfAdministration === 'sublingual',
+          'pi-caret-up': modelValue.routeOfAdministration === 'insufflated',
+          'pi-arrow-down-left': modelValue.routeOfAdministration === 'intravenous',
+          'pi-comment': modelValue.routeOfAdministration === 'smoked',
+          'pi-angle-double-up': modelValue.routeOfAdministration === 'rectal',
+          'pi-step-backward-alt': modelValue.routeOfAdministration === 'transdermal',
+          'pi-arrow-circle-up': modelValue.routeOfAdministration === 'intramuscular',
+          'pi-eye': modelValue.routeOfAdministration === 'ophthalmic',
+        }"></span>
+        {{ modelValue.timeSecond }}
+      </p>
+      <p class="col-5">
+        {{ modelValue.namePsychonautWikiOrg }}
+      </p>
+      <p class="col">
+        {{ modelValue.dose }}&nbsp;{{ modelValue.doseUnit }}
+      </p>
+      <p class="col">
+        {{ modelValue.surePercent }}
+      </p>
+    </div>
+    <div class="col-fixed w-8rem p-buttonset text-right">
+      <Button
+        severity="secondary"
+        size="small"
+        outlined
+        v-tooltip="$t('Edit')"
+        v-on:click="editClick">
+        <span class="pi pi-pencil"></span>
+      </Button>
+      <Button
+        severity="secondary"
+        size="small"
+        outlined
+        v-tooltip="$t('Remove')"
+        v-on:click="rm">
+        <span class="pi pi-times"></span>
+      </Button>
     </div>
   </div>
   </div>
@@ -163,20 +163,27 @@
 import type { Substance, PsychonautWikiSubstance } from '../services/api';
 import { defineComponent } from 'vue';
 import { fetchPsychonautWikiSubstanceList } from '../services/api';
+import InputMaskTime, { type TimeFormat } from './InputMaskTime.vue';
 
 export default defineComponent({
   name: 'SubstanceItem',
+  components: { InputMaskTime },
   props: {
     modelValue: {
       default: function () {
         return {
           dose: 1,
-        } as Partial<Substance>;
+        } as Partial<Substance> & { timeSecond: number };
       },
     },
     rm: {
       default: function () {
         return (() => null) as (payload: MouseEvent) => void;
+      },
+    },
+    timeFormat: {
+      default: function () {
+        return 'long' as TimeFormat;
       },
     }
   },
@@ -195,7 +202,7 @@ export default defineComponent({
       psychonautWikiSubstanceList: builtInSubstances,
       doseUnitOptions: ["mg", "µg", "g"],
       routeOfAdministrationOptions: ["oral", "sublingual", "insufflated", "intravenous", "smoked", "rectal", "transdermal", "intramuscular", "ophthalmic"],
-      percentOptions: [10, 20, 30, 40, 50, 60, 70, 80, 90, 99, 99.9],
+      percentOptions: [10, 20, 30, 40, 50, 60, 70, 80, 90, 99],
       updates: {} as { [K in keyof Substance]: (v: Substance[K]) => void },
     };
   },
@@ -216,6 +223,7 @@ export default defineComponent({
     },
     roaSymbol() {
       return {
+        '': '•',
         oral: '🍽️',
         sublingual: '👅',
         insufflated: '👃',
@@ -225,7 +233,7 @@ export default defineComponent({
         transdermal: '💉👆',
         intramuscular: '💪💉',
         ophthalmic: '👁💧',
-      }[this.modelValue.routeOfAdministration];
+      }[this.modelValue.routeOfAdministration || ''];
     }
   },
   methods: {
@@ -277,6 +285,24 @@ export default defineComponent({
 
 <style scoped lang="scss">
 .substance {
-  padding-top: 1em;
+  padding-top: 1.5em;
+  margin-top: 0.5em;
+  .formgrid {
+    margin: 0.5em 0;
+  }
+  border-bottom: solid 1px var(--bluegray-100);
+  .field {
+    padding-top: 1em;
+    min-width: 12rem;
+    //label {
+    //  white-space: nowrap;
+    //  //width: calc(100% + 1rem);
+    //  //min-width: 6rem;
+    //  //min-width: max-content;
+    //  overflow: hidden; /* Optional, in case you also want to hide text that overflows the container */
+    //  text-overflow: ellipsis; /* Optional, to add an ellipsis (...) when the text overflows */
+    //  //position: relative !important;
+    //}
+  }
 }
 </style>

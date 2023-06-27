@@ -7,8 +7,9 @@
     :key="i"
     v-model="value[i]"
     :rm="rmFor(i)"
+    timeFormat="short"
   />
-  <div class="w-full">
+  <div class="w-full" style="padding-top: 0.5em">
     <div class="card flex justify-content-center flex-wrap gap-3">
       <Button
         severity="info"
@@ -21,18 +22,22 @@
   </div>
 </template>
 
-<script setup lang="ts" generic="T extends Substance">
+<script setup lang="ts">
 import type { Substance } from '../services/api';
 import { computed } from 'vue';
 import SubstanceItem from './SubstanceItem.vue';
 
+type T = Substance;
+
 const props = defineProps({
   modelValue: {
+    required: false,
     default() {
       return [] as T[];
     },
   },
   empty: {
+    required: false,
     default() {
       return {
         timeSecond: 0,
@@ -41,7 +46,8 @@ const props = defineProps({
       } as T;
     },
   }
-})
+}) as unknown as { modelValue: T[], empty: T };
+
 const emits = defineEmits<{
   'update:modelValue': [array: T[]],
 }>()
