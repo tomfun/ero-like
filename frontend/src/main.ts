@@ -5,6 +5,7 @@ import Checkbox from 'primevue/checkbox';
 import PrimeVue from 'primevue/config';
 import Dropdown from 'primevue/dropdown';
 import Fieldset from 'primevue/fieldset';
+import InputMask from 'primevue/inputmask';
 import InputText from 'primevue/inputtext';
 import Message from 'primevue/message';
 import Paginator from 'primevue/paginator';
@@ -44,6 +45,7 @@ export const app = createApp(App)
   .component('Panel', Panel)
   .component('ProgressBar', ProgressBar)
   .component('Textarea', Textarea)
+  .component('InputMask', InputMask)
   .component('InputNumber', InputNumber)
   .use(store)
   .use(router)
