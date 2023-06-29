@@ -8,7 +8,7 @@
     You can choose either a "simple" report to post with a single block of description,
     or the "timelined" one with time sections each with its own description.
   </Message>
-  <TabView v-on:tab-change="handleTabChange">
+  <TabView v-on:tab-change="handleTabChange" :activeIndex="simple ? 0 : 1">
     <TabPanel header="Simple">
       <Button
          v-if="isDev"
@@ -37,21 +37,27 @@
             <small :id="id('dateTimestampDate-help')">Enter date of your journey.</small>
           </div>
         </div>
+        <Message severity="info">If this is the substance you took in the very begining, then choose zero.</Message>
+        <Message severity="info"> Both of the timelines(substance input, reporting) starts with the first substance input. </Message>
+
         <SubstanceList
           v-model="reportData.substances"
+          :DynamicComponent="SubstanceItem"
         />
-        <div>
-          <span class="p-float-label">
-            <Textarea
-              :id="id('reportText')"
-              class="p-inputtext-lg submitReportForm__text-area"
-              v-model="simpleReportText"
-              aria-describedby="report-text"
-              >
-            </Textarea>
-            <label :for="id('reportText')">Report text</label>
-          </span>
-          <small :id="id('report-text')">Type here everything you consider relevant to describe your expirience.</small>
+
+        <div class="float-label-spacing">
+          <div class="p-float-label p-float-label-shift">
+          <Textarea
+            :inputId="id('report')"
+            :aria-describedby="id('report-text')"
+            class="w-full"
+            v-model="reportData.timeLineReport[0].report"
+            autoResize
+          />
+            <label :for="id('timeSecond')">Report text</label>
+            <small :id="id('report-text')">Type here you thoughts, feelings, effects, everything
+              you consider relevant to describe your experience.</small>
+          </div>
         </div>
       </div>
     </TabPanel>
@@ -78,36 +84,42 @@
             <small :id="id('dateTimestampDate-help')">Enter date of your journey.</small>
           </div>
         </div>
+
+        <Message severity="info">If this is the substance you took in the very begining, then choose zero.</Message>
+        <Message severity="info"> Both of the timelines(substance input, reporting) starts with the first substance input. </Message>
+
         <SubstanceList
           v-model="reportData.substances"
+          :DynamicComponent="SubstanceItem"
         />
-        <TimeLineReportForm v-bind:item="stagedReport" @update:item="updateRepForm" v-if="stagedRep"/>
-        <Button
-          v-if="!stagedRep"
-          v-on:click="handleAddTimeLineReport"
-          :disabled="addReportButtonDisable">
-          Add time line form
-        </Button>
+
+        <TimeLineReportList
+          v-model="reportData.timeLineReport"
+          :DynamicComponent="TimeLineReportItem"
+        />
       </div>
     </TabPanel>
   </TabView>
-  <div>
-    <span class="p-float-label">
-      <Textarea
-        :id="id('backgroundText')"
-        class="p-inputtext-lg submitReportForm__text-area"
-        v-model="reportData.background"
-        aria-describedby="background-text"
-        >
-      </Textarea>
-      <label :for="id('backgroundText')">Background text</label>
-    </span>
-    <small :id="id('background-text')">Tell us about yourself</small>
-  </div>
-  <div>
-    <Button
-      :disabled="validationButtonDisable"
-      v-on:click="handleValidation">Validate report</Button>
+  <div class="container-spacing">
+    <div class="float-label-spacing">
+      <span class="p-float-label">
+        <Textarea
+          :inputId="id('background')"
+          :aria-describedby="id('backgroundHelp')"
+          class="w-full"
+          v-model="reportData.background"
+          autoResize
+          >
+        </Textarea>
+        <label :for="id('background')">Background text</label>
+      </span>
+      <small :id="id('backgroundHelp')">Tell us about yourself at the moment of the report</small>
+    </div>
+    <div class="button-wrapper">
+      <Button
+        :disabled="validationButtonDisable"
+        v-on:click="handleValidation">Validate report</Button>
+    </div>
     <template v-if="step === 'validating' || step === 'signing' ">
       <Message severity="error" v-for="(error, i) in errors" :key="i">
         {{ error }}
@@ -116,41 +128,39 @@
         Your report is submitted successfully!
       </Message>
     </template>
-    <div>
-      <Panel header="Report signature" toggleable :collapsed="step !== 'signing'">
-      <p class="m-0">
-          To sign your validated report, first select the user you want to sign the report with.
-        </p>
-        <p class="m-0">List all users:</p>
+    <Panel header="Report signature" toggleable :collapsed="step !== 'signing'">
+    <p class="m-0">
+        To sign your validated report, first select the user you want to sign the report with.
+      </p>
+      <p class="m-0">List all users:</p>
+      <Textarea
+        contenteditable="false"
+        rows="1"
+        class="w-full copy-paste"
+        value="gpg --list-keys"
+        disabled
+      />
+      <p class="m-0"> Paste in your local CMD the next code replacing $user with your
+        value:</p>
+      <Textarea
+        contenteditable="false"
+        class="w-full copy-paste"
+        :value="`echo '${validJson.replace(/'/g, `'\\''`)}' | gpg --clear-sign --disable-signer-uid --local-user `"
+        auto-resize
+        disabled
+      />
+      <p class="m-0">Copy the result and paste it in the next window.</p>
+    </Panel>
+    <div class="float-label-spacing">
+      <div class="p-float-label p-float-label-shift">
         <Textarea
-          contenteditable="false"
-          rows="1"
-          class="copy-paste"
-          value="gpg --list-keys"
-          auto-resize
-          disabled
-        />
-        <p class="m-0"> Paste in your local CMD the next code replacing $user with your
-          value:</p>
-        <Textarea
-          contenteditable="false"
-          rows="1"
-          class="copy-paste"
-          :value="`echo '${validJson.replace(/'/g, `'\\''`)}' | gpg --clear-sign --disable-signer-uid --local-user `"
-          auto-resize
-          disabled
-        />
-        <p class="m-0">Copy the result and paste it in the next window.</p>
-      </Panel>
-      <div class="flex flex-column gap-2 submitForm__clear-sign-text-input">
-        <label :for="id('clearSignArmored')">Signed report:</label>
-        <Textarea
-          v-model="clearSignArmored"
-          name="clearSignArmored"
-          :id="id('clearSignArmored')"
-          cols="66"
-          rows="6"
-          placeholder="-----BEGIN PGP SIGNED MESSAGE-----
+        v-model="clearSignArmored"
+        name="clearSignArmored"
+        :id="id('clearSignArmored')"
+        :aria-describedby="id('clearSignArmoredHelp')"
+        cols="66"
+        rows="6"
+        placeholder="-----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA256
 { <<YOUR JSON>> }
 -----BEGIN PGP SIGNATURE-----
@@ -162,54 +172,50 @@ iQIzBAABCgAdFiEEVUcfD9jeufsD1JVP3UX6TcUPhfEFAmC7Q2gACgkQ3UX6TcUP
 TaVHnbJ8jErfklgnRTPibX8AdmEFJasONNMJ/7euoBoH+aAYG/k=
 =B0/L
 -----END PGP SIGNATURE-----"/>
-        <small :id="id('clearSignArmored')">Paste here your validated and signed report.</small>
+        <label :for="id('clearSignArmored')">Signed report:</label>
+        <br/>
+        <small :id="id('clearSignArmoredHelp')">Paste here your validated and signed report.</small>
       </div>
-      <Button class="submitReportForm__add-sub-but" @click="submit"
-              :disabled="!clearSignArmored.length">Submit
-      </Button>
-      <template v-if="step === 'submitting'">
-        <Message severity="error" v-for="(error, i) in errors" :key="i">
-          {{ error }}
-        </Message>
-        <Message severity="success" key="success" v-if="!errors.length">
-          Your report is submitted successfully!
-        </Message>
-      </template>
     </div>
+    <div class="button-wrapper">
+      <Button @click="submit" :disabled="!clearSignArmored.length">Submit</Button>
+    </div>
+    <template v-if="step === 'submitting'">
+      <Message severity="error" v-for="(error, i) in errors" :key="i">
+        {{ error }}
+      </Message>
+      <Message severity="success" key="success" v-if="!errors.length">
+        Your report is submitted successfully!
+      </Message>
+    </template>
   </div>
 </template>
 
 <script lang="ts">
-import type { Substance } from '../services/api';
+import TabPanel from 'primevue/tabpanel';
+import TabView, { type TabViewClickEvent } from 'primevue/tabview';
 import { defineComponent } from 'vue';
 import { useFormat } from '../format.js/useFormat';
-import { BadRequestError, reportDataValidation, reportSubmit } from '../services/api';
-import TimeLineReportForm from './TimeLineReportForm.vue';
-import SubstanceList from './SubstanceList.vue';
-import TabView, { type TabViewClickEvent } from 'primevue/tabview';
-import TabPanel from 'primevue/tabpanel';
-
-type TimeLineReport = {
-  timeSecond: number;
-  report: string;
-  dataCompleted: Function;
-  simple: boolean;
-};
-
-type ReportData = {
-  substances: Substance[];
-  timeLineReport: TimeLineReport[];
-  background: string;
-  dateTimestamp: number;
-  title: string;
-};
+import type { ReportDataAlpha1, ReportSubstanceAlpha1, ReportTimeLineItemAlpha1 } from '../services/api';
+import {
+  BadRequestError,
+  reportDataValidation,
+  reportSubmit
+} from '../services/api';
+import GenericOrderedList from './GenericOrderedList.vue';
+import { getter } from './InputMaskTime.vue';
+import SubstanceItem from './SubstanceItem.vue';
+import TimeLineReportItem from './TimeLineReportItem.vue';
 
 const STORAGE_KEY = 'report-alpha1';
+
+const SubstanceList = GenericOrderedList as (typeof GenericOrderedList<ReportSubstanceAlpha1, typeof SubstanceItem>);
+const TimeLineReportList = GenericOrderedList as (typeof GenericOrderedList<ReportTimeLineItemAlpha1, typeof TimeLineReportItem>);
 
 export default defineComponent({
   name: 'SubmitReport',
   components: {
-    TimeLineReportForm,
+    TimeLineReportList,
     SubstanceList,
     TabPanel,
     TabView,
@@ -220,32 +226,25 @@ export default defineComponent({
       dateFormatShort,
     };
   },
-  mounted() {
-    this.handleAddTimeLineReport();
-  },
   data() {
-    let storedReport: ReportData|null = null;
+    let storedReport: ReportDataAlpha1|null = null;
     try {
       storedReport = localStorage && JSON.parse(localStorage.getItem(STORAGE_KEY) as string) || null;
     } catch (e) {
       // ignore
     }
+    const reportData: ReportDataAlpha1 = storedReport || {
+      substances: [{ timeSecond: 0, namePsychonautWikiOrg: '' } as ReportSubstanceAlpha1],
+      timeLineReport: [{ timeSecond: 0, report: '' }],
+      background: '',
+      dateTimestamp: Math.round(Date.now() / 10000) * 10,
+      title: '',
+    };
     return {
       uid: Math.random().toString(27).slice(2),
       isDev: import.meta.env.DEV,
-      reportData: storedReport || {
-        substances: [],
-        timeLineReport: [],
-        background: '',
-        dateTimestamp: Math.round(Date.now() / 10000) * 10,
-        title: '',
-      } as ReportData,
-      stagedSubstance: {} as Substance,
-      staged: true,
-      stagedReport: {} as TimeLineReport,
-      stagedRep: false,
-      simpleReportText: '',
-      simple: true,
+      reportData,
+      simple: reportData.substances.length < 2,
       errors: [] as string[],
       step: 'entering' as ('entering' | 'validating' | 'submitting' | 'signing'),
       validJson: '',
@@ -253,6 +252,12 @@ export default defineComponent({
     };
   },
   computed: {
+    SubstanceItem() {
+      return SubstanceItem
+    },
+    TimeLineReportItem() {
+      return TimeLineReportItem
+    },
     dateTimestampDate: {
       get(): Date {
         return new Date(this.reportData.dateTimestamp * 1000)
@@ -260,9 +265,6 @@ export default defineComponent({
       set(v: Date) {
         this.reportData.dateTimestamp = Math.floor(v.getTime() / 10000) * 10;
       },
-    },
-    addReportButtonDisable() {
-      return this.stagedRep;
     },
     validationButtonDisable() {
       return this.reportData.title.length < 4 || this.reportData.background.length < 4;
@@ -273,51 +275,40 @@ export default defineComponent({
       return this.uid + id.toString();
     },
     handleFormFill() {
-      const substance: Substance = {
+      this.reportData.substances = [{
         timeSecond: 0,
         dose: 10,
         doseUnit: 'mg',
         namePsychonautWikiOrg: 'Heroin',
         routeOfAdministration: 'intravenous',
         surePercent: 30,
-      };
-      this.stagedSubstance = substance;
-
-      this.simpleReportText = 'Repppoopoo'
+      }];
       this.reportData.title = 'Title';
       this.reportData.background = 'Backgroundd';
       this.reportData.dateTimestamp = Math.round(Date.now() / 10000) * 10;
     },
     handleTabChange(event: TabViewClickEvent) {
-      if (event.index === 0 && this.reportData.timeLineReport.length > 0) {
-        const simpleReport = this.reportData.timeLineReport.reduce((cumulatedRep, curRep) => {
-          return ({
-            report: cumulatedRep.report + '\n' + curRep.report,
-            timeSecond: 0,
-            simple: true,
-            dataCompleted: () => {},
-          });
-        });
-        this.simpleReportText = simpleReport.report;
-        this.simple = true;
-      }
       if (event.index === 1) {
         this.simple = false;
+        return;
       }
+      this.simple = true;
+      this.reportData.timeLineReport[0].report = this.reportData.timeLineReport
+        .map((rep) => (getter.call({
+          modelValue: rep.timeSecond,
+          timeFormat: 'short',
+          prefix: '+T',
+        }) + '\n\n' + rep.report).trim())
+        .join('\n\n')
+        .trim()
+        .replace(/^\+T00:00\s*/, '');
+      this.reportData.timeLineReport[0].timeSecond = 0
+      this.reportData.timeLineReport.length = 1
     },
     async handleValidation() {
       this.step = 'validating';
       try {
-        this.validJson = await reportDataValidation({
-          substances: [...this.reportData.substances],
-          timeLineReport: this.simple ? [{
-            timeSecond: 0,
-            report: this.simpleReportText,
-          }] : [...this.reportData.timeLineReport],
-          title: this.reportData.title,
-          background: this.reportData.background,
-          dateTimestamp: this.reportData.dateTimestamp,
-        })
+        this.validJson = await reportDataValidation(this.reportData)
         this.errors.length = 0;
         this.step = 'signing'
       } catch (e) {
@@ -346,25 +337,6 @@ export default defineComponent({
         }
       }
     },
-    handleAddTimeLineReport() {
-      const report: TimeLineReport = {
-        timeSecond: 0,
-        report: '',
-        dataCompleted: () => {
-          this.reportData.timeLineReport = [...this.reportData.timeLineReport, this.stagedReport];
-          this.stagedRep = false;
-        },
-        simple: true,
-      };
-      this.stagedReport = report;
-      this.stagedRep = true;
-    },
-    updateRepForm(params: Partial<TimeLineReport>) {
-      this.stagedReport = {
-        ...this.stagedReport,
-        ...params,
-      };
-    },
   },
   watch: {
     reportData: {
@@ -382,11 +354,28 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
+.float-label-spacing {
+  padding-top: 1.5em;
+  margin-top: 0.5em;
+}
+
 .tab-wrapper {
   padding-top: 2em;
+}
+
+.container-spacing {
+  padding-bottom: 1em;
+}
+
+.container-spacing, .tab-wrapper {
   margin-right: 0.5rem;
   margin-left: 0.5rem;
   margin-top: 0.5rem;
+}
+
+.button-wrapper {
+  margin: 0 auto 0.5rem auto;
+  text-align: center;
 }
 
 .copy-paste .p-inputtextarea {

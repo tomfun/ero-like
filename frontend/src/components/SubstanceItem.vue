@@ -164,13 +164,13 @@
 </template>
 
 <script lang="ts">
-import type { Substance, PsychonautWikiSubstance } from '../services/api';
+import type { ReportSubstanceAlpha1, PsychonautWikiSubstance } from '../services/api';
 import { defineComponent } from 'vue';
 import { fetchPsychonautWikiSubstanceList } from '../services/api';
 import ReportTime from './ReportTime.vue';
 import InputMaskTime, { type TimeFormat } from './InputMaskTime.vue';
 
-export type T = Partial<Substance> & Pick<Substance, 'timeSecond' | 'namePsychonautWikiOrg'>;
+export type T = Partial<ReportSubstanceAlpha1> & Pick<ReportSubstanceAlpha1, 'timeSecond' | 'namePsychonautWikiOrg'>;
 
 export default defineComponent({
   name: 'SubstanceItem',
@@ -180,6 +180,8 @@ export default defineComponent({
       default: function () {
         return {
           dose: 1,
+          timeSecond: 1,
+          namePsychonautWikiOrg: '',
         } as T;
       },
     },
@@ -256,10 +258,10 @@ export default defineComponent({
     id(id: string) {
       return this.uid + id.toString();
     },
-    setSingleValue(key: keyof Substance, value: Substance[keyof Substance]) {
+    setSingleValue(key: keyof ReportSubstanceAlpha1, value: ReportSubstanceAlpha1[keyof ReportSubstanceAlpha1]) {
       this.setNewValue({ [key]: value })
     },
-    setNewValue(value: Partial<Substance>) {
+    setNewValue(value: Partial<ReportSubstanceAlpha1>) {
       const newValue: T = Object.assign(this.modelValue, value);
       this.$emit('update:modelValue', newValue);
     },

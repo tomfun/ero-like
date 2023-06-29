@@ -9,7 +9,7 @@ export interface PsychonautWikiSubstance {
   commonNames: string[] | null;
 }
 
-export interface Substance {
+export interface ReportSubstanceAlpha1 {
   timeSecond: number;
   namePsychonautWikiOrg: string;
   routeOfAdministration: string;
@@ -18,11 +18,16 @@ export interface Substance {
   surePercent: number;
 }
 
-interface ReportDataAlpha1 {
+export interface ReportTimeLineItemAlpha1 {
+  timeSecond: number;
+  report: string;
+}
+
+export interface ReportDataAlpha1 {
   dateTimestamp: number;
   title: string;
   background: string;
-  substances: Substance[];
+  substances: ReportSubstanceAlpha1[];
   timeLineReport: Array<{ timeSecond: number; report: string }>;
 }
 

@@ -1,8 +1,6 @@
 <template>
-  <Message severity="info">If this is the substance you took in the very begining, then choose zero.</Message>
-  <Message severity="info"> Both of the timelines(substance input, reporting) starts with the first substance input. </Message>
-
-  <SubstanceItem
+  <component
+    :is="props.DynamicComponent"
     v-for="(s, i) in props.modelValue"
     :key="key(props.modelValue[i])"
     :modelValue="props.modelValue[i]"
@@ -24,11 +22,8 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import type { Substance } from '../services/api';
-import SubstanceItem from './SubstanceItem.vue';
-
-type T = Partial<Substance> & Pick<Substance, 'timeSecond' | 'namePsychonautWikiOrg'>;
+<script setup lang="ts" generic="T extends { timeSecond: number; }, C extends Component">
+import type { Component, PropType } from 'vue';
 
 const props = defineProps({
   modelValue: {
@@ -37,21 +32,26 @@ const props = defineProps({
       return [] as T[];
     },
   },
+  DynamicComponent: {
+    required: true,
+    type: Object as PropType<C>
+  },
   empty: {
     required: false,
     default() {
       return {
         timeSecond: 0,
-        namePsychonautWikiOrg: '',
-        dose: 1,
       } as T;
     },
   }
-}) as unknown as { modelValue: T[], empty: T };
+}) as unknown as { modelValue: T[], empty: T, DynamicComponent: C };
 
-const emits = defineEmits<{
-  'update:modelValue': [array: T[]],
-}>()
+const emits = defineEmits({
+  'update:modelValue'(array: T[]) {
+    return Array
+      .isArray(array) && array.every((s: T) => typeof s.timeSecond === 'number')
+  }
+})
 
 const vueKeys = new WeakMap<T, number>();
 let newKey = 0;
@@ -67,7 +67,6 @@ function onChange(el: T, i: number) {
   newArray.splice(i, 1, el);
   newArray.sort((a, b) => (a.timeSecond || 0) - (b.timeSecond || 0));
   emits('update:modelValue', newArray);
-  console.log('updated', props.modelValue === newArray)
 }
 
 function addElement() {
