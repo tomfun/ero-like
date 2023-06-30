@@ -264,7 +264,6 @@ export default defineComponent({
 
 <style scoped lang="scss">
 @import '../vars.scss';
-$buttonWidth: 2.357rem;
 
 .time-wrapper > .p-inputtext {
   border-radius: 0;

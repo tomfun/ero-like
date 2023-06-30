@@ -112,34 +112,10 @@
   </div>
   <div class="grid" v-else>
     <div class="grid col">
-      <p class="col-3 min-w-min" :title="modelValue.routeOfAdministration">
-        <span class="pi pi-user-plus"></span>
-        <ReportTime
-          :modelValue="modelValue.timeSecond"
-          :timeFormat="timeFormat"
-        />
-        {{ roaSymbol }}
-        <span :class="{ pi: true,
-          'pi-apple': modelValue.routeOfAdministration === 'oral',
-          'pi-power-off': modelValue.routeOfAdministration === 'sublingual',
-          'pi-caret-up': modelValue.routeOfAdministration === 'insufflated',
-          'pi-arrow-down-left': modelValue.routeOfAdministration === 'intravenous',
-          'pi-comment': modelValue.routeOfAdministration === 'smoked',
-          'pi-angle-double-up': modelValue.routeOfAdministration === 'rectal',
-          'pi-step-backward-alt': modelValue.routeOfAdministration === 'transdermal',
-          'pi-arrow-circle-up': modelValue.routeOfAdministration === 'intramuscular',
-          'pi-eye': modelValue.routeOfAdministration === 'ophthalmic',
-        }"></span>
-      </p>
-      <p class="col-5 min-w-min">
-        {{ modelValue.namePsychonautWikiOrg }}
-      </p>
-      <p class="col">
-        {{ modelValue.dose }}&nbsp;{{ modelValue.doseUnit }}
-      </p>
-      <p class="col">
-        {{ modelValue.surePercent }}
-      </p>
+      <SubstanceItemView
+        :timeFormat="timeFormat"
+        :modelValue="modelValue"
+      />
     </div>
     <div class="col-fixed w-8rem p-buttonset text-right">
       <Button
@@ -167,14 +143,14 @@
 import type { ReportSubstanceAlpha1, PsychonautWikiSubstance } from '../services/api';
 import { defineComponent } from 'vue';
 import { fetchPsychonautWikiSubstanceList } from '../services/api';
-import ReportTime from './ReportTime.vue';
 import InputMaskTime, { type TimeFormat } from './InputMaskTime.vue';
+import SubstanceItemView from './SubstanceItemView.vue';
 
 export type T = Partial<ReportSubstanceAlpha1> & Pick<ReportSubstanceAlpha1, 'timeSecond' | 'namePsychonautWikiOrg'>;
 
 export default defineComponent({
   name: 'SubstanceItem',
-  components: { InputMaskTime, ReportTime },
+  components: { SubstanceItemView, InputMaskTime },
   props: {
     modelValue: {
       default: function () {
@@ -239,20 +215,6 @@ export default defineComponent({
         this.setNewValue({ namePsychonautWikiOrg });
       }
     },
-    roaSymbol() {
-      return {
-        '': '•',
-        oral: '🍽️',
-        sublingual: '👅',
-        insufflated: '👃',
-        intravenous: '💉',
-        smoked: '🚬',
-        rectal: '⤴️🍑',
-        transdermal: '💉👆',
-        intramuscular: '💪💉',
-        ophthalmic: '👁💧',
-      }[this.modelValue.routeOfAdministration || ''];
-    }
   },
   methods: {
     id(id: string) {

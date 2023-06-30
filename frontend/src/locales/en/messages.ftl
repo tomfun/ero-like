@@ -45,7 +45,7 @@ how_to_get_keys_details =
   If you <a
     href="https://docs.github.com/en/authentication/managing-commit-signature-verification/generating-a-new-gpg-key">
   don't have yet keys you can
-  <b>create</b></a> them after you have decided which user to use you need to print you public keys and user data:
+  <b>create</b></a> them. After you have decided which user to use you need to print you public keys and user data:
   <br>
   <code>gpg --armor --export </code>
   <b>$user</b><br>

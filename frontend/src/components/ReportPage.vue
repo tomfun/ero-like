@@ -8,46 +8,42 @@
   </div>
   <article v-if="report?.d">
     <h3>{{ report.d.title }}</h3>
-    <Panel :header="$t('substances')" class="substance-cont" toggleable :collapsed="false">
-      <ul class="substance-full-data-list">
-        <li v-for="sub in report.d.substances" :key="sub.timeSecond">
-          <Panel :header="sub.namePsychonautWikiOrg" toggleable :collapsed="false">
-            <p class="m-0">
-              {{ $t('dose') }}: {{ sub.dose }}<br/>
-              {{ $t('dose_unit') }}: {{ sub.doseUnit }} <br/>
-              {{ $t('time') }}: {{ sub.timeSecond }}<br/>
-<!--              {{ $t('quality_percent') }}:{{ sub.surePercent }}<br/>-->
-              {{ $t('name_on_pwo') }}: {{ sub.namePsychonautWikiOrg }}<br/>
-              {{ $t('route_of_admin') }}: {{ sub.routeOfAdministration }}<br/>
-            </p>
-          </Panel>
-        </li>
-      </ul>
-    </Panel>
-    <Panel :header="$t('author_info')" class="substance-cont" toggleable :collapsed="false">
-      <p class="m-0">
-        {{ $t('nick') }}: {{  report.signature.user.nick }}<br/>
-      </p>
-    </Panel>
-    <Panel :header="$t('background')" class="substance-cont" toggleable :collapsed="false">
-      <p class="m-0">
-        {{  report.d.background }}
-      </p>
-    </Panel>
-    <Panel :header="$t('timeline')" class="substance-cont" toggleable :collapsed="false">
-      <ul class="substance-full-data-list">
-        <li v-for="tl in report.d.timeLineReport" :key="tl.timeSecond">
-          <Panel :header="tl.timeSecond.toString()" toggleable :collapsed="false">
-            <p class="m-0">
-              {{ $t('time') }}: {{ tl.timeSecond }}<br/>
-              {{ $t('description') }}: {{ tl.report }}<br/>
-            </p>
-          </Panel>
-        </li>
-      </ul>
-    </Panel>
+
+    <h5>{{ $t('substances') }}</h5>
+    <ul class="substance-full-data-list">
+      <li v-for="sub in report.d.substances" :key="sub.timeSecond">
+        <div class="grid"></div>
+        <SubstanceItemView
+          timeFormat="precise"
+          :modelValue="sub"
+        />
+      </li>
+    </ul>
+
+    <h5>{{ $t('background') }}</h5>
+    <p class="m-0">
+      {{  report.d.background }}
+    </p>
+
+    <h5>{{ $t('timeline') }}</h5>
+    <ul class="substance-full-data-list">
+      <li
+        v-for="tl in report.d.timeLineReport"
+        :key="tl.timeSecond"
+        :title="formatReportTime(tl.timeSecond)">
+        <p class="m-0">
+          <span v-if="report.d.timeLineReport.length === 1 && tl.timeSecond
+           || report.d.timeLineReport.length !== 1" :title="$t('time')">
+            {{ formatReportTime(tl.timeSecond) }}
+          </span><br/>
+          {{ tl.report }}<br/>
+          <br/>
+        </p>
+      </li>
+    </ul>
+    <h5>{{ $t('author_info') }}</h5>
     <address>
-      {{ report?.signature.user.nick }}
+      {{ $t('nick') }}: {{ report?.signature.user.nick }}
     </address>
     <time itemprop="startDate" :datetime="new Date(report?.d.dateTimestamp * 1000).toISOString()">
       {{ formatDate(report?.d.dateTimestamp) }}
@@ -68,9 +64,12 @@ import {
 } from '../store/reports';
 import { FETCH_REPORT } from '../store/reports/actions';
 import type { Report } from '../services/api';
+import { getter } from './InputMaskTime.vue';
+import SubstanceItemView from './SubstanceItemView.vue';
 
 export default defineComponent({
   name: 'ReportPage',
+  components: { SubstanceItemView },
   data() {
     return { loading: 0 };
   },
@@ -81,6 +80,13 @@ export default defineComponent({
     return { meta }
   },
   methods: {
+    formatReportTime(timeSecond: number) {
+      return getter.call({
+        modelValue: timeSecond,
+        timeFormat: 'long',
+        prefix: '+T',
+      })
+    },
     ...mapActions(REPORTS_MODULE, {
       fetchReport: FETCH_REPORT,
     }),
@@ -153,5 +159,12 @@ export default defineComponent({
 
 </script>
 <style scoped lang="scss">
-
+.substance-full-data-list {
+  display: flex;
+  flex-wrap: wrap;
+  li {
+    display: flex;
+    width: 100%;
+  }
+}
 </style>

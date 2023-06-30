@@ -16,35 +16,7 @@
          @click="handleFormFill"
       />
       <div class="tab-wrapper">
-        <div class="formgrid grid">
-          <div class="field col-12 lg:col">
-            <div class="p-float-label">
-              <InputText class="w-full" :id="id('title')"
-                         v-model="reportData.title" aria-describedby="title-help" />
-              <label :for="id('title')">Title</label>
-            </div>
-            <small :id="id('title-help')">Enter a title the best describes your journey.</small>
-          </div>
-          <div class="field col-fixed min-w-min md:w-16rem">
-            <div class="p-float-label">
-              <Calendar v-model="dateTimestampDate"
-                        :dateFormat="dateFormatShort"
-                        :placeholder="dateFormatShort"
-                        :id="id('dateTimestampDate')"
-                        aria-describedby="title-help" />
-              <label :for="id('dateTimestampDate')">Date</label>
-            </div>
-            <small :id="id('dateTimestampDate-help')">Enter date of your journey.</small>
-          </div>
-        </div>
-        <Message severity="info">If this is the substance you took in the very begining, then choose zero.</Message>
-        <Message severity="info"> Both of the timelines(substance input, reporting) starts with the first substance input. </Message>
-
-        <SubstanceList
-          v-model="reportData.substances"
-          :DynamicComponent="SubstanceItem"
-        />
-
+        <CommonSubmitReport v-model="reportData" :timeFormat="TIME_FORMAT" />
         <div class="float-label-spacing">
           <div class="p-float-label p-float-label-shift">
           <Textarea
@@ -63,35 +35,7 @@
     </TabPanel>
     <TabPanel header="Timelined">
       <div class="tab-wrapper">
-        <div class="grid grid-nogutter">
-          <div class="field col-9">
-            <span class="p-float-label">
-              <InputText class="col-12" :id="id('title')"
-                         v-model="reportData.title" aria-describedby="title-help" />
-              <label :for="id('title')">Title</label>
-            </span>
-            <small :id="id('title-help')">Enter a title the best describes your journey.</small>
-          </div>
-          <div class="field col-3">
-            <span class="p-float-label">
-              <Calendar v-model="dateTimestampDate"
-                        :dateFormat="dateFormatShort"
-                        :placeholder="dateFormatShort"
-                        :id="id('dateTimestampDate')"
-                        aria-describedby="title-help" />
-              <label :for="id('dateTimestampDate')">Date</label>
-            </span>
-            <small :id="id('dateTimestampDate-help')">Enter date of your journey.</small>
-          </div>
-        </div>
-
-        <Message severity="info">If this is the substance you took in the very begining, then choose zero.</Message>
-        <Message severity="info"> Both of the timelines(substance input, reporting) starts with the first substance input. </Message>
-
-        <SubstanceList
-          v-model="reportData.substances"
-          :DynamicComponent="SubstanceItem"
-        />
+        <CommonSubmitReport v-model="reportData" :timeFormat="TIME_FORMAT" />
 
         <TimeLineReportList
           v-model="reportData.timeLineReport"
@@ -129,27 +73,12 @@
       </Message>
     </template>
     <Panel header="Report signature" toggleable :collapsed="step !== 'signing'">
-    <p class="m-0">
-        To sign your validated report, first select the user you want to sign the report with.
-      </p>
-      <p class="m-0">List all users:</p>
-      <Textarea
-        contenteditable="false"
-        rows="1"
-        class="w-full copy-paste"
-        value="gpg --list-keys"
-        disabled
-      />
-      <p class="m-0"> Paste in your local CMD the next code replacing $user with your
-        value:</p>
-      <Textarea
-        contenteditable="false"
-        class="w-full copy-paste"
-        :value="`echo '${validJson.replace(/'/g, `'\\''`)}' | gpg --clear-sign --disable-signer-uid --local-user `"
-        auto-resize
-        disabled
-      />
-      <p class="m-0">Copy the result and paste it in the next window.</p>
+
+    <ContentSignature
+      v-if="validJson"
+      :content="validJson"
+    />
+
     </Panel>
     <div class="float-label-spacing">
       <div class="p-float-label p-float-label-shift">
@@ -159,7 +88,7 @@
         :id="id('clearSignArmored')"
         :aria-describedby="id('clearSignArmoredHelp')"
         cols="66"
-        rows="6"
+        rows="15"
         placeholder="-----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA256
 { <<YOUR JSON>> }
@@ -195,36 +124,32 @@ TaVHnbJ8jErfklgnRTPibX8AdmEFJasONNMJ/7euoBoH+aAYG/k=
 import TabPanel from 'primevue/tabpanel';
 import TabView, { type TabViewClickEvent } from 'primevue/tabview';
 import { defineComponent } from 'vue';
-import { useFormat } from '../format.js/useFormat';
 import type { ReportDataAlpha1, ReportSubstanceAlpha1, ReportTimeLineItemAlpha1 } from '../services/api';
 import {
   BadRequestError,
   reportDataValidation,
   reportSubmit
 } from '../services/api';
+import ContentSignature from './ContentSignature.vue';
 import GenericOrderedList from './GenericOrderedList.vue';
 import { getter } from './InputMaskTime.vue';
+import CommonSubmitReport from './SubmitRepor/CommonSubmitReport.vue';
 import SubstanceItem from './SubstanceItem.vue';
 import TimeLineReportItem from './TimeLineReportItem.vue';
 
 const STORAGE_KEY = 'report-alpha1';
+const TIME_FORMAT = 'short' as const;
 
-const SubstanceList = GenericOrderedList as (typeof GenericOrderedList<ReportSubstanceAlpha1, typeof SubstanceItem>);
 const TimeLineReportList = GenericOrderedList as (typeof GenericOrderedList<ReportTimeLineItemAlpha1, typeof TimeLineReportItem>);
 
 export default defineComponent({
   name: 'SubmitReport',
   components: {
+    CommonSubmitReport,
+    ContentSignature,
     TimeLineReportList,
-    SubstanceList,
     TabPanel,
     TabView,
-  },
-  setup() {
-    const { dateFormatShort } = useFormat();
-    return {
-      dateFormatShort,
-    };
   },
   data() {
     let storedReport: ReportDataAlpha1|null = null;
@@ -233,18 +158,12 @@ export default defineComponent({
     } catch (e) {
       // ignore
     }
-    const reportData: ReportDataAlpha1 = storedReport || {
-      substances: [{ timeSecond: 0, namePsychonautWikiOrg: '' } as ReportSubstanceAlpha1],
-      timeLineReport: [{ timeSecond: 0, report: '' }],
-      background: '',
-      dateTimestamp: Math.round(Date.now() / 10000) * 10,
-      title: '',
-    };
+    const reportData: ReportDataAlpha1 = storedReport || this.newReport();
     return {
       uid: Math.random().toString(27).slice(2),
       isDev: import.meta.env.DEV,
       reportData,
-      simple: reportData.substances.length < 2,
+      simple: reportData.timeLineReport.length < 2,
       errors: [] as string[],
       step: 'entering' as ('entering' | 'validating' | 'submitting' | 'signing'),
       validJson: '',
@@ -252,25 +171,29 @@ export default defineComponent({
     };
   },
   computed: {
+    TIME_FORMAT() {
+      return TIME_FORMAT
+    },
     SubstanceItem() {
       return SubstanceItem
     },
     TimeLineReportItem() {
       return TimeLineReportItem
     },
-    dateTimestampDate: {
-      get(): Date {
-        return new Date(this.reportData.dateTimestamp * 1000)
-      },
-      set(v: Date) {
-        this.reportData.dateTimestamp = Math.floor(v.getTime() / 10000) * 10;
-      },
-    },
     validationButtonDisable() {
       return this.reportData.title.length < 4 || this.reportData.background.length < 4;
     }
   },
   methods: {
+    newReport() {
+      return {
+        substances: [{ timeSecond: 0, namePsychonautWikiOrg: '' } as ReportSubstanceAlpha1],
+        timeLineReport: [{ timeSecond: 0, report: '' }],
+        background: '',
+        dateTimestamp: Math.round(Date.now() / 10000) * 10,
+        title: '',
+      }
+    },
     id(id: string) {
       return this.uid + id.toString();
     },
@@ -293,24 +216,32 @@ export default defineComponent({
         return;
       }
       this.simple = true;
-      this.reportData.timeLineReport[0].report = this.reportData.timeLineReport
+      const report = this.reportData.timeLineReport
         .map((rep) => (getter.call({
           modelValue: rep.timeSecond,
-          timeFormat: 'short',
+          timeFormat: TIME_FORMAT,
           prefix: '+T',
         }) + '\n\n' + rep.report).trim())
         .join('\n\n')
         .trim()
-        .replace(/^\+T00:00\s*/, '');
+        .replace(/^\+T00:00\s*/, '') + ' ';
+      this.reportData.timeLineReport[0].report = '...'
       this.reportData.timeLineReport[0].timeSecond = 0
       this.reportData.timeLineReport.length = 1
+      // forcibly update report textarea to trigger resize
+      this.$nextTick(() => {
+        this.reportData.timeLineReport[0].report = report
+      })
     },
     async handleValidation() {
       this.step = 'validating';
       try {
-        this.validJson = await reportDataValidation(this.reportData)
-        this.errors.length = 0;
+        const validJson = await reportDataValidation(this.reportData)
         this.step = 'signing'
+        // forcibly update report textarea to trigger resize
+        await this.$nextTick()
+        this.errors.length = 0;
+        this.validJson = validJson
       } catch (e) {
         if (e instanceof BadRequestError) {
           this.errors = e.errors;
@@ -324,6 +255,7 @@ export default defineComponent({
       try {
         this.validJson = await reportSubmit(this.clearSignArmored)
         this.errors.length = 0;
+        this.reportData = this.newReport()
         try {
           localStorage.removeItem(STORAGE_KEY)
         } catch (e) {
@@ -376,11 +308,6 @@ export default defineComponent({
 .button-wrapper {
   margin: 0 auto 0.5rem auto;
   text-align: center;
-}
-
-.copy-paste .p-inputtextarea {
-  width: 100%;
-  opacity: 0.94;
 }
 
 </style>

@@ -64,16 +64,16 @@
                    placeholder="Search by canonical name"/>
       </template>
       <template #body="{data}">
-        <ul class="substance-list" :title="maxSubstanceTimeSecond.toString()">
+        <ul class="substance-list" :title="formatReportTime(maxSubstanceTimeSecond)">
           <template v-for="(s, i) in data.d.substances" :key="i">
-            <li class="arrow" :title="Math.round(s.timeSecond / 60) + ' minutes'">
+            <li class="arrow" :title="formatReportTime(s.timeSecond)">
             <div>
               <hr
                 :style="`width: ${Math.round(100 * s.timeSecond / maxSubstanceTimeSecond)}%`"
               />
             </div>
             </li>
-            <li :title="Math.round(s.timeSecond / 60) + ' minutes'">
+            <li :title="formatReportTime(s.timeSecond)">
             +<span>{{s.namePsychonautWikiOrg}}</span> {{s.dose}}<small>{{s.doseUnit}}</small>
             </li>
           </template>
@@ -114,6 +114,7 @@ import {
 import { FETCH_REPORTS } from '../store/reports/actions';
 import type { ReportFilters, Report } from '../services/api';
 import pipe from '../services/api.converter';
+import { getter } from './InputMaskTime.vue';
 
 type FetchParams = {
   page: number;
@@ -205,6 +206,13 @@ export default defineComponent({
     ...mapActions(REPORTS_MODULE, {
       fetchReports: FETCH_REPORTS,
     }),
+    formatReportTime(timeSecond: number) {
+      return getter.call({
+        modelValue: timeSecond,
+        timeFormat: 'short',
+        prefix: '+T',
+      })
+    },
     async fetchWith(fetchParams: Partial<FetchParams>) {
       this.fetchParams = { ...this.fetchParams, ...fetchParams };
       this.isDebouncedFetch = true;
