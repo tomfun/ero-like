@@ -265,6 +265,6 @@ build_front:
   script:
     - cd client-config && npm install && cd ..
     - cd frontend
-    - npm install
+    - npm install --legacy-peer-deps
     - npm run build
     - npm run lint
