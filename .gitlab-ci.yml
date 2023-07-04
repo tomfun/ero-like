@@ -5,10 +5,21 @@ stages:
   - registry
   - deploy
 
+.cache-root-npm-0: &cache-root-npm-0
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+
+.cache-home-npm-1: &cache-home-npm-1
+  paths:
+    - ~/.npm
+
 .cache-api-npm: &cache-api-npm
   cache:
-    - paths:
-        - .npm
+    - <<: *cache-root-npm-0
+    - <<: *cache-home-npm-1
     - key:
         files:
           - api/package-lock.json
@@ -17,8 +28,8 @@ stages:
 
 .cache-front-npm: &cache-front-npm
   cache:
-    - paths:
-        - .npm
+    - <<: *cache-root-npm-0
+    - <<: *cache-home-npm-1
     - key:
         files:
           - frontend/package-lock.json
@@ -27,8 +38,8 @@ stages:
 
 .cache-config-npm: &cache-config-npm
   cache:
-    - paths:
-        - .npm
+    - <<: *cache-root-npm-0
+    - <<: *cache-home-npm-1
     - key:
         files:
           - client-config/package-lock.json
@@ -37,8 +48,8 @@ stages:
 
 .cache-sdk-npm: &cache-sdk-npm
   cache:
-    - paths:
-        - .npm
+    - <<: *cache-root-npm-0
+    - <<: *cache-home-npm-1
     - key:
         files:
           - client-sdk/package-lock.json
@@ -214,6 +225,10 @@ build_sdk:
     expire_in: 30 days
   image: node:18.15-alpine3.17
   script:
+    - npm install
+    - env
+    - ls -la ~
+    - ls -la ~/.npm
     - cd client-sdk
     - npm install
     - npm run build
@@ -231,6 +246,7 @@ build_config:
     - build_sdk
   image: node:18.15-alpine3.17
   script:
+    - npm install
     - cd client-config
     - npm install
     - npm run build
@@ -245,6 +261,7 @@ build_api:
     - build_config
   image: node:18.15-alpine3.17
   script:
+    - npm install
     - cd client-config && npm install && cd ..
     - cd api
     - npm install
@@ -263,6 +280,7 @@ build_front:
       - frontend/dist
     expire_in: 30 days
   script:
+    - npm install
     - cd client-config && npm install && cd ..
     - cd frontend
     - npm install --legacy-peer-deps
