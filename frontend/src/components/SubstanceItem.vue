@@ -256,15 +256,6 @@ export default defineComponent({
   .field {
     padding-top: 1em;
     min-width: 12rem;
-    //label {
-    //  white-space: nowrap;
-    //  //width: calc(100% + 1rem);
-    //  //min-width: 6rem;
-    //  //min-width: max-content;
-    //  overflow: hidden; /* Optional, in case you also want to hide text that overflows the container */
-    //  text-overflow: ellipsis; /* Optional, to add an ellipsis (...) when the text overflows */
-    //  //position: relative !important;
-    //}
   }
 }
 </style>

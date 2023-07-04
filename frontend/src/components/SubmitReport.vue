@@ -87,8 +87,9 @@
         name="clearSignArmored"
         :id="id('clearSignArmored')"
         :aria-describedby="id('clearSignArmoredHelp')"
-        cols="66"
+        class="w-full"
         rows="15"
+        autoResize
         placeholder="-----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA256
 { <<YOUR JSON>> }
@@ -206,8 +207,9 @@ export default defineComponent({
         routeOfAdministration: 'intravenous',
         surePercent: 30,
       }];
-      this.reportData.title = 'Title';
+      this.reportData.title = 'Title ' + Math.round(Math.random() * 200) % 200;
       this.reportData.background = 'Backgroundd';
+      this.reportData.timeLineReport = [{ timeSecond: 0, report: '12354' }];
       this.reportData.dateTimestamp = Math.round(Date.now() / 10000) * 10;
     },
     handleTabChange(event: TabViewClickEvent) {

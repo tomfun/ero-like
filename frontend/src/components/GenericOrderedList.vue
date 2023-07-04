@@ -39,9 +39,9 @@ const props = defineProps({
   empty: {
     required: false,
     default() {
-      return {
+      return Object.seal({
         timeSecond: 0,
-      } as T;
+      }) as T
     },
   }
 }) as unknown as { modelValue: T[], empty: T, DynamicComponent: C };
@@ -70,7 +70,7 @@ function onChange(el: T, i: number) {
 }
 
 function addElement() {
-  emits('update:modelValue', [...props.modelValue, props.empty]);
+  emits('update:modelValue', [...props.modelValue, { ...props.empty }])
 }
 
 function rmElement(i: number) {

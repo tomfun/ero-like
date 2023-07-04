@@ -11,7 +11,7 @@
 
     <h5>{{ $t('substances') }}</h5>
     <ul class="substance-full-data-list">
-      <li v-for="sub in report.d.substances" :key="sub.timeSecond">
+      <li v-for="(sub, i) in report.d.substances" :key="i">
         <div class="grid"></div>
         <SubstanceItemView
           timeFormat="precise"
@@ -28,8 +28,8 @@
     <h5>{{ $t('timeline') }}</h5>
     <ul class="substance-full-data-list">
       <li
-        v-for="tl in report.d.timeLineReport"
-        :key="tl.timeSecond"
+        v-for="(tl, i) in report.d.timeLineReport"
+        :key="i"
         :title="formatReportTime(tl.timeSecond)">
         <p class="m-0">
           <span v-if="report.d.timeLineReport.length === 1 && tl.timeSecond
