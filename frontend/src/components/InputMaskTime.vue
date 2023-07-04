@@ -1,12 +1,14 @@
 <template>
-  <span :class="{
-    'grid': true,
-    'grid-nogutter': true,
-    'p-buttonset': true,
-    'time-wrapper': true,
-    'p-inputwrapper-filled': isFill,
-    'p-inputwrapper-focus': isFocus,
-  }">
+  <span
+    :class="{
+      grid: true,
+      'grid-nogutter': true,
+      'p-buttonset': true,
+      'time-wrapper': true,
+      'p-inputwrapper-filled': isFill,
+      'p-inputwrapper-focus': isFocus,
+    }"
+  >
     <Button
       class="col-fixed"
       @:click="minusHandler"
@@ -18,7 +20,7 @@
       <span class="pi pi-minus"></span>
     </Button>
     <InputMask
-      :style="`min-width: ${0.8 + inputMinWidth * 7.93 / 14}rem`"
+      :style="`min-width: ${0.8 + (inputMinWidth * 7.93) / 14}rem`"
       :mask="timeSecondMask"
       :placeholder="timeSecondPlaceholder"
       :inputId="inputId"
@@ -42,14 +44,14 @@
 </template>
 
 <script lang="ts">
-import type { PropType } from 'vue';
-import { defineComponent } from 'vue';
+import type { PropType } from 'vue'
+import { defineComponent } from 'vue'
 
 type ConfigPart = {
-  length: number;
-  div: number | null;
-  c: string | number;
-  mask: string;
+  length: number
+  div: number | null
+  c: string | number
+  mask: string
 }
 
 const CONFIGS = {
@@ -73,18 +75,18 @@ const CONFIGS = {
 export type TimeFormat = keyof typeof CONFIGS
 
 export function getter(this: {
-  modelValue: number,
-  timeFormat: TimeFormat,
+  modelValue: number
+  timeFormat: TimeFormat
   prefix: string
 }): string | undefined {
-  const timeSecond = this.modelValue;
+  const timeSecond = this.modelValue
   return CONFIGS[this.timeFormat].reduce((str, conf, i, configs) => {
-    const div = conf.div || 1;
-    const mod = (configs[i - 1] && configs[i - 1].div || Number.MAX_SAFE_INTEGER) / div;
-    const c = conf.c || '';
-    return str
-      + (Math.floor(timeSecond / div) % mod).toString().padStart(conf.length, '0')
-      + c
+    const div = conf.div || 1
+    const mod = ((configs[i - 1] && configs[i - 1].div) || Number.MAX_SAFE_INTEGER) / div
+    const c = conf.c || ''
+    return (
+      str + (Math.floor(timeSecond / div) % mod).toString().padStart(conf.length, '0') + c
+    )
   }, this.prefix)
 }
 
@@ -105,42 +107,44 @@ export default defineComponent({
     timeFormat: {
       type: String as PropType<TimeFormat>,
       default: function () {
-        return 'long' as TimeFormat;
+        return 'long' as TimeFormat
       },
       validator(value) {
         return !!value && Object.keys(CONFIGS).includes(value as string)
-      }
+      },
     },
     prefix: {
       type: String,
       default: function () {
-        return '+T';
+        return '+T'
       },
-    }
+    },
   },
   emits: ['update:modelValue'],
   mounted() {
-    window && window.addEventListener('mouseup', this.windowHandler);
-    window && window.addEventListener('touchend', this.windowHandler);
+    window && window.addEventListener('mouseup', this.windowHandler)
+    window && window.addEventListener('touchend', this.windowHandler)
   },
   beforeUnmount() {
-    window && window.removeEventListener('mouseup', this.windowHandler);
-    window && window.removeEventListener('touchend', this.windowHandler);
+    window && window.removeEventListener('mouseup', this.windowHandler)
+    window && window.removeEventListener('touchend', this.windowHandler)
   },
   data() {
     return {
       timeSecondRaw: undefined as string | undefined,
       isFocus: false,
       windowHandler: () => this.mouseHandler(),
-      interval: null as ReturnType<typeof setInterval>|null,
-      timeoutInitDelay: null as ReturnType<typeof setTimeout>|null,
-      timeoutWarpDelay: null as ReturnType<typeof setTimeout>|null,
-    };
+      interval: null as ReturnType<typeof setInterval> | null,
+      timeoutInitDelay: null as ReturnType<typeof setTimeout> | null,
+      timeoutWarpDelay: null as ReturnType<typeof setTimeout> | null,
+    }
   },
   computed: {
     isEmpty() {
-      return [null, undefined].includes(this.modelValue as unknown as null)
-        || (!this.allow0 && this.modelValue === 0);
+      return (
+        [null, undefined].includes(this.modelValue as unknown as null) ||
+        (!this.allow0 && this.modelValue === 0)
+      )
     },
     isFill() {
       return !this.isEmpty || this.timeSecondRaw
@@ -148,51 +152,49 @@ export default defineComponent({
     timeSecond: {
       get(): string | undefined {
         if (this.isEmpty) {
-          return this.timeSecondRaw;
+          return this.timeSecondRaw
         }
         return getter.call(this)
       },
       set(value: string) {
-        this.timeSecondRaw = value || undefined;
+        this.timeSecondRaw = value || undefined
         if (!value) {
-          this.setNewValue(0);
-          return;
+          this.setNewValue(0)
+          return
         }
         const pattern = CONFIGS[this.timeFormat].reduce((pattern, conf) => {
-          const digitPattern = `(\\d{${conf.length}})`;
-          const separator = conf.c ? `${conf.c}` : '';
-          return pattern + digitPattern + separator;
-        }, '');
+          const digitPattern = `(\\d{${conf.length}})`
+          const separator = conf.c ? `${conf.c}` : ''
+          return pattern + digitPattern + separator
+        }, '')
 
-        const match = value.replace(this.prefix, '')
-          .match(new RegExp(pattern));
+        const match = value.replace(this.prefix, '').match(new RegExp(pattern))
         if (!match) {
-          return;
+          return
         }
-        const timeSecond = CONFIGS[this.timeFormat]
-          .reduce((n: number, conf, i: number) =>
-              n + (conf.div || 1) * (+match[i + 1]),
-            0,
-          )
-        this.setNewValue(timeSecond);
-      }
+        const timeSecond = CONFIGS[this.timeFormat].reduce(
+          (n: number, conf, i: number) => n + (conf.div || 1) * +match[i + 1],
+          0,
+        )
+        this.setNewValue(timeSecond)
+      },
     },
     inputMinWidth() {
       return this.timeSecondMask.length
     },
     timeSecondMask() {
       return CONFIGS[this.timeFormat].reduce((mask, conf) => {
-        const maskPart = (new Array(conf.length).fill('9')).join('');
-        const separator = conf.c ? `${conf.c}` : '';
-        return mask + maskPart + separator;
-      }, this.prefix);
+        const maskPart = new Array(conf.length).fill('9').join('')
+        const separator = conf.c ? `${conf.c}` : ''
+        return mask + maskPart + separator
+      }, this.prefix)
     },
     timeSecondPlaceholder() {
       return CONFIGS[this.timeFormat].reduce((mask, conf) => {
-        const maskPart = (new Array(conf.length).fill(conf.mask)).join('');
-        const separator = conf.c ? `${conf.c}` : '';
-        return mask + maskPart + separator;
-      }, this.prefix);
+        const maskPart = new Array(conf.length).fill(conf.mask).join('')
+        const separator = conf.c ? `${conf.c}` : ''
+        return mask + maskPart + separator
+      }, this.prefix)
     },
   },
   methods: {
@@ -205,15 +207,15 @@ export default defineComponent({
     mouseHandler(isDown = false, isPlus = false) {
       if (this.interval) {
         clearInterval(this.interval)
-        this.interval = null;
+        this.interval = null
       }
       if (this.timeoutWarpDelay) {
         clearTimeout(this.timeoutWarpDelay)
-        this.timeoutWarpDelay = null;
+        this.timeoutWarpDelay = null
       }
       if (this.timeoutInitDelay) {
         clearTimeout(this.timeoutInitDelay)
-        this.timeoutInitDelay = null;
+        this.timeoutInitDelay = null
       }
       if (isDown) {
         this.timeoutInitDelay = setTimeout(() => {
@@ -221,20 +223,17 @@ export default defineComponent({
             () => this.setNewValue(this.modelValue + (isPlus ? 1 : -1) * 60),
             60,
           )
-        }, 750);
+        }, 750)
         let warp = 1
         this.timeoutWarpDelay = setTimeout(() => {
           this.interval && clearInterval(this.interval)
-          this.interval = setInterval(
-            () => {
-              warp += 0.1;
-              this.setNewValue(this.modelValue + (isPlus ? 1 : -1) * Math.floor(warp) * 60)
-            },
-            60,
-          )
-        }, 2000);
+          this.interval = setInterval(() => {
+            warp += 0.1
+            this.setNewValue(this.modelValue + (isPlus ? 1 : -1) * Math.floor(warp) * 60)
+          }, 60)
+        }, 2000)
 
-        return;
+        return
       }
     },
     focusHandler() {
@@ -245,21 +244,21 @@ export default defineComponent({
     },
     keydownHandler(event: KeyboardEvent) {
       if (event.altKey || event.metaKey || !event.isTrusted) {
-        return;
+        return
       }
       if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
-        return;
+        return
       }
-      event.preventDefault();
+      event.preventDefault()
       let step = event.ctrlKey || event.shiftKey ? 3600 : 60
-      step *= event.key === 'ArrowDown' ? -1 : 1;
+      step *= event.key === 'ArrowDown' ? -1 : 1
       this.setNewValue(this.modelValue + step)
     },
     setNewValue(value: number) {
-      this.$emit('update:modelValue', value);
+      this.$emit('update:modelValue', value)
     },
   },
-});
+})
 </script>
 
 <style scoped lang="scss">
@@ -303,7 +302,7 @@ export default defineComponent({
   left: 44px;
 }
 .p-float-label .time-wrapper.p-inputwrapper-filled ~ label,
-  .p-float-label .time-wrapper.p-inputwrapper-focus ~ label {
-  left: 0
+.p-float-label .time-wrapper.p-inputwrapper-focus ~ label {
+  left: 0;
 }
 </style>

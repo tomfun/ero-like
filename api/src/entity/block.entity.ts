@@ -1,12 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
-import { BlockEntity as BlockEntityInner } from 'ero-like-sdk/dist/block.entity';
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-} from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger'
+import { Expose } from 'class-transformer'
+import { BlockEntity as BlockEntityInner } from 'ero-like-sdk/dist/block.entity'
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm'
 
 export enum BlockType {
   NEW = 'new',
@@ -22,12 +17,12 @@ export class BlockEntity extends BlockEntityInner {
   @ApiProperty()
   @Expose()
   @PrimaryGeneratedColumn('uuid')
-  declare id: string;
+  declare id: string
 
   @ApiProperty()
   @Expose()
   @CreateDateColumn()
-  declare createdAt: Date;
+  declare createdAt: Date
 
   @ApiProperty()
   @Expose()
@@ -35,10 +30,10 @@ export class BlockEntity extends BlockEntityInner {
     type: 'enum',
     enum: BlockType,
   })
-  declare type: BlockType;
+  declare type: BlockType
 
   @ApiProperty()
   @Expose()
   @Column({ type: 'text' })
-  declare blockArmored: string;
+  declare blockArmored: string
 }

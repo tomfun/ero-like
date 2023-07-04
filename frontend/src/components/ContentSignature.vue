@@ -4,8 +4,9 @@
   </p>
   <p class="m-0">List all users:</p>
   <CopyText content="gpg --list-keys" />
-  <p class="m-0"> Paste in your local CMD the next code replacing $user with your
-    value:</p>
+  <p class="m-0">
+    Paste in your local CMD the next code replacing $user with your value:
+  </p>
   <CopyText
     :content="`echo '${contentLinux}' | gpg --clear-sign --disable-signer-uid --local-user `"
     v-if="content"
@@ -15,8 +16,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import CopyText from './CopyText.vue';
+import { defineComponent } from 'vue'
+import CopyText from './CopyText.vue'
 
 export default defineComponent({
   name: 'ContentSignature',
@@ -27,12 +28,12 @@ export default defineComponent({
     content: {
       type: String,
       required: true,
-    }
+    },
   },
   emits: {
-    'copied'() {
+    copied() {
       return typeof arguments[0] === 'undefined'
-    }
+    },
   },
   data() {
     return {
@@ -46,14 +47,13 @@ export default defineComponent({
   },
   methods: {
     id(id: string) {
-      return this.uid + id.toString();
+      return this.uid + id.toString()
     },
     notifyCopied() {
-      this.$emit('copied');
+      this.$emit('copied')
     },
   },
-});
+})
 </script>
 
-<style scoped lang="scss">
-</style>
+<style scoped lang="scss"></style>

@@ -1,4 +1,4 @@
-import { QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm'
 
 export class blockTable1680776879745 {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -85,6 +85,6 @@ export class blockTable1680776879745 {
     ALTER TABLE report
         DROP "userId";
 
-    `);
+    `)
   }
 }

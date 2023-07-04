@@ -9,26 +9,23 @@ import {
   Param,
   Patch,
   Post,
-} from '@nestjs/common';
-import { ApiCreatedResponse, ApiResponse } from '@nestjs/swagger';
-import * as stringify from 'json-stable-stringify';
-import { instanceToPlain } from 'class-transformer';
-import { UUID_V4_REGEX } from '../consts';
-import { InvalidDataError } from '../core/gpg.service';
-import { PaginableReportDto } from './paginable-report.dto';
+} from '@nestjs/common'
+import { ApiCreatedResponse, ApiResponse } from '@nestjs/swagger'
+import * as stringify from 'json-stable-stringify'
+import { instanceToPlain } from 'class-transformer'
+import { UUID_V4_REGEX } from '../consts'
+import { InvalidDataError } from '../core/gpg.service'
+import { PaginableReportDto } from './paginable-report.dto'
 import {
   ReportService,
   ReportForList,
   ReportDataBodyPayload,
   ReportEntity,
-} from './report.service';
-import {
-  PaginateQuery,
-  PaginationQueryDto,
-} from '../core/pagination-query.pipe';
-import { UserNotFoundError } from '../core/user.service';
-import { ValidBody } from '../validBodyPipe';
-import { PaginationFilters, ReportFilters } from './filters-query.pipe';
+} from './report.service'
+import { PaginateQuery, PaginationQueryDto } from '../core/pagination-query.pipe'
+import { UserNotFoundError } from '../core/user.service'
+import { ValidBody } from '../validBodyPipe'
+import { PaginationFilters, ReportFilters } from './filters-query.pipe'
 
 @Controller('/api/report')
 export class ReportController {
@@ -65,16 +62,14 @@ curl -X 'GET' 'http://....../api/report/....' \\
   @Get('/:id')
   async getReport(@Param('id') id: string) {
     if (!id) {
-      throw new BadRequestException('Find by parameter id not provided');
+      throw new BadRequestException('Find by parameter id not provided')
     }
     if (!id.match(UUID_V4_REGEX)) {
-      throw new BadRequestException(
-        'Find by parameter id contain special characters',
-      );
+      throw new BadRequestException('Find by parameter id contain special characters')
     }
     return instanceToPlain(await this.reportService.getReport(id), {
       groups: ['report', 'entity', 'user'],
-    });
+    })
   }
 
   @Get()
@@ -85,7 +80,7 @@ curl -X 'GET' 'http://....../api/report/....' \\
     @PaginateQuery query: PaginationQueryDto,
     @PaginationFilters filters: ReportFilters,
   ): Promise<PaginableReportDto> {
-    return this.reportService.getList(query, filters);
+    return this.reportService.getList(query, filters)
   }
 
   @Post('/validate')
@@ -98,8 +93,8 @@ curl -X 'GET' 'http://....../api/report/....' \\
     @ValidBody
     createReportDto: ReportDataBodyPayload,
   ): Promise<ReportDataBodyPayload> {
-    await this.reportService.extraValidation(createReportDto);
-    return stringify(createReportDto);
+    await this.reportService.extraValidation(createReportDto)
+    return stringify(createReportDto)
   }
 
   @Patch()
@@ -111,12 +106,12 @@ curl -X 'GET' 'http://....../api/report/....' \\
     try {
       return instanceToPlain(await this.reportService.create(data), {
         groups: ['report', 'entity'],
-      }) as ReportForList;
+      }) as ReportForList
     } catch (e) {
       if (e instanceof InvalidDataError || e instanceof UserNotFoundError) {
-        throw new BadRequestException([e.message]);
+        throw new BadRequestException([e.message])
       }
-      throw e;
+      throw e
     }
   }
 }

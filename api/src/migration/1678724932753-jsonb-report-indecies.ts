@@ -1,4 +1,4 @@
-import { QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm'
 
 export class jsonbReportIndecies1678724932753 {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -10,6 +10,6 @@ export class jsonbReportIndecies1678724932753 {
 
         CREATE INDEX report_d_substances_name_idx ON report
             USING gin ((d->'substances'->'name'));
-    `);
+    `)
   }
 }

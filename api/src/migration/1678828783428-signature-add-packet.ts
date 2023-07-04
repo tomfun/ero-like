@@ -1,4 +1,4 @@
-import { QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm'
 
 export class signatureAddPacket1678828783428 {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -6,6 +6,6 @@ export class signatureAddPacket1678828783428 {
     await queryRunner.query(`
         ALTER TABLE signature
             ADD packet bytea not null;
-    `);
+    `)
   }
 }

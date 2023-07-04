@@ -1,4 +1,4 @@
-import { QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm'
 
 export class jsonbReportIndecies1679224938414 {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -27,6 +27,6 @@ $$;
 CREATE INDEX report_d_substances_name_idx ON report
     USING gin (jsonb_values_of_key(d->'substances', 'namePsychonautWikiOrg') gin_trgm_ops)
     WHERE type = 'ReportEntity';
-    `);
+    `)
   }
 }

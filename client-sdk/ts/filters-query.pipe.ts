@@ -1,17 +1,15 @@
-export type FieldFilters<Filters extends QueryOperator, T> = Partial<
-  Record<Filters, T>
->;
+export type FieldFilters<Filters extends QueryOperator, T> = Partial<Record<Filters, T>>
 
 export interface NumberFieldFilters
   extends FieldFilters<
     QueryOperator.GreaterThan | QueryOperator.LessThan | QueryOperator.Equal,
     number
   > {
-  equals?: number;
-  lt?: number;
-  lte?: number;
-  gt?: number;
-  gte?: number;
+  equals?: number
+  lt?: number
+  lte?: number
+  gt?: number
+  gte?: number
 }
 
 export interface StringFieldFilters
@@ -22,28 +20,28 @@ export interface StringFieldFilters
     | QueryOperator.Start,
     string
   > {
-  equals?: string;
-  include?: string;
-  startsWith?: string; // validation?
-  endsWith?: string;
+  equals?: string
+  include?: string
+  startsWith?: string // validation?
+  endsWith?: string
 }
 
-export const TypeSymbol = Symbol('type');
-export type TypeSymbolType = typeof TypeSymbol;
-export const FiltersSymbol = Symbol('filters');
-export type FiltersSymbolType = typeof FiltersSymbol;
-export const KeyClassSymbol = Symbol('keyClass');
-export type KeyClassSymbolType = typeof KeyClassSymbol;
+export const TypeSymbol = Symbol('type')
+export type TypeSymbolType = typeof TypeSymbol
+export const FiltersSymbol = Symbol('filters')
+export type FiltersSymbolType = typeof FiltersSymbol
+export const KeyClassSymbol = Symbol('keyClass')
+export type KeyClassSymbolType = typeof KeyClassSymbol
 
 export interface StringField {
-  filters: StringFieldFilters;
-  [TypeSymbol]: typeof String;
-  [KeyClassSymbol]?: 'jsonb_values_of_key';
+  filters: StringFieldFilters
+  [TypeSymbol]: typeof String
+  [KeyClassSymbol]?: 'jsonb_values_of_key'
 }
 
 export interface NumberField {
-  filters: NumberFieldFilters;
-  [TypeSymbol]: typeof Number;
+  filters: NumberFieldFilters
+  [TypeSymbol]: typeof Number
 }
 /*
 const FilterMatchMode = {
@@ -83,19 +81,19 @@ export enum QueryOperator {
 }
 
 type ReportConfigType = {
-  [TypeSymbol]: typeof Object;
+  [TypeSymbol]: typeof Object
   [field: string]:
     | {
-        [TypeSymbol]: typeof String;
-        [FiltersSymbol]: Array<QueryOperator>;
-        [KeyClassSymbol]?: 'jsonb_values_of_key';
+        [TypeSymbol]: typeof String
+        [FiltersSymbol]: Array<QueryOperator>
+        [KeyClassSymbol]?: 'jsonb_values_of_key'
       }
     | {
-        [TypeSymbol]: typeof Number;
-        [FiltersSymbol]: Array<QueryOperator>;
+        [TypeSymbol]: typeof Number
+        [FiltersSymbol]: Array<QueryOperator>
       }
-    | ReportConfigType;
-};
+    | ReportConfigType
+}
 
 export type ReportFilterType<C extends ReportConfigType> = {
   [F in keyof C]?: F extends typeof TypeSymbol
@@ -104,15 +102,11 @@ export type ReportFilterType<C extends ReportConfigType> = {
     ? ReportFilterType<C[F]>
     : C[F] extends { [TypeSymbol]: typeof String }
     ? StringField
-    : NumberField;
-} & { [TypeSymbol]: any };
+    : NumberField
+} & { [TypeSymbol]: any }
 
-export const StringFilters = [
-  QueryOperator.Start,
-  QueryOperator.Equal,
-  QueryOperator.End,
-];
-export const HurtStringFilters = [...StringFilters, QueryOperator.Contains];
+export const StringFilters = [QueryOperator.Start, QueryOperator.Equal, QueryOperator.End]
+export const HurtStringFilters = [...StringFilters, QueryOperator.Contains]
 
 export const NumberFilters = [
   QueryOperator.Equal,
@@ -120,57 +114,52 @@ export const NumberFilters = [
   QueryOperator.GreaterThanEqual,
   QueryOperator.LessThan,
   QueryOperator.LessThanEqual,
-];
+]
 
 export function lastParse<C extends ReportConfigType>(
   queryUnk: unknown,
   config: C,
 ): ReportFilterType<C> {
-  const filters = { [TypeSymbol]: Object } as unknown as ReportFilterType<C>;
+  const filters = { [TypeSymbol]: Object } as unknown as ReportFilterType<C>
   if (typeof queryUnk !== 'object') {
-    return filters;
+    return filters
   }
-  const query = queryUnk as Record<keyof C, unknown>;
+  const query = queryUnk as Record<keyof C, unknown>
   Object.keys(config).forEach((fieldNameString) => {
-    if (
-      typeof query[fieldNameString] !== 'object' ||
-      !(fieldNameString in config)
-    ) {
-      return;
+    if (typeof query[fieldNameString] !== 'object' || !(fieldNameString in config)) {
+      return
     }
-    const fieldName = fieldNameString as keyof C;
-    const v = query[fieldName] as Record<string, unknown>;
-    const fieldConfig = config[fieldName];
+    const fieldName = fieldNameString as keyof C
+    const v = query[fieldName] as Record<string, unknown>
+    const fieldConfig = config[fieldName]
     if (fieldConfig[TypeSymbol] === Object) {
       Object.assign(filters, {
         [fieldName]: lastParse(v, fieldConfig as ReportConfigType),
-      });
-      return;
+      })
+      return
     }
     if (![String, Number, Object].includes(fieldConfig[TypeSymbol])) {
-      throw new TypeError('New query config type not implemented');
+      throw new TypeError('New query config type not implemented')
     }
     Object.assign(filters, {
       [fieldName]:
         fieldConfig[TypeSymbol] === String
           ? {
-            [TypeSymbol]: fieldConfig[TypeSymbol],
-            [KeyClassSymbol]: fieldConfig[KeyClassSymbol],
-            filters: {},
-          }
+              [TypeSymbol]: fieldConfig[TypeSymbol],
+              [KeyClassSymbol]: fieldConfig[KeyClassSymbol],
+              filters: {},
+            }
           : {
-            [TypeSymbol]: fieldConfig[TypeSymbol],
-            filters: {},
-          },
-    });
+              [TypeSymbol]: fieldConfig[TypeSymbol],
+              filters: {},
+            },
+    })
     for (const operator of fieldConfig[FiltersSymbol]) {
       if (operator in v && typeof v[operator] === 'string') {
         filters[fieldName].filters[operator] =
-          fieldConfig[TypeSymbol] === String
-            ? (v[operator] as string)
-            : +v[operator];
+          fieldConfig[TypeSymbol] === String ? (v[operator] as string) : +v[operator]
       }
     }
-  });
-  return filters;
+  })
+  return filters
 }

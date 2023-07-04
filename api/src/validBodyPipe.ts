@@ -1,5 +1,3 @@
-import { Body, ValidationPipe } from '@nestjs/common';
+import { Body, ValidationPipe } from '@nestjs/common'
 
-export const ValidBody = Body(
-  new ValidationPipe({ whitelist: true, transform: true }),
-);
+export const ValidBody = Body(new ValidationPipe({ whitelist: true, transform: true }))

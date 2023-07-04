@@ -1,4 +1,4 @@
-import { QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm'
 
 export class initialReportTable1621107439539 {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -13,6 +13,6 @@ CREATE TABLE report
     nick           varchar not null,
     "gpgSignature" varchar not null
 );
-`);
+`)
   }
 }

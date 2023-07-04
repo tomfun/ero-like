@@ -217,7 +217,7 @@ build_sdk:
     - cd client-sdk
     - npm install
     - npm run build
-    - echo npm run lint ':('
+    - npm run lint
 
 build_config:
   stage: config

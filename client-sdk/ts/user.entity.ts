@@ -1,13 +1,13 @@
-import { SignatureEntity } from './signature.entity';
+import { SignatureEntity } from './signature.entity'
 
 export class UserEntity {
-  id: string;
+  id: string
 
-  agreementSignature: SignatureEntity;
+  agreementSignature: SignatureEntity
 
-  createdAt: Date;
+  createdAt: Date
 
-  updatedAt: Date;
+  updatedAt: Date
 
-  nick: string;
+  nick: string
 }

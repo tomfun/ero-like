@@ -6,17 +6,13 @@ import {
   HttpStatus,
   Param,
   Patch,
-} from '@nestjs/common';
-import { instanceToPlain } from 'class-transformer';
-import { UUID_V4_REGEX } from '../consts';
-import { InvalidDataError } from './gpg.service';
-import { ImportAndVerifyPayload } from './verify.payload';
-import {
-  NotAcceptAgreementError,
-  UserCreateError,
-  UserService,
-} from './user.service';
-import { ValidBody } from '../validBodyPipe';
+} from '@nestjs/common'
+import { instanceToPlain } from 'class-transformer'
+import { UUID_V4_REGEX } from '../consts'
+import { InvalidDataError } from './gpg.service'
+import { ImportAndVerifyPayload } from './verify.payload'
+import { NotAcceptAgreementError, UserCreateError, UserService } from './user.service'
+import { ValidBody } from '../validBodyPipe'
 
 @Controller('/api/user')
 export class UserController {
@@ -25,16 +21,14 @@ export class UserController {
   @Get('/:id')
   async getUser(@Param('id') id: string) {
     if (!id) {
-      throw new BadRequestException('Find by parameter id not provided');
+      throw new BadRequestException('Find by parameter id not provided')
     }
     if (!id.match(UUID_V4_REGEX)) {
-      throw new BadRequestException(
-        'Find by parameter id contain special characters',
-      );
+      throw new BadRequestException('Find by parameter id contain special characters')
     }
     return instanceToPlain(await this.userService.getUser(id), {
       groups: ['user'],
-    });
+    })
   }
 
   @Patch('/dry-run')
@@ -44,11 +38,11 @@ export class UserController {
     importAndVerifyDto: ImportAndVerifyPayload,
   ) {
     try {
-      const data = await this.userService.createUserDryRun(importAndVerifyDto);
-      return instanceToPlain(data.user, { groups: ['user'] });
+      const data = await this.userService.createUserDryRun(importAndVerifyDto)
+      return instanceToPlain(data.user, { groups: ['user'] })
     } catch (e) {
-      this.convertUserRegisterError(e);
-      throw e;
+      this.convertUserRegisterError(e)
+      throw e
     }
   }
 
@@ -58,12 +52,11 @@ export class UserController {
     importAndVerifyDto: ImportAndVerifyPayload,
   ) {
     try {
-      return instanceToPlain(
-        await this.userService.createUser(importAndVerifyDto),
-        { groups: ['user'] },
-      );
+      return instanceToPlain(await this.userService.createUser(importAndVerifyDto), {
+        groups: ['user'],
+      })
     } catch (e) {
-      this.convertUserRegisterError(e);
+      this.convertUserRegisterError(e)
     }
   }
   private convertUserRegisterError(e: Error): never {
@@ -72,8 +65,8 @@ export class UserController {
       e instanceof NotAcceptAgreementError ||
       e instanceof UserCreateError
     ) {
-      throw new BadRequestException(e.message);
+      throw new BadRequestException(e.message)
     }
-    throw e;
+    throw e
   }
 }

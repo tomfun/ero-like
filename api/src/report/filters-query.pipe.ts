@@ -1,6 +1,6 @@
-import { PipeTransform, Query } from '@nestjs/common';
-import { reportConfig, ReportFilters } from 'ero-like-config';
-import { lastParse as lastParseInner } from 'ero-like-sdk/dist/filters-query.pipe';
+import { PipeTransform, Query } from '@nestjs/common'
+import { reportConfig, ReportFilters } from 'ero-like-config'
+import { lastParse as lastParseInner } from 'ero-like-sdk/dist/filters-query.pipe'
 
 export {
   QueryOperator,
@@ -8,13 +8,13 @@ export {
   StringField,
   KeyClassSymbol,
   TypeSymbol,
-} from 'ero-like-sdk/dist/filters-query.pipe';
-export { ReportFilters } from 'ero-like-config';
+} from 'ero-like-sdk/dist/filters-query.pipe'
+export { ReportFilters } from 'ero-like-config'
 
 export class FiltersQueryPipe implements PipeTransform {
   transform(query: Record<string, unknown>): ReportFilters {
-    return lastParseInner(query, reportConfig);
+    return lastParseInner(query, reportConfig)
   }
 }
 
-export const PaginationFilters = Query(new FiltersQueryPipe());
+export const PaginationFilters = Query(new FiltersQueryPipe())

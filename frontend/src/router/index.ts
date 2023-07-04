@@ -1,16 +1,12 @@
-import type {
-  RouteRecordRaw,
-} from 'vue-router';
-import {
-  createRouter, createWebHistory,
-} from 'vue-router';
-import AboutView from '../views/AboutView.vue';
-import HomeView from '../views/HomeView.vue';
-import ReportView from '../views/ReportView.vue';
-import SubmitView from '../views/SubmitView.vue';
-import ReportsView from '../views/ReportsView.vue';
-import TermsView from '../views/TermsView.vue';
-import UserView from '../views/UserView.vue';
+import type { RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
+import AboutView from '../views/AboutView.vue'
+import HomeView from '../views/HomeView.vue'
+import ReportView from '../views/ReportView.vue'
+import SubmitView from '../views/SubmitView.vue'
+import ReportsView from '../views/ReportsView.vue'
+import TermsView from '../views/TermsView.vue'
+import UserView from '../views/UserView.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -48,14 +44,16 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Terms',
     component: TermsView,
   },
-];
+]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [{
-    path: '/:locale?',
-    children: routes,
-  }],
-});
+  routes: [
+    {
+      path: '/:locale?',
+      children: routes,
+    },
+  ],
+})
 
-export default router;
+export default router

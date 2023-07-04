@@ -1,4 +1,4 @@
-import { QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm'
 
 export class dataTable1678021709777 {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -19,6 +19,6 @@ export class dataTable1678021709777 {
             sha256 bytea not null,
             "clearSignDataPart" text not null CHECK ("clearSignDataPart" ~ '^[\\x00-\\x7F]*$')
         );
-    `);
+    `)
   }
 }

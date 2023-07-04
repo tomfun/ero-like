@@ -3,10 +3,9 @@
 </template>
 
 <script lang="ts">
-import type { PropType } from 'vue';
-import { defineComponent } from 'vue';
-import { getter, type TimeFormat } from './InputMaskTime.vue';
-
+import type { PropType } from 'vue'
+import { defineComponent } from 'vue'
+import { getter, type TimeFormat } from './InputMaskTime.vue'
 
 export default defineComponent({
   name: 'ReportTime',
@@ -18,19 +17,18 @@ export default defineComponent({
     timeFormat: {
       type: String as PropType<TimeFormat>,
       default: function () {
-        return 'long' as TimeFormat;
+        return 'long' as TimeFormat
       },
     },
     prefix: {
       type: String,
       default: function () {
-        return '+T';
+        return '+T'
       },
-    }
+    },
   },
   computed: {
     timeSecond: getter,
-  }
-});
+  },
+})
 </script>
-

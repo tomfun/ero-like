@@ -12,7 +12,9 @@
             @update:modelValue="setSingleValue('timeSecond', $event)"
           />
           <label :for="id('timeSecond')">Time</label>
-          <small :id="id('timeSecondHelp')">You can estimate the time since the first substance administration.</small>
+          <small :id="id('timeSecondHelp')"
+            >You can estimate the time since the first substance administration.</small
+          >
         </div>
       </div>
       <div class="field col min-w-min">
@@ -26,7 +28,10 @@
             autoResize
           />
           <label :for="id('timeSecond')">Report text</label>
-          <small :id="id('report-text')">Type here you thoughts, feelings, effects, everything you consider relevant to describe your experience.</small>
+          <small :id="id('report-text')"
+            >Type here you thoughts, feelings, effects, everything you consider relevant
+            to describe your experience.</small
+          >
         </div>
       </div>
     </div>
@@ -36,7 +41,8 @@
         size="small"
         outlined
         v-tooltip="$t('Remove')"
-        v-on:click="rm">
+        v-on:click="rm"
+      >
         <span class="pi pi-times"></span>
       </Button>
     </div>
@@ -44,11 +50,11 @@
 </template>
 
 <script lang="ts">
-import type { ReportTimeLineItemAlpha1 } from '../services/api';
-import { defineComponent } from 'vue';
-import InputMaskTime, { type TimeFormat } from './InputMaskTime.vue';
+import type { ReportTimeLineItemAlpha1 } from '../services/api'
+import { defineComponent } from 'vue'
+import InputMaskTime, { type TimeFormat } from './InputMaskTime.vue'
 
-export type T = ReportTimeLineItemAlpha1;
+export type T = ReportTimeLineItemAlpha1
 
 export default defineComponent({
   name: 'SubstanceItem',
@@ -59,48 +65,48 @@ export default defineComponent({
         return {
           timeSecond: 1,
           report: '',
-        } as T;
+        } as T
       },
     },
     isFirst: {
       default: function () {
-        return false as boolean;
+        return false as boolean
       },
     },
     rm: {
       default: function () {
-        return (() => null) as (payload: MouseEvent) => void;
+        return (() => null) as (payload: MouseEvent) => void
       },
     },
     timeFormat: {
       default: function () {
-        return 'long' as TimeFormat;
+        return 'long' as TimeFormat
       },
-    }
+    },
   },
   emits: {
     'update:modelValue'(item: T) {
-      return typeof item === 'object' && typeof item.timeSecond === 'number';
-    }
+      return typeof item === 'object' && typeof item.timeSecond === 'number'
+    },
   },
   data() {
     return {
       uid: Math.random().toString(27).slice(2),
-    };
+    }
   },
   methods: {
     id(id: string) {
-      return this.uid + id.toString();
+      return this.uid + id.toString()
     },
     setSingleValue(key: keyof T, value: T[keyof T]) {
       this.setNewValue({ [key]: value })
     },
     setNewValue(value: Partial<T>) {
-      const newValue: T = Object.assign(this.modelValue, value);
-      this.$emit('update:modelValue', newValue);
+      const newValue: T = Object.assign(this.modelValue, value)
+      this.$emit('update:modelValue', newValue)
     },
   },
-});
+})
 </script>
 
 <style scoped lang="scss">

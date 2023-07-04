@@ -1,4 +1,4 @@
-import { QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm'
 
 export class dataClearSignDataPartAllowUtf81678828784341 {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -6,6 +6,6 @@ export class dataClearSignDataPartAllowUtf81678828784341 {
     await queryRunner.query(`
         ALTER TABLE data
             DROP CONSTRAINT "data_clearSignDataPart_check";
-    `);
+    `)
   }
 }

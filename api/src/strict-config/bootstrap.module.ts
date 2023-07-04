@@ -1,5 +1,5 @@
-import { DynamicModule, Module } from '@nestjs/common';
-import { ModuleMetadata } from '@nestjs/common/interfaces/modules/module-metadata.interface';
+import { DynamicModule, Module } from '@nestjs/common'
+import { ModuleMetadata } from '@nestjs/common/interfaces/modules/module-metadata.interface'
 
 @Module({})
 export class BootstrapModule {
@@ -7,6 +7,6 @@ export class BootstrapModule {
     return {
       module: BootstrapModule,
       ...moduleMetadata,
-    };
+    }
   }
 }

@@ -11,9 +11,7 @@
   />
   <div class="w-full" style="padding-top: 0.5em">
     <div class="card flex justify-content-center flex-wrap gap-3">
-      <Button
-        severity="info"
-        v-on:click="addElement">
+      <Button severity="info" v-on:click="addElement">
         <span class="pi pi-plus"></span>
         &nbsp;
         {{ $t('Add') }}
@@ -23,18 +21,18 @@
 </template>
 
 <script setup lang="ts" generic="T extends { timeSecond: number; }, C extends Component">
-import type { Component, PropType } from 'vue';
+import type { Component, PropType } from 'vue'
 
 const props = defineProps({
   modelValue: {
     required: false,
     default() {
-      return [] as T[];
+      return [] as T[]
     },
   },
   DynamicComponent: {
     required: true,
-    type: Object as PropType<C>
+    type: Object as PropType<C>,
   },
   empty: {
     required: false,
@@ -43,30 +41,29 @@ const props = defineProps({
         timeSecond: 0,
       }) as T
     },
-  }
-}) as unknown as { modelValue: T[], empty: T, DynamicComponent: C };
+  },
+}) as unknown as { modelValue: T[]; empty: T; DynamicComponent: C }
 
 const emits = defineEmits({
   'update:modelValue'(array: T[]) {
-    return Array
-      .isArray(array) && array.every((s: T) => typeof s.timeSecond === 'number')
-  }
+    return Array.isArray(array) && array.every((s: T) => typeof s.timeSecond === 'number')
+  },
 })
 
-const vueKeys = new WeakMap<T, number>();
-let newKey = 0;
+const vueKeys = new WeakMap<T, number>()
+let newKey = 0
 function key(value: T) {
   if (!vueKeys.has(value)) {
-    vueKeys.set(value, ++newKey);
+    vueKeys.set(value, ++newKey)
   }
   return vueKeys.get(value)
 }
 
 function onChange(el: T, i: number) {
-  let newArray: T[] = props.modelValue;
-  newArray.splice(i, 1, el);
-  newArray.sort((a, b) => (a.timeSecond || 0) - (b.timeSecond || 0));
-  emits('update:modelValue', newArray);
+  let newArray: T[] = props.modelValue
+  newArray.splice(i, 1, el)
+  newArray.sort((a, b) => (a.timeSecond || 0) - (b.timeSecond || 0))
+  emits('update:modelValue', newArray)
 }
 
 function addElement() {
@@ -74,20 +71,18 @@ function addElement() {
 }
 
 function rmElement(i: number) {
-  const newArray = (props.modelValue || []).slice(0);
-  newArray.splice(i, 1);
-  emits('update:modelValue', newArray);
+  const newArray = (props.modelValue || []).slice(0)
+  newArray.splice(i, 1)
+  emits('update:modelValue', newArray)
 }
 
 const rms = [] as Array<() => void>
 function rmFor(i: number) {
   if (!rms[i]) {
-    rms[i] = rmElement.bind(rmElement, i);
+    rms[i] = rmElement.bind(rmElement, i)
   }
-  return rms[i];
+  return rms[i]
 }
 </script>
 
-<style scoped lang="scss">
-
-</style>
+<style scoped lang="scss"></style>

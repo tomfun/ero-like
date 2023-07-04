@@ -1,9 +1,9 @@
-import { ValidationPipe } from '@nestjs/common';
-import { ValidationError } from '@nestjs/common/interfaces/external/validation-error.interface';
+import { ValidationPipe } from '@nestjs/common'
+import { ValidationError } from '@nestjs/common/interfaces/external/validation-error.interface'
 
 const pipeToBorrowMethods = new ValidationPipe() as ValidationPipe & {
-  flattenValidationErrors(validationErrors: ValidationError[]): string[];
-};
+  flattenValidationErrors(validationErrors: ValidationError[]): string[]
+}
 
 export class TransformResourceDeserializationError extends Error {
   constructor(
@@ -12,6 +12,6 @@ export class TransformResourceDeserializationError extends Error {
       .flattenValidationErrors(errors)
       .join(', ')}`,
   ) {
-    super(message);
+    super(message)
   }
 }

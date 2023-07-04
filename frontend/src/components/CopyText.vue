@@ -1,8 +1,5 @@
 <template>
-  <span :class="[
-    'grid copy-paste-wrapper',
-    { 'p-inputwrapper-focus': false },
-  ]">
+  <span :class="['grid copy-paste-wrapper', { 'p-inputwrapper-focus': false }]">
     <span class="tooltip" v-if="tooltipText">{{ tooltipText }}</span>
     <Textarea
       rows="1"
@@ -11,17 +8,14 @@
       autoResize
       ref="textArea"
     />
-    <Button
-      class="col-fixed text-center"
-      @:click="copyHandler"
-    >
+    <Button class="col-fixed text-center" @:click="copyHandler">
       <span class="pi pi-copy"></span>
     </Button>
   </span>
 </template>
 
 <script lang="ts">
-import { defineComponent, type ComponentPublicInstance } from 'vue';
+import { defineComponent, type ComponentPublicInstance } from 'vue'
 
 export default defineComponent({
   name: 'CopyText',
@@ -33,26 +27,26 @@ export default defineComponent({
     tooltipMaxLength: {
       type: Number,
       default: 66,
-    }
+    },
   },
   emits: {
-    'copied'() {
+    copied() {
       return typeof arguments[0] === 'undefined'
-    }
+    },
   },
   data() {
     return {
       uid: Math.random().toString(27).slice(2),
-      copied: null as string|null,
+      copied: null as string | null,
       tooltipText: '',
     }
   },
   methods: {
     id(id: string) {
-      return this.uid + id.toString();
+      return this.uid + id.toString()
     },
     notifyCopied() {
-      this.$emit('copied');
+      this.$emit('copied')
     },
     async copyHandler() {
       const ta: HTMLTextAreaElement = (this.$refs.textArea as ComponentPublicInstance).$el
@@ -69,13 +63,14 @@ export default defineComponent({
       }
       await this.$nextTick()
       if (this.copied !== null) {
-        const sliced = this.copied.slice(0, this.tooltipMaxLength)
-          + (this.copied.length > this.tooltipMaxLength ? '...' : '');
+        const sliced =
+          this.copied.slice(0, this.tooltipMaxLength) +
+          (this.copied.length > this.tooltipMaxLength ? '...' : '')
         this.tooltipText = `Copied: ${sliced}`
       }
     },
   },
-});
+})
 </script>
 
 <style scoped lang="scss">
@@ -94,7 +89,7 @@ export default defineComponent({
     flex-grow: 1;
     flex-basis: 0;
     padding: $gutter;
-  //  width: calc(100% - $buttonWidth);
+    //  width: calc(100% - $buttonWidth);
   }
 
   button {
@@ -120,7 +115,7 @@ export default defineComponent({
   }
 
   .tooltip::after {
-    content: "";
+    content: '';
     position: absolute;
     top: 100%;
     left: 50%;

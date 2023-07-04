@@ -5,30 +5,28 @@
     <router-link :to="{ name: 'UserRegistration' }">register</router-link>
   </Message>
   <Message severity="info">
-    You can choose either a "simple" report to post with a single block of description,
-    or the "timelined" one with time sections each with its own description.
+    You can choose either a "simple" report to post with a single block of description, or
+    the "timelined" one with time sections each with its own description.
   </Message>
   <TabView v-on:tab-change="handleTabChange" :activeIndex="simple ? 0 : 1">
     <TabPanel header="Simple">
-      <Button
-         v-if="isDev"
-         label="Autofill"
-         @click="handleFormFill"
-      />
+      <Button v-if="isDev" label="Autofill" @click="handleFormFill" />
       <div class="tab-wrapper">
         <CommonSubmitReport v-model="reportData" :timeFormat="TIME_FORMAT" />
         <div class="float-label-spacing">
           <div class="p-float-label p-float-label-shift">
-          <Textarea
-            :inputId="id('report')"
-            :aria-describedby="id('report-text')"
-            class="w-full"
-            v-model="reportData.timeLineReport[0].report"
-            autoResize
-          />
+            <Textarea
+              :inputId="id('report')"
+              :aria-describedby="id('report-text')"
+              class="w-full"
+              v-model="reportData.timeLineReport[0].report"
+              autoResize
+            />
             <label :for="id('timeSecond')">Report text</label>
-            <small :id="id('report-text')">Type here you thoughts, feelings, effects, everything
-              you consider relevant to describe your experience.</small>
+            <small :id="id('report-text')"
+              >Type here you thoughts, feelings, effects, everything you consider relevant
+              to describe your experience.</small
+            >
           </div>
         </div>
       </div>
@@ -53,18 +51,20 @@
           class="w-full"
           v-model="reportData.background"
           autoResize
-          >
+        >
         </Textarea>
         <label :for="id('background')">Background text</label>
       </span>
-      <small :id="id('backgroundHelp')">Tell us about yourself at the moment of the report</small>
+      <small :id="id('backgroundHelp')"
+        >Tell us about yourself at the moment of the report</small
+      >
     </div>
     <div class="button-wrapper">
-      <Button
-        :disabled="validationButtonDisable"
-        v-on:click="handleValidation">Validate report</Button>
+      <Button :disabled="validationButtonDisable" v-on:click="handleValidation"
+        >Validate report</Button
+      >
     </div>
-    <template v-if="step === 'validating' || step === 'signing' ">
+    <template v-if="step === 'validating' || step === 'signing'">
       <Message severity="error" v-for="(error, i) in errors" :key="i">
         {{ error }}
       </Message>
@@ -73,24 +73,19 @@
       </Message>
     </template>
     <Panel header="Report signature" toggleable :collapsed="step !== 'signing'">
-
-    <ContentSignature
-      v-if="validJson"
-      :content="validJson"
-    />
-
+      <ContentSignature v-if="validJson" :content="validJson" />
     </Panel>
     <div class="float-label-spacing">
       <div class="p-float-label p-float-label-shift">
         <Textarea
-        v-model="clearSignArmored"
-        name="clearSignArmored"
-        :id="id('clearSignArmored')"
-        :aria-describedby="id('clearSignArmoredHelp')"
-        class="w-full"
-        rows="15"
-        autoResize
-        placeholder="-----BEGIN PGP SIGNED MESSAGE-----
+          v-model="clearSignArmored"
+          name="clearSignArmored"
+          :id="id('clearSignArmored')"
+          :aria-describedby="id('clearSignArmoredHelp')"
+          class="w-full"
+          rows="15"
+          autoResize
+          placeholder="-----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA256
 { <<YOUR JSON>> }
 -----BEGIN PGP SIGNATURE-----
@@ -101,10 +96,13 @@ iQIzBAABCgAdFiEEVUcfD9jeufsD1JVP3UX6TcUPhfEFAmC7Q2gACgkQ3UX6TcUP
 ....
 TaVHnbJ8jErfklgnRTPibX8AdmEFJasONNMJ/7euoBoH+aAYG/k=
 =B0/L
------END PGP SIGNATURE-----"/>
+-----END PGP SIGNATURE-----"
+        />
         <label :for="id('clearSignArmored')">Signed report:</label>
-        <br/>
-        <small :id="id('clearSignArmoredHelp')">Paste here your validated and signed report.</small>
+        <br />
+        <small :id="id('clearSignArmoredHelp')"
+          >Paste here your validated and signed report.</small
+        >
       </div>
     </div>
     <div class="button-wrapper">
@@ -122,26 +120,29 @@ TaVHnbJ8jErfklgnRTPibX8AdmEFJasONNMJ/7euoBoH+aAYG/k=
 </template>
 
 <script lang="ts">
-import TabPanel from 'primevue/tabpanel';
-import TabView, { type TabViewClickEvent } from 'primevue/tabview';
-import { defineComponent } from 'vue';
-import type { ReportDataAlpha1, ReportSubstanceAlpha1, ReportTimeLineItemAlpha1 } from '../services/api';
-import {
-  BadRequestError,
-  reportDataValidation,
-  reportSubmit
-} from '../services/api';
-import ContentSignature from './ContentSignature.vue';
-import GenericOrderedList from './GenericOrderedList.vue';
-import { getter } from './InputMaskTime.vue';
-import CommonSubmitReport from './SubmitRepor/CommonSubmitReport.vue';
-import SubstanceItem from './SubstanceItem.vue';
-import TimeLineReportItem from './TimeLineReportItem.vue';
+import TabPanel from 'primevue/tabpanel'
+import TabView, { type TabViewClickEvent } from 'primevue/tabview'
+import { defineComponent } from 'vue'
+import type {
+  ReportDataAlpha1,
+  ReportSubstanceAlpha1,
+  ReportTimeLineItemAlpha1,
+} from '../services/api'
+import { BadRequestError, reportDataValidation, reportSubmit } from '../services/api'
+import ContentSignature from './ContentSignature.vue'
+import GenericOrderedList from './GenericOrderedList.vue'
+import { getter } from './InputMaskTime.vue'
+import CommonSubmitReport from './SubmitRepor/CommonSubmitReport.vue'
+import SubstanceItem from './SubstanceItem.vue'
+import TimeLineReportItem from './TimeLineReportItem.vue'
 
-const STORAGE_KEY = 'report-alpha1';
-const TIME_FORMAT = 'short' as const;
+const STORAGE_KEY = 'report-alpha1'
+const TIME_FORMAT = 'short' as const
 
-const TimeLineReportList = GenericOrderedList as (typeof GenericOrderedList<ReportTimeLineItemAlpha1, typeof TimeLineReportItem>);
+const TimeLineReportList = GenericOrderedList as typeof GenericOrderedList<
+  ReportTimeLineItemAlpha1,
+  typeof TimeLineReportItem
+>
 
 export default defineComponent({
   name: 'SubmitReport',
@@ -153,23 +154,24 @@ export default defineComponent({
     TabView,
   },
   data() {
-    let storedReport: ReportDataAlpha1|null = null;
+    let storedReport: ReportDataAlpha1 | null = null
     try {
-      storedReport = localStorage && JSON.parse(localStorage.getItem(STORAGE_KEY) as string) || null;
+      storedReport =
+        (localStorage && JSON.parse(localStorage.getItem(STORAGE_KEY) as string)) || null
     } catch (e) {
       // ignore
     }
-    const reportData: ReportDataAlpha1 = storedReport || this.newReport();
+    const reportData: ReportDataAlpha1 = storedReport || this.newReport()
     return {
       uid: Math.random().toString(27).slice(2),
       isDev: import.meta.env.DEV,
       reportData,
       simple: reportData.timeLineReport.length < 2,
       errors: [] as string[],
-      step: 'entering' as ('entering' | 'validating' | 'submitting' | 'signing'),
+      step: 'entering' as 'entering' | 'validating' | 'submitting' | 'signing',
       validJson: '',
       clearSignArmored: '',
-    };
+    }
   },
   computed: {
     TIME_FORMAT() {
@@ -182,13 +184,15 @@ export default defineComponent({
       return TimeLineReportItem
     },
     validationButtonDisable() {
-      return this.reportData.title.length < 4 || this.reportData.background.length < 4;
-    }
+      return this.reportData.title.length < 4 || this.reportData.background.length < 4
+    },
   },
   methods: {
     newReport() {
       return {
-        substances: [{ timeSecond: 0, namePsychonautWikiOrg: '' } as ReportSubstanceAlpha1],
+        substances: [
+          { timeSecond: 0, namePsychonautWikiOrg: '' } as ReportSubstanceAlpha1,
+        ],
         timeLineReport: [{ timeSecond: 0, report: '' }],
         background: '',
         dateTimestamp: Math.round(Date.now() / 10000) * 10,
@@ -196,37 +200,46 @@ export default defineComponent({
       }
     },
     id(id: string) {
-      return this.uid + id.toString();
+      return this.uid + id.toString()
     },
     handleFormFill() {
-      this.reportData.substances = [{
-        timeSecond: 0,
-        dose: 10,
-        doseUnit: 'mg',
-        namePsychonautWikiOrg: 'Heroin',
-        routeOfAdministration: 'intravenous',
-        surePercent: 30,
-      }];
-      this.reportData.title = 'Title ' + Math.round(Math.random() * 200) % 200;
-      this.reportData.background = 'Backgroundd';
-      this.reportData.timeLineReport = [{ timeSecond: 0, report: '12354' }];
-      this.reportData.dateTimestamp = Math.round(Date.now() / 10000) * 10;
+      this.reportData.substances = [
+        {
+          timeSecond: 0,
+          dose: 10,
+          doseUnit: 'mg',
+          namePsychonautWikiOrg: 'Heroin',
+          routeOfAdministration: 'intravenous',
+          surePercent: 30,
+        },
+      ]
+      this.reportData.title = 'Title ' + (Math.round(Math.random() * 200) % 200)
+      this.reportData.background = 'Backgroundd'
+      this.reportData.timeLineReport = [{ timeSecond: 0, report: '12354' }]
+      this.reportData.dateTimestamp = Math.round(Date.now() / 10000) * 10
     },
     handleTabChange(event: TabViewClickEvent) {
       if (event.index === 1) {
-        this.simple = false;
-        return;
+        this.simple = false
+        return
       }
-      this.simple = true;
-      const report = this.reportData.timeLineReport
-        .map((rep) => (getter.call({
-          modelValue: rep.timeSecond,
-          timeFormat: TIME_FORMAT,
-          prefix: '+T',
-        }) + '\n\n' + rep.report).trim())
-        .join('\n\n')
-        .trim()
-        .replace(/^\+T00:00\s*/, '') + ' ';
+      this.simple = true
+      const report =
+        this.reportData.timeLineReport
+          .map((rep) =>
+            (
+              getter.call({
+                modelValue: rep.timeSecond,
+                timeFormat: TIME_FORMAT,
+                prefix: '+T',
+              }) +
+              '\n\n' +
+              rep.report
+            ).trim(),
+          )
+          .join('\n\n')
+          .trim()
+          .replace(/^\+T00:00\s*/, '') + ' '
       this.reportData.timeLineReport[0].report = '...'
       this.reportData.timeLineReport[0].timeSecond = 0
       this.reportData.timeLineReport.length = 1
@@ -236,27 +249,27 @@ export default defineComponent({
       })
     },
     async handleValidation() {
-      this.step = 'validating';
+      this.step = 'validating'
       try {
         const validJson = await reportDataValidation(this.reportData)
         this.step = 'signing'
         // forcibly update report textarea to trigger resize
         await this.$nextTick()
-        this.errors.length = 0;
+        this.errors.length = 0
         this.validJson = validJson
       } catch (e) {
         if (e instanceof BadRequestError) {
-          this.errors = e.errors;
+          this.errors = e.errors
         } else {
-          this.errors = [(e as Error).message];
+          this.errors = [(e as Error).message]
         }
       }
     },
     async submit() {
-      this.step = 'submitting';
+      this.step = 'submitting'
       try {
         this.validJson = await reportSubmit(this.clearSignArmored)
-        this.errors.length = 0;
+        this.errors.length = 0
         this.reportData = this.newReport()
         try {
           localStorage.removeItem(STORAGE_KEY)
@@ -265,9 +278,9 @@ export default defineComponent({
         }
       } catch (e) {
         if (e instanceof BadRequestError) {
-          this.errors = e.errors;
+          this.errors = e.errors
         } else {
-          this.errors = [(e as Error).message];
+          this.errors = [(e as Error).message]
         }
       }
     },
@@ -281,10 +294,10 @@ export default defineComponent({
         } catch (e) {
           // ignore
         }
-      }
-    }
-  }
-});
+      },
+    },
+  },
+})
 </script>
 
 <style scoped lang="scss">
@@ -301,7 +314,8 @@ export default defineComponent({
   padding-bottom: 1em;
 }
 
-.container-spacing, .tab-wrapper {
+.container-spacing,
+.tab-wrapper {
   margin-right: 0.5rem;
   margin-left: 0.5rem;
   margin-top: 0.5rem;
@@ -311,5 +325,4 @@ export default defineComponent({
   margin: 0 auto 0.5rem auto;
   text-align: center;
 }
-
 </style>

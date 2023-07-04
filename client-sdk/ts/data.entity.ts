@@ -1,13 +1,13 @@
 export class DataEntity {
-  id: string;
+  id: string
 
-  createdAt: Date;
+  createdAt: Date
 
-  type: string;
+  type: string
 
-  mime: string;
+  mime: string
 
-  sha256: string;
+  sha256: string
 
-  clearSignDataPart: string;
+  clearSignDataPart: string
 }

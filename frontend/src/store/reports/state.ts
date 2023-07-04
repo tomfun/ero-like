@@ -1,36 +1,36 @@
-import type { ReportFilters, Report as ApiFetchReport } from '../../services/api';
+import type { ReportFilters, Report as ApiFetchReport } from '../../services/api'
 
-export const REPORTS = 'data';
-export const PAGINATION = 'pagination';
-export const IS_LOADING = 'isLoading';
+export const REPORTS = 'data'
+export const PAGINATION = 'pagination'
+export const IS_LOADING = 'isLoading'
 
-export type Report = ApiFetchReport;
+export type Report = ApiFetchReport
 
 export interface Reports {
-  [id: string]: Report;
+  [id: string]: Report
 }
 
 export interface Pagination {
-  page: number;
-  pageSize: number;
-  itemsTotal: number;
+  page: number
+  pageSize: number
+  itemsTotal: number
   order: {
-    id: 1|-1;
-  };
-  ids: Array<string>;
-  viewIds: Array<string>;
-  filters: ReportFilters;
-  encodedQuery: string;
+    id: 1 | -1
+  }
+  ids: Array<string>
+  viewIds: Array<string>
+  filters: ReportFilters
+  encodedQuery: string
 }
 
 export interface IsLoading {
-  isLoading: boolean;
+  isLoading: boolean
 }
 
 export interface State {
-  [REPORTS]: Reports;
-  [PAGINATION]: Pagination;
-  [IS_LOADING]: IsLoading;
+  [REPORTS]: Reports
+  [PAGINATION]: Pagination
+  [IS_LOADING]: IsLoading
 }
 
 export default {
@@ -67,4 +67,4 @@ export default {
   [IS_LOADING]: {
     isLoading: false,
   },
-} as State;
+} as State

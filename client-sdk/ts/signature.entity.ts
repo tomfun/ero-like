@@ -1,30 +1,30 @@
-import { BlockEntity } from './block.entity';
-import { DataEntity } from './data.entity';
-import { PublicKeyEntity } from './public-key.entity';
-import { UserEntity } from './user.entity';
+import { BlockEntity } from './block.entity'
+import { DataEntity } from './data.entity'
+import { PublicKeyEntity } from './public-key.entity'
+import { UserEntity } from './user.entity'
 
 export class SignatureEntity {
-  id: string;
+  id: string
 
-  data: DataEntity | null;
+  data: DataEntity | null
 
-  block: BlockEntity | null;
+  block: BlockEntity | null
 
-  signedPublicKey: PublicKeyEntity | null;
+  signedPublicKey: PublicKeyEntity | null
 
-  user: UserEntity | null;
+  user: UserEntity | null
 
-  publicKey: PublicKeyEntity | null;
+  publicKey: PublicKeyEntity | null
 
-  createdAt: Date;
+  createdAt: Date
 
-  updatedAt: Date;
+  updatedAt: Date
 
-  signedAt: Date;
+  signedAt: Date
 
-  hash: string[];
+  hash: string[]
 
-  usedKeyFingerprint: string | ArrayBuffer;
+  usedKeyFingerprint: string | ArrayBuffer
 
-  signature: string | ArrayBuffer;
+  signature: string | ArrayBuffer
 }

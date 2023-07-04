@@ -1,9 +1,9 @@
 export class BlockEntity {
-  id: string;
+  id: string
 
-  createdAt: Date;
+  createdAt: Date
 
-  type: string;
+  type: string
 
-  blockArmored: string;
+  blockArmored: string
 }

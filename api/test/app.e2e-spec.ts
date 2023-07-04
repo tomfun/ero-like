@@ -1,34 +1,31 @@
-import * as events from 'events';
+import * as events from 'events'
 
-import { ConsoleLogger } from '@nestjs/common';
-import {
-  FastifyAdapter,
-  NestFastifyApplication,
-} from '@nestjs/platform-fastify';
-import { Test, TestingModule } from '@nestjs/testing';
-import Server from 'fastify';
-import * as qs from 'qs';
-import { AppSchema } from '../src/app.schema';
-import { BootstrapModule } from '../src/strict-config/bootstrap.module';
-import { CONFIG_OBJECT_TOKEN } from '../src/strict-config/strict-config.constants';
-import { StrictConfigModule } from '../src/strict-config/strict-config.module';
-import { AppModule } from './../src/app.module';
+import { ConsoleLogger } from '@nestjs/common'
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify'
+import { Test, TestingModule } from '@nestjs/testing'
+import Server from 'fastify'
+import * as qs from 'qs'
+import { AppSchema } from '../src/app.schema'
+import { BootstrapModule } from '../src/strict-config/bootstrap.module'
+import { CONFIG_OBJECT_TOKEN } from '../src/strict-config/strict-config.constants'
+import { StrictConfigModule } from '../src/strict-config/strict-config.module'
+import { AppModule } from './../src/app.module'
 
-const TIMER_MAX = 5000;
+const TIMER_MAX = 5000
 
 describe('init (e2e)', () => {
-  let config: AppSchema;
-  let app: NestFastifyApplication;
-  const logger = new ConsoleLogger();
+  let config: AppSchema
+  let app: NestFastifyApplication
+  const logger = new ConsoleLogger()
 
   beforeAll(async () => {
-    logger.setLogLevels(['error', 'warn']);
-    events.EventEmitter.defaultMaxListeners = 15;
-    process.setMaxListeners(15);
+    logger.setLogLevels(['error', 'warn'])
+    events.EventEmitter.defaultMaxListeners = 15
+    process.setMaxListeners(15)
     const strictConfigForRoot = StrictConfigModule.forRoot<any, any>({
       schemes: [],
       schema: AppSchema,
-    });
+    })
 
     const appConfig = await Test.createTestingModule({
       imports: [
@@ -36,38 +33,40 @@ describe('init (e2e)', () => {
           imports: [strictConfigForRoot],
         }),
       ],
-    }).compile();
-    config = appConfig.get<AppSchema>(CONFIG_OBJECT_TOKEN);
+    }).compile()
+    config = appConfig.get<AppSchema>(CONFIG_OBJECT_TOKEN)
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule.forConfig(config)],
     })
       .setLogger(logger)
-      .compile();
+      .compile()
 
     const server = Server({
       trustProxy: 0,
       logger: config.logHttp,
       querystringParser: (str) => qs.parse(str),
-    });
+    })
     app = moduleFixture.createNestApplication<NestFastifyApplication>(
       new FastifyAdapter(server),
-      { logger },
-    );
-    await app.init();
-    await app.getHttpAdapter().getInstance().ready();
+      {
+        logger,
+      },
+    )
+    await app.init()
+    await app.getHttpAdapter().getInstance().ready()
     if (config.log === '1') {
-      logger.setLogLevels(['log', 'debug', 'error', 'verbose', 'warn']);
+      logger.setLogLevels(['log', 'debug', 'error', 'verbose', 'warn'])
     }
-  });
+  })
 
   // afterEach(() => expect(nock.isDone()).toBeTruthy());
   // afterEach(() => nock.cleanAll());
-  afterEach(() => app.flushLogs());
+  afterEach(() => app.flushLogs())
 
   afterAll(async function () {
-    await app.close();
-  }, TIMER_MAX * 5);
+    await app.close()
+  }, TIMER_MAX * 5)
 
   it(`POST /api/user/dry-run 400 invalid (3 keys)`, () => {
     return app
@@ -82,19 +81,16 @@ describe('init (e2e)', () => {
         },
       })
       .then((result) => {
-        expect(result.statusCode).toEqual(400);
-        const json = result.json();
-        expect(json).toHaveProperty('message');
-        expect(json).toHaveProperty(
-          'error',
-          expect.stringMatching('Bad Request'),
-        );
+        expect(result.statusCode).toEqual(400)
+        const json = result.json()
+        expect(json).toHaveProperty('message')
+        expect(json).toHaveProperty('error', expect.stringMatching('Bad Request'))
         expect(json).toHaveProperty(
           'message',
           expect.stringMatching('gpg imported more than one keys'),
-        );
-      });
-  });
+        )
+      })
+  })
   const users = {
     tomfun: {
       clearSignArmored: {
@@ -117,10 +113,10 @@ describe('init (e2e)', () => {
         v4: '05F9ED8812AA8CD52A716B24AAE6AD94022ABBF1',
       },
     },
-  };
+  }
 
   async function createTomfunUserAndCheck(url) {
-    const { clearSignArmored, publicKeyArmored, key1 } = users.tomfun;
+    const { clearSignArmored, publicKeyArmored, key1 } = users.tomfun
     const result = await app.inject({
       method: 'PATCH',
       url,
@@ -128,9 +124,9 @@ describe('init (e2e)', () => {
         clearSignArmored: `-----BEGIN PGP SIGNED MESSAGE-----\nHash: ${clearSignArmored.hash}\n\n${clearSignArmored.clear}\n${clearSignArmored.signBlock}`,
         publicKeyArmored,
       },
-    });
-    expect(result.statusCode).toEqual(200);
-    const json = result.json();
+    })
+    expect(result.statusCode).toEqual(200)
+    const json = result.json()
     expect(json).toMatchObject({
       nick: expect.stringMatching(/^Hryhorii \(Greg\) Kotov|Grigory Kotov$/),
       agreementSignature: {
@@ -155,8 +151,7 @@ describe('init (e2e)', () => {
         data: {
           type: 'text',
           mime: 'text/plain',
-          sha256:
-            '9c57803c40bc8088c3e3c836ac97a67d0db16baada45b725b20150fb5de74281',
+          sha256: '9c57803c40bc8088c3e3c836ac97a67d0db16baada45b725b20150fb5de74281',
           clearSignDataPart: clearSignArmored.clear,
         },
         block: {
@@ -164,33 +159,33 @@ describe('init (e2e)', () => {
           blockArmored: clearSignArmored.signBlock,
         },
       },
-    });
-    return result;
+    })
+    return result
   }
 
   it(`POST /api/user/dry-run 200`, async () => {
-    await createTomfunUserAndCheck('/api/user/dry-run');
-  });
+    await createTomfunUserAndCheck('/api/user/dry-run')
+  })
 
   describe('idempotence', () => {
-    let createdUser;
+    let createdUser
 
     beforeAll(async () => {
-      const result = await createTomfunUserAndCheck('/api/user');
-      createdUser = result.json();
-      expect(createdUser).toHaveProperty('id', expect.any(String));
-    });
+      const result = await createTomfunUserAndCheck('/api/user')
+      createdUser = result.json()
+      expect(createdUser).toHaveProperty('id', expect.any(String))
+    })
 
     it.each([1, 2])('get same user %i', async () => {
-      const result = await createTomfunUserAndCheck('/api/user');
-      expect(result.json()).toStrictEqual(createdUser);
-    });
+      const result = await createTomfunUserAndCheck('/api/user')
+      expect(result.json()).toStrictEqual(createdUser)
+    })
 
     it.each([1, 2])('get same user dry run %i', async () => {
-      const result = await createTomfunUserAndCheck('/api/user/dry-run');
-      expect(result.json()).toStrictEqual(createdUser);
-    });
-  });
+      const result = await createTomfunUserAndCheck('/api/user/dry-run')
+      expect(result.json()).toStrictEqual(createdUser)
+    })
+  })
 
   const reports = {
     extraField: {
@@ -251,27 +246,27 @@ YO8xR8wqClwK0743+7AQcb9rCibV8XJbQHVDkyeNoQgM+OMKA96sUUcYORVfq+JX
 pXcpAnsZczdDma+OQayFT77DX20LldOZ+pDNUL3cAmP0JRa0jTg=
 =3FlI
 -----END PGP SIGNATURE-----`,
-  };
+  }
 
   it(`POST /api/report/validate 200`, async () => {
     const result = await app.inject({
       method: 'POST',
       url: '/api/report/validate',
       payload: reports.extraField,
-    });
-    expect(result.statusCode).toEqual(200);
-    const json = result.json();
-    expect(json).toStrictEqual(JSON.parse(reports.ok1));
-    expect(result.body).toEqual(reports.ok1);
-  });
+    })
+    expect(result.statusCode).toEqual(200)
+    const json = result.json()
+    expect(json).toStrictEqual(JSON.parse(reports.ok1))
+    expect(result.body).toEqual(reports.ok1)
+  })
 
   describe('report', () => {
-    let createdUser;
+    let createdUser
     beforeAll(async () => {
-      const result = await createTomfunUserAndCheck('/api/user');
-      createdUser = result.json();
-      expect(createdUser).toHaveProperty('id', expect.any(String));
-    });
+      const result = await createTomfunUserAndCheck('/api/user')
+      createdUser = result.json()
+      expect(createdUser).toHaveProperty('id', expect.any(String))
+    })
 
     it(`PATCH /api/report 400`, async () => {
       const result = await app.inject({
@@ -300,15 +295,15 @@ NDJd8cFUBpHGYEqOeoTaogfQ9Cn9uX7cnTyoJu0HZVVrLyB1G12GGvbY7DDPPZeg
 EWJ4a7iMkXHQ4gXamxtdcDTeFjUAVpPxfjzPyG0bkLRGTmV8fBQ=
 =BZBx
 -----END PGP SIGNATURE-----`,
-      });
-      expect(result.statusCode).toEqual(400);
-      const json = result.json();
+      })
+      expect(result.statusCode).toEqual(400)
+      const json = result.json()
       expect(json).toMatchObject({
         message: ['You must use sorted keys to produce consistent hash'],
-      });
-    });
+      })
+    })
 
-    let createdReport1;
+    let createdReport1
 
     it.each([1, 2])(`PATCH /api/report 200 %i`, async () => {
       const result = await app.inject({
@@ -322,9 +317,9 @@ Hash: SHA512
 
 {"background":"А жизнь как масло, а ты как сыр в жопе перепробовав всё говно, остаёшься вонять благородной плесенью","dateTimestamp":1678021709,"substances":[{"dose":10,"doseUnit":"mg","namePsychonautWikiOrg":"2C-I","routeOfAdministration":"insufflated","surePercent":95,"timeSecond":0},{"dose":10,"doseUnit":"mg","namePsychonautWikiOrg":"2C-I","routeOfAdministration":"insufflated","surePercent":95,"timeSecond":360}],"timeLineReport":[{"report":"Печёт пиздец","timeSecond":0},{"report":"Ну что-то вроде есть","timeSecond":300},{"report":"Душевная лёгкость, вкус чая будто тает во рту, свет стал ламповым, атмосфера отдаёт пленящим теплом","timeSecond":600}],"title":"Вечерний променад"}
 ${reports.signatureArmored1}`,
-      });
-      expect(result.statusCode).toEqual(200);
-      const json = result.json();
+      })
+      expect(result.statusCode).toEqual(200)
+      const json = result.json()
       expect(json).toMatchObject({
         id: expect.any(String),
         createdAt: expect.any(String),
@@ -343,17 +338,17 @@ ${reports.signatureArmored1}`,
             nick: createdUser.nick,
           },
         },
-      });
-      createdReport1 = json;
-    });
+      })
+      createdReport1 = json
+    })
 
     it(`GET /api/report/:id`, async () => {
       const result = await app.inject({
         method: 'GET',
         url: `/api/report/${createdReport1.id}`,
-      });
-      expect(result.statusCode).toEqual(200);
-      const json = result.json();
+      })
+      expect(result.statusCode).toEqual(200)
+      const json = result.json()
       expect(json).toMatchObject({
         id: createdReport1.id,
         createdAt: expect.any(String),
@@ -382,8 +377,7 @@ ${reports.signatureArmored1}`,
             createdAt: expect.any(String),
             clearSignDataPart: reports.ok1,
             mime: 'application/json',
-            sha256:
-              'f39e378ece0f8514b61b5d6d4acaaa300c709f5f5cb351c5627aa9ff0b55d712',
+            sha256: 'f39e378ece0f8514b61b5d6d4acaaa300c709f5f5cb351c5627aa9ff0b55d712',
             type: 'drugs.ero-like.online/report@0.0.1-alpha-1',
           },
           publicKey: {
@@ -397,8 +391,8 @@ ${reports.signatureArmored1}`,
             },
           },
         },
-      });
-    });
+      })
+    })
 
     it.each([
       [`page=0`, 1],
@@ -441,18 +435,18 @@ ${reports.signatureArmored1}`,
         method: 'GET',
         url: `/api/report`,
         query: q,
-      });
-      console.log(length);
-      expect(result.statusCode).toEqual(200);
-      const json = result.json();
+      })
+      console.log(length)
+      expect(result.statusCode).toEqual(200)
+      const json = result.json()
       expect(json).toMatchObject({
         itemsTotal: length,
         page: 0,
         pageSize: 10,
-      });
-      expect(json.items).toHaveLength(length);
+      })
+      expect(json.items).toHaveLength(length)
       if (length === 0) {
-        return;
+        return
       }
       expect(json.items[0]).toMatchObject({
         id: expect.any(String),
@@ -465,7 +459,7 @@ ${reports.signatureArmored1}`,
             nick: createdUser.nick,
           },
         },
-      });
-    });
-  });
-});
+      })
+    })
+  })
+})
