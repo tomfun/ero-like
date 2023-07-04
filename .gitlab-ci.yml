@@ -62,11 +62,12 @@ stages:
       else
         export TAG_PREFIX="dev-"
       fi
-    - curl --fail -XPOST "https://jenkins.tomfun.co/buildByToken/buildWithParameters?job=$JENKINS_JOB&token=$JENKINS_DEMO_DEPLOY_TOKEN&IMAGE_TAG=$TAG_PREFIX$CI_COMMIT_SHA&PUBLIC_HTTP_HOST=$PUBLIC_HTTP_HOST"
-    - sleep 20
-    - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_COMMIT_SHA" || sleep 20
-    - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_COMMIT_SHA" || sleep 10
-    - curl --fail -XGET $URI_TO_TEST | grep -i "$CI_COMMIT_SHA"
+    - curl --fail -XPOST "https://jenkins.tomfun.co/buildByToken/buildWithParameters?job=$JENKINS_JOB&token=$JENKINS_DEMO_DEPLOY_TOKEN&IMAGE_TAG=$TAG_PREFIX$CI_COMMIT_SHA&PUBLIC_HTTP_HOST=$PUBLIC_HTTP_HOST&BRANCH=$CI_COMMIT_REF_NAME&ENV=$CI_ENVIRONMENT_NAME"
+    - sleep 30
+    - |
+      for i in {1..8}; do
+        curl --fail -XGET $URI_TO_TEST | grep -i "$CI_COMMIT_SHA" && break || sleep 20
+      done
 
 
 job-deploy-demo:
