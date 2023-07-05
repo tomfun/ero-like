@@ -12,7 +12,6 @@
         <label :for="id('title')">Title</label>
       </div>
       <small :id="id('title-help')">Enter a title the best describes your journey.</small>
-      <small> Enter a title the best describes your journey 1 1 1 1 1 1 1 1 1 1 1 </small>
     </div>
     <div class="field col-fixed min-w-min md:w-16rem">
       <div class="p-float-label">

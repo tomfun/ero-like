@@ -1,6 +1,21 @@
 <template>
   <div class="substance border-bluegray-100">
     <div class="formgrid grid" v-if="isEdit">
+      <div class="field col min-w-min">
+        <div class="p-float-label p-float-label-shift">
+          <InputMaskTime
+            :inputId="id('timeSecond')"
+            :timeFormat="timeFormat"
+            :modelValue="modelValue.timeSecond"
+            :allow0="isFirst"
+            @update:modelValue="setSingleValue('timeSecond', $event)"
+            @update:modelValueValid="
+              isTimeValid = isFirst ? $event && modelValue.timeSecond <= 0 : $event
+            "
+          />
+          <label :for="id('timeSecond')">Time of input</label>
+        </div>
+      </div>
       <div class="field col-12 md:col-8">
         <div class="p-float-label">
           <AutoComplete
@@ -11,7 +26,7 @@
             dataKey="name"
             v-model:modelValue="namePsychonautWikiOrg"
             :suggestions="suggestions"
-            :disabled="!loaded"
+            :disabled="!loaded || !isTimeValid"
             @complete="onComplete('namePsychonautWikiOrg', $event)"
             class="w-full"
           >
@@ -33,11 +48,12 @@
             :options="routeOfAdministrationOptions"
             :modelValue="modelValue.routeOfAdministration"
             @update:modelValue="setSingleValue('routeOfAdministration', $event)"
+            :disabled="!isTimeValid"
           />
           <label :for="id('route')">Route of administration</label>
         </div>
       </div>
-      <div class="field col-fixed" style="min-width: 8rem">
+      <div class="field col">
         <div class="p-float-label">
           <Dropdown
             class="w-full min-w-min"
@@ -45,14 +61,15 @@
             :modelValue="modelValue.doseUnit"
             :options="doseUnitOptions"
             @update:modelValue="setSingleValue('doseUnit', $event)"
+            :disabled="!isTimeValid"
           />
           <label :for="id('dose-unit')">Dosage unit</label>
         </div>
       </div>
-      <div class="field col-fixed" style="min-width: 8rem">
+      <div class="field col">
         <div class="p-float-label">
           <InputNumber
-            class="w-8rem"
+            class="w-full"
             :pt="{ input: { style: 'width: 8rem' } }"
             :inputId="id('dose')"
             :modelValue="modelValue.dose"
@@ -60,6 +77,7 @@
             @update:modelValue="setSingleValue('dose', $event)"
             :minFractionDigits="2"
             :min="0"
+            :disabled="!isTimeValid"
           />
           <label :for="id('dose')">Amount</label>
         </div>
@@ -72,24 +90,13 @@
             :modelValue="modelValue.surePercent"
             :options="percentOptions"
             @update:modelValue="setSingleValue('surePercent', $event)"
+            :disabled="!isTimeValid"
           />
           <label :for="id('qualityPercent')">Quality percent</label>
         </div>
         <small :id="id('qualityPercent')">
           How much you sure about the quality of the substance?
         </small>
-      </div>
-      <div class="field col min-w-min">
-        <div class="p-float-label p-float-label-shift">
-          <InputMaskTime
-            :inputId="id('timeSecond')"
-            :timeFormat="timeFormat"
-            :modelValue="modelValue.timeSecond"
-            :allow0="isFirst"
-            @update:modelValue="setSingleValue('timeSecond', $event)"
-          />
-          <label :for="id('timeSecond')">Time of input</label>
-        </div>
       </div>
       <div class="w-full">
         <div class="card flex justify-content-center flex-wrap gap-3">
@@ -102,6 +109,7 @@
             class="bg-transparent text-color-secondary"
             severity="secondary"
             v-tooltip="$t('Remove')"
+            :disabled="isFirst"
             v-on:click="rm"
           >
             <span class="pi pi-times"></span>
@@ -128,6 +136,7 @@
           size="small"
           outlined
           v-tooltip="$t('Remove')"
+          :disabled="isFirst"
           v-on:click="rm"
         >
           <span class="pi pi-times"></span>
@@ -180,6 +189,9 @@ export default defineComponent({
     'update:modelValue'(substance: T) {
       return typeof substance === 'object' && typeof substance.timeSecond === 'number'
     },
+    'update:modelValueValid'(isValid: boolean) {
+      return typeof isValid === 'boolean'
+    },
   },
   async mounted() {
     this.psychonautWikiSubstanceList = await fetchPsychonautWikiSubstanceList()
@@ -192,6 +204,9 @@ export default defineComponent({
     return {
       loaded: false,
       isEdit: true,
+      isTimeValid: this.isFirst
+        ? this.modelValue.timeSecond <= 0
+        : this.modelValue.timeSecond > 0 || this.modelValue.namePsychonautWikiOrg, // :(
       uid: Math.random().toString(27).slice(2),
       suggestions: builtInSubstances,
       psychonautWikiSubstanceList: builtInSubstances,

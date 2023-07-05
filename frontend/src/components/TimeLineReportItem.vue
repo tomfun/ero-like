@@ -41,6 +41,7 @@
         size="small"
         outlined
         v-tooltip="$t('Remove')"
+        :disabled="isFirst"
         v-on:click="rm"
       >
         <span class="pi pi-times"></span>

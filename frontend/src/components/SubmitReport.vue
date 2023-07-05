@@ -64,7 +64,10 @@
         >Validate report</Button
       >
     </div>
-    <template v-if="step === 'validating' || step === 'signing'">
+    <div style="height: 0.5em">
+      <ProgressBar v-if="!isLoaded" mode="indeterminate" style="height: 0.5em" />
+    </div>
+    <template v-if="(step === 'validating' || step === 'signing') && isLoaded">
       <Message severity="error" v-for="(error, i) in errors" :key="i">
         {{ error }}
       </Message>
@@ -85,6 +88,10 @@
           class="w-full"
           rows="15"
           autoResize
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
           placeholder="-----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA256
 { <<YOUR JSON>> }
@@ -108,7 +115,7 @@ TaVHnbJ8jErfklgnRTPibX8AdmEFJasONNMJ/7euoBoH+aAYG/k=
     <div class="button-wrapper">
       <Button @click="submit" :disabled="!clearSignArmored.length">Submit</Button>
     </div>
-    <template v-if="step === 'submitting'">
+    <template v-if="step === 'submitting' && isLoaded">
       <Message severity="error" v-for="(error, i) in errors" :key="i">
         {{ error }}
       </Message>
@@ -168,6 +175,7 @@ export default defineComponent({
       reportData,
       simple: reportData.timeLineReport.length < 2,
       errors: [] as string[],
+      isLoaded: true,
       step: 'entering' as 'entering' | 'validating' | 'submitting' | 'signing',
       validJson: '',
       clearSignArmored: '',
@@ -250,6 +258,7 @@ export default defineComponent({
     },
     async handleValidation() {
       this.step = 'validating'
+      this.isLoaded = false
       try {
         const validJson = await reportDataValidation(this.reportData)
         this.step = 'signing'
@@ -264,9 +273,11 @@ export default defineComponent({
           this.errors = [(e as Error).message]
         }
       }
+      this.isLoaded = true
     },
     async submit() {
       this.step = 'submitting'
+      this.isLoaded = false
       try {
         this.validJson = await reportSubmit(this.clearSignArmored)
         this.errors.length = 0
@@ -283,6 +294,7 @@ export default defineComponent({
           this.errors = [(e as Error).message]
         }
       }
+      this.isLoaded = true
     },
   },
   watch: {

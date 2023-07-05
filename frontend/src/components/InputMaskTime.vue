@@ -120,7 +120,7 @@ export default defineComponent({
       },
     },
   },
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'update:modelValueValid'],
   mounted() {
     window && window.addEventListener('mouseup', this.windowHandler)
     window && window.addEventListener('touchend', this.windowHandler)
@@ -160,6 +160,7 @@ export default defineComponent({
         this.timeSecondRaw = value || undefined
         if (!value) {
           this.setNewValue(0)
+          this.$emit('update:modelValueValid', false)
           return
         }
         const pattern = CONFIGS[this.timeFormat].reduce((pattern, conf) => {
@@ -170,6 +171,7 @@ export default defineComponent({
 
         const match = value.replace(this.prefix, '').match(new RegExp(pattern))
         if (!match) {
+          this.$emit('update:modelValueValid', false)
           return
         }
         const timeSecond = CONFIGS[this.timeFormat].reduce(
@@ -177,6 +179,7 @@ export default defineComponent({
           0,
         )
         this.setNewValue(timeSecond)
+        this.$emit('update:modelValueValid', true)
       },
     },
     inputMinWidth() {

@@ -7,6 +7,10 @@
       :value="content"
       autoResize
       ref="textArea"
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
     />
     <Button class="col-fixed text-center" @:click="copyHandler">
       <span class="pi pi-copy"></span>
