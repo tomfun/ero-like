@@ -1,4 +1,4 @@
-import { QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm'
 
 export class signatureTable1678021709877 {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -19,6 +19,6 @@ export class signatureTable1678021709877 {
             "subkeyFingerprint" bytea not null,
             "signature" bytea not null
         );
-    `);
+    `)
   }
 }

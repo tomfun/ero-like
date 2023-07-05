@@ -40,7 +40,7 @@ Zl80bV7VFNgQHt7yeBIAyJvh2VRjASY=
 -----END PGP SIGNATURE-----
 
 ### tomfun
-PUT {{host}}/api/report
+PATCH {{host}}/api/report
 Content-Type: text/plain
 
 -----BEGIN PGP SIGNED MESSAGE-----
@@ -75,9 +75,8 @@ Content-Type: application/json
       "timeSecond": 0,
       "dose": 5,
       "doseUnit": "mg",
-      "name": "Heroin",
+      "namePsychonautWikiOrg": "Heroin",
       "routeOfAdministration": "intravenous",
-      "activeSubstance": "heroin",
       "surePercent": 99
     }
   ],

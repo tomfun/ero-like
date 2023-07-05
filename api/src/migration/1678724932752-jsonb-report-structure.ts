@@ -1,4 +1,4 @@
-import { QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm'
 
 export class jsonbReportStructure1678724932752 {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -35,6 +35,6 @@ export class jsonbReportStructure1678724932752 {
         ALTER TABLE report
             ADD constraint report_user_fk
                 foreign key ("userId") references "user";
-    `);
+    `)
   }
 }

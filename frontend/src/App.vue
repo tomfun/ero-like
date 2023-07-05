@@ -18,20 +18,22 @@
               {{ $t('reports') }}
             </router-link>
             |
-            <router-link :to="{ name: 'Submit', params: { locale }  }">
+            <router-link :to="{ name: 'Submit', params: { locale } }">
               {{ $t('app_submit_report') }}
             </router-link>
             &nbsp;<!-- <-~ я верстальщик от бога -->
           </nav>
-          <LocaleSelect/>
+          <LocaleSelect />
         </header>
         <div id="forkme">
-          <div class="forkme"><a href="https://github.com/tomfun/ero-like">Fork me on Github</a></div>
+          <div class="forkme">
+            <a href="https://github.com/tomfun/ero-like">Fork me on Github</a>
+          </div>
         </div>
       </div>
     </template>
     <template v-slot:default="{ isLocaleLoaded, locale }">
-      <main><router-view v-if="isLocaleLoaded"/></main>
+      <main><router-view v-if="isLocaleLoaded" /></main>
       <footer id="nav-footer" v-if="isLocaleLoaded">
         <router-link :to="{ name: 'Home', params: { locale } }">
           {{ $t('home') }}
@@ -59,11 +61,17 @@
         <a href="https://pontoon.tomfun.co/projects/ero-like/">
           &#127987;&nbsp;{{ $t('app_add_translations') }}
         </a>
-        <a title="copy address helper link to you i2p browser" href="http://ero-like.i2p/?i2paddresshelper=KacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKSmnDHUDkRKeWmmK-g5lOiQreBfQ294Hz2iL68GGD5cpKacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKSmnDHUDkRKeWmmK-g5lOiQreBfQ294Hz2iL68GGD5cpKacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKSmnDHUDkRKeWmmK-g5lOiQreBfQ294Hz2iL68GGD5cpKacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKaOfiDskfhZWWQzo82rc~cjnIqTN13o64vJsXdWdXpYkBQAEAAcAAA==">
+        <a
+          title="copy address helper link to you i2p browser"
+          href="http://ero-like.i2p/?i2paddresshelper=KacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKSmnDHUDkRKeWmmK-g5lOiQreBfQ294Hz2iL68GGD5cpKacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKSmnDHUDkRKeWmmK-g5lOiQreBfQ294Hz2iL68GGD5cpKacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKSmnDHUDkRKeWmmK-g5lOiQreBfQ294Hz2iL68GGD5cpKacMdQOREp5aaYr6DmU6JCt4F9Db3gfPaIvrwYYPlykppwx1A5ESnlppivoOZTokK3gX0NveB89oi-vBhg-XKaOfiDskfhZWWQzo82rc~cjnIqTN13o64vJsXdWdXpYkBQAEAAcAAA=="
+        >
           📄ero-like.i2p
         </a>
         |
-        <a title="instructions for i2p" href="https://github.com/tomfun/ero-like/blob/main/i2p.md">
+        <a
+          title="instructions for i2p"
+          href="https://github.com/tomfun/ero-like/blob/main/i2p.md"
+        >
           i2p usage
         </a>
       </footer>
@@ -71,8 +79,8 @@
   </LocaleContainer>
 </template>
 <script setup lang="ts">
-import LocaleSelect from './format.js/LocaleSelect.vue';
-import LocaleContainer from './format.js/LocaleContainer.vue';
+import LocaleSelect from './format.js/LocaleSelect.vue'
+import LocaleContainer from './format.js/LocaleContainer.vue'
 </script>
 
 <style lang="scss">
@@ -87,7 +95,9 @@ import LocaleContainer from './format.js/LocaleContainer.vue';
   width: 100%;
 }
 
-body, #app, html {
+body,
+#app,
+html {
   border: none;
   margin: 0;
   padding: 0;
@@ -96,13 +106,16 @@ body, #app, html {
 main {
   padding: 0 5px;
 }
-div.center, #nav, #nav-footer {
+div.center,
+#nav,
+#nav-footer {
   text-align: center;
 }
 
 $navPadding: 30px;
 
-#nav, #nav-footer {
+#nav,
+#nav-footer {
   padding: $navPadding;
 
   a {
@@ -127,7 +140,6 @@ $navPadding: 30px;
   }
 }
 
-
 #nav-footer {
   border-top: #2c3e50 2px solid;
 }
@@ -142,7 +154,8 @@ $forkMeSizeMax: 40px;
   justify-content: start;
   align-items: start;
 
-  #nav, #forkme {
+  #nav,
+  #forkme {
     display: flex;
   }
 
@@ -159,7 +172,7 @@ $forkMeSizeMax: 40px;
     min-height: 28px;
     .forkme {
       transform: rotate(45deg);
-      background-color: #FFF;
+      background-color: #fff;
       overflow: hidden;
       position: absolute;
       z-index: 1;
@@ -167,9 +180,9 @@ $forkMeSizeMax: 40px;
       right: -119px;
       top: 18px;
       border-style: solid;
-      border-color: #7B7979;
+      border-color: #7b7979;
       transition: 0.3s;
-      transition-property: right,top;
+      transition-property: right, top;
       &:hover {
         right: -114px;
         top: 23px;
@@ -181,10 +194,9 @@ $forkMeSizeMax: 40px;
         margin: 0.05em 0px 0.075em;
         padding: 0.6em;
         text-align: center;
-        text-decoration: none
+        text-decoration: none;
       }
     }
   }
 }
-
 </style>

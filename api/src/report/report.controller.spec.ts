@@ -1,14 +1,14 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { TypeSymbol } from 'ero-like-sdk/dist/filters-query.pipe';
-import { PaginationQueryDto } from '../core/pagination-query.pipe';
-import { ReportController } from './report.controller';
-import { ReportService } from './report.service';
+import { Test, TestingModule } from '@nestjs/testing'
+import { TypeSymbol } from 'ero-like-sdk/dist/filters-query.pipe'
+import { PaginationQueryDto } from '../core/pagination-query.pipe'
+import { ReportController } from './report.controller'
+import { ReportService } from './report.service'
 
 describe('AppController', () => {
-  let appController: ReportController;
+  let appController: ReportController
   const reportService = {
     getList: jest.fn(),
-  };
+  }
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
@@ -17,10 +17,10 @@ describe('AppController', () => {
     })
       .overrideProvider(ReportService)
       .useValue(reportService)
-      .compile();
+      .compile()
 
-    appController = app.get<ReportController>(ReportController);
-  });
+    appController = app.get<ReportController>(ReportController)
+  })
 
   describe('root', () => {
     it('should return "Hello World!"', async () => {
@@ -38,12 +38,12 @@ describe('AppController', () => {
         d: {
           [TypeSymbol]: Object,
         },
-      };
-      const out = {};
-      reportService.getList.mockResolvedValueOnce(out);
-      expect(
-        await appController.getReports(new PaginationQueryDto(), emptyFilters),
-      ).toBe(out);
-    });
-  });
-});
+      }
+      const out = {}
+      reportService.getList.mockResolvedValueOnce(out)
+      expect(await appController.getReports(new PaginationQueryDto(), emptyFilters)).toBe(
+        out,
+      )
+    })
+  })
+})

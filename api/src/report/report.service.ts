@@ -1,14 +1,9 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  ValidationPipe,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import * as stringify from 'json-stable-stringify';
-import * as _ from 'lodash';
-import { Repository } from 'typeorm';
-import { InvalidDataError } from '../core/gpg.service';
+import { BadRequestException, Inject, Injectable, ValidationPipe } from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
+import * as stringify from 'json-stable-stringify'
+import * as _ from 'lodash'
+import { Repository } from 'typeorm'
+import { InvalidDataError } from '../core/gpg.service'
 import {
   KeyClassSymbol,
   NumberField,
@@ -16,39 +11,39 @@ import {
   ReportFilters,
   StringField,
   TypeSymbol,
-} from './filters-query.pipe';
-import { Paginable, PaginationQueryDto } from '../core/pagination-query.pipe';
-import { ReportDataBodyPayload, ReportEntity } from '../entity';
-import { SignatureDataService } from '../core/signature-data.service';
-import { UserService } from '../core/user.service';
-import { PsychonautWikiService } from './psychonaut-wiki.service';
+} from './filters-query.pipe'
+import { Paginable, PaginationQueryDto } from '../core/pagination-query.pipe'
+import { ReportDataBodyPayload, ReportEntity } from '../entity'
+import { SignatureDataService } from '../core/signature-data.service'
+import { UserService } from '../core/user.service'
+import { PsychonautWikiService } from './psychonaut-wiki.service'
 
-export { ReportDataBodyPayload, ReportEntity } from '../entity';
+export { ReportDataBodyPayload, ReportEntity } from '../entity'
 
-export type ReportForList = Omit<ReportEntity, 'signature'>;
+export type ReportForList = Omit<ReportEntity, 'signature'>
 
-export const TYPE = 'drugs.ero-like.online/report@0.0.1-alpha-1';
+export const TYPE = 'drugs.ero-like.online/report@0.0.1-alpha-1'
 
 @Injectable()
 export class ReportService {
   @InjectRepository(ReportEntity)
-  private reportRepo: Repository<ReportEntity>;
+  private reportRepo: Repository<ReportEntity>
 
   @Inject()
-  private signService: SignatureDataService;
+  private signService: SignatureDataService
 
   @Inject()
-  private psychonautWikiService: PsychonautWikiService;
+  private psychonautWikiService: PsychonautWikiService
 
   @Inject()
-  private userService: UserService;
+  private userService: UserService
 
   readonly validationPipe = new ValidationPipe({
     transform: true,
     whitelist: true,
     validateCustomDecorators: true,
     // exceptionFactory: (e) => new TransformResourceDeserializationError(e),
-  });
+  })
 
   async getList(
     { page, pageSize }: PaginationQueryDto,
@@ -57,19 +52,15 @@ export class ReportService {
     let query = this.reportRepo
       .createQueryBuilder('r')
       .innerJoinAndSelect('r.signature', 's')
-      .select(['r', 's.id', 's.signedAt', 's.user']);
+      .select(['r', 's.id', 's.signedAt', 's.user'])
     if (filters?.signature?.user?.nick || filters?.signature?.user?.id) {
-      const joins = [];
-      const params = {};
+      const joins = []
+      const params = {}
       if (filters.signature.user.id) {
-        const idWhere = this.buildStringWhere(
-          filters.signature.user.id,
-          'u.id',
-          'userId',
-        );
+        const idWhere = this.buildStringWhere(filters.signature.user.id, 'u.id', 'userId')
         if (idWhere) {
-          joins.push(idWhere.sql);
-          _.assign(params, idWhere.params);
+          joins.push(idWhere.sql)
+          _.assign(params, idWhere.params)
         }
       }
       if (filters.signature.user.nick) {
@@ -77,49 +68,44 @@ export class ReportService {
           filters.signature.user.nick,
           'u.nick',
           'userNick',
-        );
+        )
         if (nickWhere) {
-          joins.push(nickWhere.sql);
-          _.assign(params, nickWhere.params);
+          joins.push(nickWhere.sql)
+          _.assign(params, nickWhere.params)
         }
       }
-      const joinWhere = joins.join(' AND ');
-      query = query.innerJoinAndSelect('s.user', 'u', joinWhere, params);
+      const joinWhere = joins.join(' AND ')
+      query = query.innerJoinAndSelect('s.user', 'u', joinWhere, params)
     } else {
-      query = query.innerJoinAndSelect('s.user', 'u');
+      query = query.innerJoinAndSelect('s.user', 'u')
     }
-    let i = 0;
+    let i = 0
     for (const f in filters.d) {
-      let key: string;
+      let key: string
       if (filters.d[f][KeyClassSymbol] === 'jsonb_values_of_key') {
         // substances.*.namePsychonautWikiOrg
         //   ->
         // jsonb_values_of_key(r.d->'substances', 'namePsychonautWikiOrg')
-        const fieldParts = f.split('.*.', 3);
+        const fieldParts = f.split('.*.', 3)
         if (fieldParts.length !== 2) {
-          throw new Error('jsonb_values_of_key class exception');
+          throw new Error('jsonb_values_of_key class exception')
         }
-        key = `jsonb_values_of_key(r.d->'${fieldParts[0]}', '${fieldParts[1]}')`;
+        key = `jsonb_values_of_key(r.d->'${fieldParts[0]}', '${fieldParts[1]}')`
       } else {
-        key =
-          filters.d[f][TypeSymbol] === String ? `r.d->>'${f}'` : `r.d->'${f}'`;
+        key = filters.d[f][TypeSymbol] === String ? `r.d->>'${f}'` : `r.d->'${f}'`
       }
       const subWhere =
         filters.d[f][TypeSymbol] === String
-          ? this.buildStringWhere(
-              filters.d[f],
-              key,
-              `d${f.replace(/\W/g, '')}${i++}`,
-            )
+          ? this.buildStringWhere(filters.d[f], key, `d${f.replace(/\W/g, '')}${i++}`)
           : this.buildNumberWhere(
               filters.d[f],
               `(${key})::numeric`,
               `d${f.replace(/\W/g, '')}${i++}`,
-            );
+            )
       if (!subWhere) {
-        continue;
+        continue
       }
-      query = query.andWhere(subWhere.sql, subWhere.params);
+      query = query.andWhere(subWhere.sql, subWhere.params)
     }
 
     const [items, itemsTotal] = await query
@@ -127,24 +113,24 @@ export class ReportService {
       .take(pageSize)
       .orderBy({ 'r.id': 'ASC' })
       .cache(60000)
-      .getManyAndCount();
+      .getManyAndCount()
     return {
       items,
       itemsTotal,
       page,
       pageSize,
-    };
+    }
   }
 
   async extraValidation(obj: ReportDataBodyPayload) {
-    const list = await this.psychonautWikiService.getShortList();
+    const list = await this.psychonautWikiService.getShortList()
     const invalidNameIndex = obj.substances.findIndex(
       (s) => !list.find(({ name }) => name === s.namePsychonautWikiOrg),
-    );
+    )
     if (invalidNameIndex !== -1) {
       throw new BadRequestException([
         `substances.${invalidNameIndex}.namePsychonautWikiOrg must be known psychonautWiki.org substance`,
-      ]);
+      ])
     }
   }
 
@@ -152,8 +138,8 @@ export class ReportService {
     const { signature } = await this.signService.createEntity({
       clearSignArmored,
       type: TYPE,
-    });
-    let report;
+    })
+    let report
     if (signature.id) {
       report = await this.reportRepo.findOne({
         where: { signature: { id: signature.id } },
@@ -162,9 +148,9 @@ export class ReportService {
             user: true,
           },
         },
-      });
+      })
       if (report) {
-        return report;
+        return report
       }
     }
     // throw http bad request error
@@ -174,23 +160,21 @@ export class ReportService {
         type: 'body',
         metatype: ReportDataBodyPayload,
       },
-    )) as ReportDataBodyPayload;
-    await this.extraValidation(createReportDto);
+    )) as ReportDataBodyPayload
+    await this.extraValidation(createReportDto)
     if (stringify(createReportDto) !== signature.data.clearSignDataPart) {
-      throw new InvalidDataError(
-        'You must use sorted keys to produce consistent hash',
-      );
+      throw new InvalidDataError('You must use sorted keys to produce consistent hash')
     }
-    report = new ReportEntity();
-    report.d = createReportDto;
-    report.signature = signature;
+    report = new ReportEntity()
+    report.d = createReportDto
+    report.signature = signature
     await this.reportRepo.manager.save([
       report.signature.block,
       report.signature.data,
       report.signature,
-    ]);
-    report.createdAt = report.signature.createdAt;
-    return this.reportRepo.save(report);
+    ])
+    report.createdAt = report.signature.createdAt
+    return this.reportRepo.save(report)
   }
 
   private buildStringWhere(
@@ -202,38 +186,31 @@ export class ReportService {
       return {
         sql: `${key} = :${pName}`,
         params: { [pName]: field.filters[QueryOperator.Equal] },
-      };
+      }
     }
-    const params = {} as Record<string, string>;
-    const sql = [] as string[];
+    const params = {} as Record<string, string>
+    const sql = [] as string[]
     if (field.filters[QueryOperator.End]) {
-      sql.push(`${key} LIKE :${pName}End`);
+      sql.push(`${key} LIKE :${pName}End`)
       params[`${pName}End`] =
-        '%' +
-        field.filters[QueryOperator.End]
-          .replace(/%/g, '\\%')
-          .replace(/_/g, '\\_');
+        '%' + field.filters[QueryOperator.End].replace(/%/g, '\\%').replace(/_/g, '\\_')
     }
     if (field.filters[QueryOperator.Start]) {
-      sql.push(`${key} LIKE :${pName}Start`);
+      sql.push(`${key} LIKE :${pName}Start`)
       params[`${pName}Start`] =
-        field.filters[QueryOperator.Start]
-          .replace(/%/g, '\\%')
-          .replace(/_/g, '\\_') + '%';
+        field.filters[QueryOperator.Start].replace(/%/g, '\\%').replace(/_/g, '\\_') + '%'
     }
     if (field.filters[QueryOperator.Contains]) {
-      sql.push(`${key} LIKE :${pName}Include`);
+      sql.push(`${key} LIKE :${pName}Include`)
       params[`${pName}Include`] =
         '%' +
-        field.filters[QueryOperator.Contains]
-          .replace(/%/g, '\\%')
-          .replace(/_/g, '\\_') +
-        '%';
+        field.filters[QueryOperator.Contains].replace(/%/g, '\\%').replace(/_/g, '\\_') +
+        '%'
     }
     if (sql.length) {
-      return { sql: sql.join(' AND '), params };
+      return { sql: sql.join(' AND '), params }
     }
-    return undefined;
+    return undefined
   }
 
   private buildNumberWhere(
@@ -245,33 +222,33 @@ export class ReportService {
       return {
         sql: `${key} = :${pName}`,
         params: { [pName]: field.filters[QueryOperator.Equal] },
-      };
+      }
     }
-    const params = {} as Record<string, number>;
-    const sql = [] as string[];
+    const params = {} as Record<string, number>
+    const sql = [] as string[]
     if (field.filters[QueryOperator.GreaterThan]) {
-      sql.push(`${key} > :${pName}Gt`);
-      params[`${pName}Gt`] = field.filters[QueryOperator.GreaterThan];
+      sql.push(`${key} > :${pName}Gt`)
+      params[`${pName}Gt`] = field.filters[QueryOperator.GreaterThan]
     }
     if (field.filters[QueryOperator.GreaterThanEqual]) {
-      sql.push(`${key} >= :${pName}Gte`);
-      params[`${pName}Gte`] = field.filters[QueryOperator.GreaterThanEqual];
+      sql.push(`${key} >= :${pName}Gte`)
+      params[`${pName}Gte`] = field.filters[QueryOperator.GreaterThanEqual]
     }
     if (field.filters[QueryOperator.LessThan]) {
-      sql.push(`${key} < :${pName}Lt`);
-      params[`${pName}Lt`] = field.filters[QueryOperator.LessThan];
+      sql.push(`${key} < :${pName}Lt`)
+      params[`${pName}Lt`] = field.filters[QueryOperator.LessThan]
     }
     if (field.filters[QueryOperator.LessThanEqual]) {
-      sql.push(`${key} <= :${pName}Lte`);
-      params[`${pName}Lte`] = field.filters[QueryOperator.LessThanEqual];
+      sql.push(`${key} <= :${pName}Lte`)
+      params[`${pName}Lte`] = field.filters[QueryOperator.LessThanEqual]
     }
     if (field.filters[QueryOperator.Between]) {
-      throw new Error('between not implemented');
+      throw new Error('between not implemented')
     }
     if (sql.length) {
-      return { sql: sql.join(' AND '), params };
+      return { sql: sql.join(' AND '), params }
     }
-    return undefined;
+    return undefined
   }
 
   async getReport(id: string) {
@@ -287,6 +264,6 @@ export class ReportService {
           },
         },
       },
-    });
+    })
   }
 }

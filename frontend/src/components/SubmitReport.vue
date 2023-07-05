@@ -1,611 +1,340 @@
 <template>
-  <div class="submitReportForm">
-    <div class="submitReportForm__main-cont">
-      <h1 class="submitReportForm__title">{{ $t('submit_page_title') }}</h1>
-      <div class="submitForm__registr-cont">
-        <Message severity="warn">
-          Only registered users can submit reports
-          <router-link :to="{ name: 'UserRegistration' }">register</router-link>
-        </Message>
-      </div>
-      <div class="submitForm__title-cont">
-
-      </div>
-      <div class="submitForm__info-cont">
-        <Message severity="info">
-          You can choose either a "simple" report to post with a single block of description,
-          or the "timelined" one with time sections each with its own description.
-        </Message>
-      </div>
-      <TabView v-on:tab-change="handleTabChange" class="reportForm__tab-panel">
-        <TabPanel header="Simple">
-          <div class="submitReportForm__simpleRep-cont">
-            <Button
-              v-if="isDev"
-              label="Autofill"
-              class="submitReportForm__add-sub-but"
-              @click="handleFormFill"
-            />
-            <div class="col-8">
-              <span class="p-float-label">
-                <InputText class="col-12" :id="id('title')"
-                           v-model="reportData.title" aria-describedby="title-help" />
-                <label :for="id('title')">Title</label>
-              </span>
-              <small :id="id('title-help')">Enter a title the best describes your journey.</small>
-            </div>
-            <div class="col-4">
-              <Calendar v-model="dateTimestampDate"
-                        :dateFormat="dateFormatShort"
-                        :placeholder="dateFormatShort"
-              />
-            </div>
-            <SubmitSubstanceData
-              v-bind:substancesArray="reportData.substances"
-              v-bind:editSubstance="editSubstance"
-              v-bind:deleteSubstance="deleteSubstance"/>
-            <Button
-              v-if="!staged"
-              v-on:click="handleAddSubstance"
-              :disabled="addSubstanceButtonDisable"
-              class="submitReportForm__add-sub-but">
-              Add substance form
-            </Button>
-            <SubstanceForm v-show="staged" v-bind:item="stagedSubstance" />
-            <div class="submitForm__cont">
-              <span class="p-float-label">
-                <Textarea
-                  :id="id('reportText')"
-                  class="p-inputtext-lg submitReportForm__text-area"
-                  v-model="simpleReportText"
-                  aria-describedby="report-text"
-                  >
-                </Textarea>
-                <label :for="id('reportText')">Report text</label>
-              </span>
-              <small :id="id('report-text')">Type here everything you consider relevant to describe your expirience.</small>
-            </div>
-          </div>
-        </TabPanel>
-        <TabPanel header="Timelined">
-          <div class="submitReportForm__time-line-cont">
-            <div class="col-12">
-              <span class="p-float-label">
-                <InputText class="col-12" :id="id('title')"
-                           v-model="reportData.title" aria-describedby="title-help" />
-                <label :for="id('title')">Title</label>
-              </span>
-              <small :id="id('title-help')">Enter a title the best describes your journey.</small>
-            </div>
-            <SubmitSubstanceData
-              v-bind:substancesArray="reportData.substances"
-              v-bind:editSubstance="editSubstance"
-              v-bind:deleteSubstance="deleteSubstance"/>
-            <Button
-              v-if="!staged"
-              v-on:click="handleAddSubstance"
-              :disabled="addSubstanceButtonDisable"
-              class="submitReportForm__add-sub-but">
-              Add substance form
-            </Button>
-            <SubstanceForm v-show="staged" v-bind:item="stagedSubstance" />
-            <h3 class="submitReportForm__title_left">Tell us about your journey in details</h3>
-            <div class="submitReportForm__ready-time-line-cont" v-if="reportData.timeLineReport.length">
-              <ul>
-                <li v-for="(rep, index) in reportData.timeLineReport" class="submitReportForm__rep-cont" v-bind:key="index">
-                  <Panel :header="'timeline ' + (rep.timeSecond + 1).toString()"  toggleable :collapsed="true">
-                    <p class="m-0">
-                      timeline: {{ index + 1 }}<br/>
-                      Report text: {{ rep }}
-                    </p>
-                  </Panel>
-                  <Button label="Edit" v-on:click="editReportData(index)" />
-                  <Button label="Delete" severity="danger" v-on:click="deleteReportData(index)" />
-                </li>
-              </ul>
-            </div>
-            <TimeLineReportForm v-bind:item="stagedReport" @update:item="updateRepForm" v-if="stagedRep"/>
-            <Button
-              v-if="!stagedRep"
-              class="submitReportForm__add-sub-but"
-              v-on:click="handleAddTimeLineReport"
-              :disabled="addReportButtonDisable">
-              Add time line form
-            </Button>
-        </div>
-        </TabPanel>
-      </TabView>
-      <div class="submitForm__background-cont">
-        <span class="p-float-label">
-          <Textarea
-            :id="id('backgroundText')"
-            class="p-inputtext-lg submitReportForm__text-area"
-            v-model="reportData.background"
-            aria-describedby="background-text"
-            >
-          </Textarea>
-          <label :for="id('backgroundText')">Background text</label>
-        </span>
-        <small :id="id('background-text')">Tell us about yourself</small>
-      </div>
-      <div class="submitForm__validation-cont">
-        <Button
-          :disabled="validationButtonDisable"
-          class="submitReportForm__add-sub-but" v-on:click="handleValidation">Validate report</Button>
-        <div class="submitReportForm__valid-status-cont" >
-          <div class="submitReportForm__valid-status-err">
-
-          </div>
-          <Message v-show="errors.length" severity="error" v-for="(error) in errors" :key="error">
-            {{ error }}
-          </Message>
-          <div class="submitReportForm__valid-status-err"></div>
-          <Message v-show="validReport" severity="success">
-            the report is valid!
-          </Message>
-        </div>
-        <div class="submitForm__validation-success-cont">
-          <Panel header="Report segnification" toggleable :collapsed="true" class="reportForm__sign-cont">
-            <p class="m-0">
-              To sign your validated report, first select the user you want to sign the report with.
-            </p>
-            <p class="m-0">List all users:</p>
-            <div class="reportForm__code-block">
-              <code class="reportForm__json-text">
-                gpg --list-keys
-              </code>
-              <span class="reportForm__code-block-span">$your command line</span>
-            </div>
-            <p class="m-0"> Paste in your local CMD the next code replacing $user with your value:</p>
-            <div class="reportForm__code-block">
-              <code class="reportForm__json-text">
-                echo -e '{{ validJson }}' | gpg --clear-sign --disable-signer-uid --local-user
-                <b>$user</b>
-              </code>
-              <span class="reportForm__code-block-span">$your command line</span>
-            </div>
-            <p class="m-0">Copy the result and paste it in the next window.</p>
-          </Panel>
-          <div class="flex flex-column gap-2 submitForm__clear-sign-text-input">
-            <label :for="id('clearSignArmored')">Signed report:</label>
+  <h1>{{ $t('submit_page_title') }}</h1>
+  <Message severity="warn">
+    Only registered users can submit reports
+    <router-link :to="{ name: 'UserRegistration' }">register</router-link>
+  </Message>
+  <Message severity="info">
+    You can choose either a "simple" report to post with a single block of description, or
+    the "timelined" one with time sections each with its own description.
+  </Message>
+  <TabView v-on:tab-change="handleTabChange" :activeIndex="simple ? 0 : 1">
+    <TabPanel header="Simple">
+      <Button v-if="isDev" label="Autofill" @click="handleFormFill" />
+      <div class="tab-wrapper">
+        <CommonSubmitReport v-model="reportData" :timeFormat="TIME_FORMAT" />
+        <div class="float-label-spacing">
+          <div class="p-float-label p-float-label-shift">
             <Textarea
-              v-model="clearSignArmored"
-              name="clearSignArmored"
-              :id="id('clearSignArmored')"
-              cols="66"
-              rows="6"
-              placeholder="-----BEGIN PGP SIGNED MESSAGE-----
+              :inputId="id('report')"
+              :aria-describedby="id('report-text')"
+              class="w-full"
+              v-model="reportData.timeLineReport[0].report"
+              autoResize
+            />
+            <label :for="id('timeSecond')">Report text</label>
+            <small :id="id('report-text')"
+              >Type here you thoughts, feelings, effects, everything you consider relevant
+              to describe your experience.</small
+            >
+          </div>
+        </div>
+      </div>
+    </TabPanel>
+    <TabPanel header="Timelined">
+      <div class="tab-wrapper">
+        <CommonSubmitReport v-model="reportData" :timeFormat="TIME_FORMAT" />
+
+        <TimeLineReportList
+          v-model="reportData.timeLineReport"
+          :DynamicComponent="TimeLineReportItem"
+        />
+      </div>
+    </TabPanel>
+  </TabView>
+  <div class="container-spacing">
+    <div class="float-label-spacing">
+      <span class="p-float-label">
+        <Textarea
+          :inputId="id('background')"
+          :aria-describedby="id('backgroundHelp')"
+          class="w-full"
+          v-model="reportData.background"
+          autoResize
+        >
+        </Textarea>
+        <label :for="id('background')">Background text</label>
+      </span>
+      <small :id="id('backgroundHelp')"
+        >Tell us about yourself at the moment of the report</small
+      >
+    </div>
+    <div class="button-wrapper">
+      <Button :disabled="validationButtonDisable" v-on:click="handleValidation"
+        >Validate report</Button
+      >
+    </div>
+    <div style="height: 0.5em">
+      <ProgressBar v-if="!isLoaded" mode="indeterminate" style="height: 0.5em" />
+    </div>
+    <template v-if="(step === 'validating' || step === 'signing') && isLoaded">
+      <Message severity="error" v-for="(error, i) in errors" :key="i">
+        {{ error }}
+      </Message>
+      <Message severity="success" key="success" v-if="!errors.length">
+        Your report is submitted successfully!
+      </Message>
+    </template>
+    <Panel header="Report signature" toggleable :collapsed="step !== 'signing'">
+      <ContentSignature v-if="validJson" :content="validJson" />
+    </Panel>
+    <div class="float-label-spacing">
+      <div class="p-float-label p-float-label-shift">
+        <Textarea
+          v-model="clearSignArmored"
+          name="clearSignArmored"
+          :id="id('clearSignArmored')"
+          :aria-describedby="id('clearSignArmoredHelp')"
+          class="w-full"
+          rows="15"
+          autoResize
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          placeholder="-----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA256
 { <<YOUR JSON>> }
 -----BEGIN PGP SIGNATURE-----
 iQIzBAABCgAdFiEEVUcfD9jeufsD1JVP3UX6TcUPhfEFAmC7Q2gACgkQ3UX6TcUP
 ....
-  .
-  .
+.
+.
 ....
 TaVHnbJ8jErfklgnRTPibX8AdmEFJasONNMJ/7euoBoH+aAYG/k=
 =B0/L
------END PGP SIGNATURE-----"/>
-            <small :id="id('clearSignArmored')">Paste here your validated and signed report.</small>
-          </div>
-          <Button class="submitReportForm__add-sub-but" @click="submit" :disabled="!clearSignArmored.length">Submit</Button>
-          <div class="submitReportForm__errors-cont" v-if="submitError.length">
-            <Message severity="error">
-              {{ submitError }}
-            </Message>
-          </div>
-          <div class="submitReportForm__validJson-cont" v-if="successSubmit">
-            <Message severity="success">
-              the report was sent successfully!
-            </Message>
-          </div>
-        </div>
+-----END PGP SIGNATURE-----"
+        />
+        <label :for="id('clearSignArmored')">Signed report:</label>
+        <br />
+        <small :id="id('clearSignArmoredHelp')"
+          >Paste here your validated and signed report.</small
+        >
       </div>
     </div>
+    <div class="button-wrapper">
+      <Button @click="submit" :disabled="!clearSignArmored.length">Submit</Button>
+    </div>
+    <template v-if="step === 'submitting' && isLoaded">
+      <Message severity="error" v-for="(error, i) in errors" :key="i">
+        {{ error }}
+      </Message>
+      <Message severity="success" key="success" v-if="!errors.length">
+        Your report is submitted successfully!
+      </Message>
+    </template>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { useFormat } from '../format.js/useFormat';
-import { BadRequestError, reportDataValidation } from '../services/api';
-import SubstanceForm from './SubstanceForm.vue';
-import TimeLineReportForm from './TimeLineReportForm.vue';
-import SubmitSubstanceData from './SubmitSubstanceData.vue';
-import TabView, { type TabViewClickEvent } from 'primevue/tabview';
-import TabPanel from 'primevue/tabpanel';
+import TabPanel from 'primevue/tabpanel'
+import TabView, { type TabViewClickEvent } from 'primevue/tabview'
+import { defineComponent } from 'vue'
+import type {
+  ReportDataAlpha1,
+  ReportSubstanceAlpha1,
+  ReportTimeLineItemAlpha1,
+} from '../services/api'
+import { BadRequestError, reportDataValidation, reportSubmit } from '../services/api'
+import ContentSignature from './ContentSignature.vue'
+import GenericOrderedList from './GenericOrderedList.vue'
+import { getter } from './InputMaskTime.vue'
+import CommonSubmitReport from './SubmitRepor/CommonSubmitReport.vue'
+import SubstanceItem from './SubstanceItem.vue'
+import TimeLineReportItem from './TimeLineReportItem.vue'
 
-type Substance = {
-  timeSecond: number;
-  dose: number;
-  doseUnit: string;
-  namePsychonautWikiOrg: string;
-  routeOfAdministration: string;
-  activeSubstance: string;
-  surePercent: number;
-  dataCompleted: () => void;
-};
+const STORAGE_KEY = 'report-alpha1'
+const TIME_FORMAT = 'short' as const
 
-type TimeLineReport = {
-  timeSecond: number;
-  report: string;
-  dataCompleted: Function;
-  simple: boolean;
-};
-
-type ReportData = {
-  substances: Substance[];
-  timeLineReport: TimeLineReport[];
-  background: string;
-  dateTimestamp: number;
-  title: string;
-};
+const TimeLineReportList = GenericOrderedList as typeof GenericOrderedList<
+  ReportTimeLineItemAlpha1,
+  typeof TimeLineReportItem
+>
 
 export default defineComponent({
   name: 'SubmitReport',
   components: {
-    SubstanceForm,
-    TimeLineReportForm,
-    SubmitSubstanceData,
+    CommonSubmitReport,
+    ContentSignature,
+    TimeLineReportList,
     TabPanel,
     TabView,
   },
-  setup() {
-    const { dateFormatShort } = useFormat();
-    return {
-      dateFormatShort,
-    };
-  },
-  mounted() {
-    this.handleAddSubstance();
-    this.handleAddTimeLineReport();
-  },
   data() {
+    let storedReport: ReportDataAlpha1 | null = null
+    try {
+      storedReport =
+        (localStorage && JSON.parse(localStorage.getItem(STORAGE_KEY) as string)) || null
+    } catch (e) {
+      // ignore
+    }
+    const reportData: ReportDataAlpha1 = storedReport || this.newReport()
     return {
       uid: Math.random().toString(27).slice(2),
       isDev: import.meta.env.DEV,
-      reportData: {
-        substances: [],
-        timeLineReport: [],
-        background: '',
-        dateTimestamp: 0,
-        title: '',
-      } as ReportData,
-      stagedSubstance: {} as Substance,
-      staged: true,
-      stagedReport: {} as TimeLineReport,
-      stagedRep: false,
-      simpleReportText: '',
-      simple: true,
+      reportData,
+      simple: reportData.timeLineReport.length < 2,
       errors: [] as string[],
-      validReport: false,
-      validJson: {},
+      isLoaded: true,
+      step: 'entering' as 'entering' | 'validating' | 'submitting' | 'signing',
+      validJson: '',
       clearSignArmored: '',
-      submitError: '',
-      successSubmit: false,
-    };
+    }
   },
   computed: {
-    dateTimestampDate: {
-      get(): Date {
-        return new Date(this.reportData.dateTimestamp * 1000)
-      },
-      set(v: Date) {
-        this.reportData.dateTimestamp = Math.floor(v.getTime() / 10000) * 10;
-      },
+    TIME_FORMAT() {
+      return TIME_FORMAT
     },
-    addSubstanceButtonDisable() {
-      return this.staged;
+    SubstanceItem() {
+      return SubstanceItem
     },
-    addReportButtonDisable() {
-      return this.stagedRep;
+    TimeLineReportItem() {
+      return TimeLineReportItem
     },
     validationButtonDisable() {
-      return this.reportData.title.length < 4 || this.reportData.background.length < 4;
-    }
+      return this.reportData.title.length < 4 || this.reportData.background.length < 4
+    },
   },
   methods: {
+    newReport() {
+      return {
+        substances: [
+          { timeSecond: 0, namePsychonautWikiOrg: '' } as ReportSubstanceAlpha1,
+        ],
+        timeLineReport: [{ timeSecond: 0, report: '' }],
+        background: '',
+        dateTimestamp: Math.round(Date.now() / 10000) * 10,
+        title: '',
+      }
+    },
     id(id: string) {
-      return this.uid + id.toString();
+      return this.uid + id.toString()
     },
     handleFormFill() {
-      const substance: Substance = {
-        timeSecond: 0,
-        dose: 10,
-        doseUnit: 'mg',
-        namePsychonautWikiOrg: 'Heroin',
-        routeOfAdministration: 'intravenous',
-        activeSubstance: 'Heroin',
-        surePercent: 30,
-        dataCompleted: () => {
-          this.staged = false;
-          this.reportData.substances = [...this.reportData.substances, this.stagedSubstance];
+      this.reportData.substances = [
+        {
+          timeSecond: 0,
+          dose: 10,
+          doseUnit: 'mg',
+          namePsychonautWikiOrg: 'Heroin',
+          routeOfAdministration: 'intravenous',
+          surePercent: 30,
         },
-      };
-      this.stagedSubstance = substance;
-
-      this.simpleReportText = 'Repppoopoo'
-      this.reportData.title = 'Title';
-      this.reportData.background = 'Backgroundd';
-      this.reportData.dateTimestamp = Math.round(Date.now() / 10000) * 10;
+      ]
+      this.reportData.title = 'Title ' + (Math.round(Math.random() * 200) % 200)
+      this.reportData.background = 'Backgroundd'
+      this.reportData.timeLineReport = [{ timeSecond: 0, report: '12354' }]
+      this.reportData.dateTimestamp = Math.round(Date.now() / 10000) * 10
     },
     handleTabChange(event: TabViewClickEvent) {
-      if (event.index === 0 && this.reportData.timeLineReport.length > 0) {
-        const simpleReport = this.reportData.timeLineReport.reduce((cumulatedRep, curRep) => {
-          return ({
-            report: cumulatedRep.report + '\n' + curRep.report,
-            timeSecond: 0,
-            simple: true,
-            dataCompleted: () => {},
-          });
-        });
-        this.simpleReportText = simpleReport.report;
-        this.simple = true;
-      }
       if (event.index === 1) {
-        this.simple = false;
+        this.simple = false
+        return
       }
+      this.simple = true
+      const report =
+        this.reportData.timeLineReport
+          .map((rep) =>
+            (
+              getter.call({
+                modelValue: rep.timeSecond,
+                timeFormat: TIME_FORMAT,
+                prefix: '+T',
+              }) +
+              '\n\n' +
+              rep.report
+            ).trim(),
+          )
+          .join('\n\n')
+          .trim()
+          .replace(/^\+T00:00\s*/, '') + ' '
+      this.reportData.timeLineReport[0].report = '...'
+      this.reportData.timeLineReport[0].timeSecond = 0
+      this.reportData.timeLineReport.length = 1
+      // forcibly update report textarea to trigger resize
+      this.$nextTick(() => {
+        this.reportData.timeLineReport[0].report = report
+      })
     },
     async handleValidation() {
+      this.step = 'validating'
+      this.isLoaded = false
       try {
-        this.validJson = await reportDataValidation({
-          substances: [...this.reportData.substances],
-          timeLineReport: this.simple ? [{
-            timeSecond: 0,
-            report: this.simpleReportText,
-          }] : [...this.reportData.timeLineReport],
-          title: this.reportData.title,
-          background: this.reportData.background,
-          dateTimestamp: this.reportData.dateTimestamp,
-        })
-        this.validReport = true;
-        this.errors.length = 0;
+        const validJson = await reportDataValidation(this.reportData)
+        this.step = 'signing'
+        // forcibly update report textarea to trigger resize
+        await this.$nextTick()
+        this.errors.length = 0
+        this.validJson = validJson
       } catch (e) {
         if (e instanceof BadRequestError) {
-          this.errors = e.errors;
+          this.errors = e.errors
         } else {
-          this.errors = [(e as Error).message];
+          this.errors = [(e as Error).message]
         }
       }
+      this.isLoaded = true
     },
     async submit() {
-      const requestOptions = {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'text/plain' },
-        body: this.clearSignArmored,
-      };
-      const response = await fetch('/api/report', requestOptions);
-      const data = await response.json();
-
-      if (data.statusCode && data.error) {
-        this.submitError = data.message;
-        this.successSubmit = false;
+      this.step = 'submitting'
+      this.isLoaded = false
+      try {
+        this.validJson = await reportSubmit(this.clearSignArmored)
+        this.errors.length = 0
+        this.reportData = this.newReport()
+        try {
+          localStorage.removeItem(STORAGE_KEY)
+        } catch (e) {
+          // ignore
+        }
+      } catch (e) {
+        if (e instanceof BadRequestError) {
+          this.errors = e.errors
+        } else {
+          this.errors = [(e as Error).message]
+        }
       }
-      if (data.signature) {
-        this.successSubmit = true;
-        this.submitError = '';
-      }
+      this.isLoaded = true
     },
-    handleAddTimeLineReport() {
-      const report: TimeLineReport = {
-        timeSecond: 0,
-        report: '',
-        dataCompleted: () => {
-          this.reportData.timeLineReport = [...this.reportData.timeLineReport, this.stagedReport];
-          this.stagedRep = false;
-        },
-        simple: true,
-      };
-      this.stagedReport = report;
-      this.stagedRep = true;
-    },
-    updateRepForm(params: Partial<TimeLineReport>) {
-      this.stagedReport = {
-        ...this.stagedReport,
-        ...params,
-      };
-    },
-    handleAddSubstance() {
-      const substance: Substance = {
-        timeSecond: 0,
-        dose: 0,
-        doseUnit: '',
-        namePsychonautWikiOrg: '',
-        routeOfAdministration: '',
-        activeSubstance: '',
-        surePercent: 0,
-        dataCompleted: () => {
-          this.staged = false;
-          this.reportData.substances = [...this.reportData.substances, this.stagedSubstance];
-        },
-      };
-      this.stagedSubstance = substance;
-      this.staged = true;
-    },
-    editSubstance(index: number) {
-      this.handleAddSubstance();
-      this.stagedSubstance = { ...this.reportData.substances[index] };
-      this.reportData.substances.splice(index, 1);
-    },
-    deleteSubstance(index: number) {
-      this.reportData.substances.splice(index, 1);
-    },
-    editReportData(index: number) {
-      this.handleAddTimeLineReport();
-      this.stagedReport = { ...this.reportData.timeLineReport[index] };
-      this.reportData.timeLineReport.splice(index, 1);
-    },
-    deleteReportData(index: number) {
-      this.reportData.timeLineReport.splice(index, 1);
-    }
   },
-});
+  watch: {
+    reportData: {
+      deep: true,
+      handler(reportData) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(reportData))
+        } catch (e) {
+          // ignore
+        }
+      },
+    },
+  },
+})
 </script>
 
 <style scoped lang="scss">
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+.float-label-spacing {
+  padding-top: 1.5em;
+  margin-top: 0.5em;
 }
 
-.submitReportForm__title {
-  margin: 2vh auto;
+.tab-wrapper {
+  padding-top: 2em;
+}
+
+.container-spacing {
+  padding-bottom: 1em;
+}
+
+.container-spacing,
+.tab-wrapper {
+  margin-right: 0.5rem;
+  margin-left: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.button-wrapper {
+  margin: 0 auto 0.5rem auto;
   text-align: center;
 }
-.submitReportForm__title_left {
-  margin: 2vh 0;
-}
-.submitReportForm {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 1440px;
-  margin: 5vh auto;
-}
-.submitForm__title-cont {
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-}
-.submitForm__title-inner-cont {
-  margin: 2em auto;
-}
-.submitForm__info-cont {
-  display: flex;
-  flex-direction: column;
-}
-.submitReportForm__substance-cont {
-  margin: 5vh auto;
-  display: flex;
-  flex-direction: column;
-}
-.submitForm__title-input {
-  margin: auto;
-}
-
-.submitReportForm__main-cont {
-  width: 85%;
-  margin: auto;
-}
-.submitForm__cont {
-  width: 100%;
-  margin: 2vh auto;
-  padding: 0;
-}
-.submitReportForm__add-sub-but {
-  margin: 3vh auto;
-}
-.submitReportForm__simpleRep-cont {
-  display: flex;
-  flex-direction: column;
-  width: 70%;
-  margin: auto;
-}
-.submitReportForm__time-line-cont {
-  display: flex;
-  flex-direction: column;
-  width: 70%;
-  margin: auto;
-}
-.submitForm__validation-cont {
-  width: 70%;
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-}
-.submitForm__validation-success-cont {
-  display: flex;
-  flex-direction: column;
-  margin-top: 2vh;
-}
-.submitForm__background-cont {
-  width: 70%;
-  margin: 2vh auto;
-}
-.submitReportForm__text-area {
-  padding: 0;
-  width: 100%;
-  height: 15vh;
-}
-.submitReportForm__rep-cont {
-  width: 100%;
-}
-.reportForm__json-text {
-  display: block;
-  overflow: scroll;
-  border: #42b983 2px solid;
-  padding: 1vh;
-  margin: 2vh 0;
-}
-.submitForm__clear-sign-text-input {
-  margin-top: 5vh;
-}
-.reportForm__code-block-span {
-  position: absolute;
-  right: 0;
-  top: -1.5vh;
-}
-.reportForm__code-block {
-  position: relative;
-}
-
-
-$break-point-large: 1400px;
-
-$break-point-medium: 980px;
-$medium-width: 85%;
-
-$break-point-mobile: 480px;
-$mobile-width: 95%;
-
-@media (max-width: $break-point-large) {
-  .submitReportForm__main-cont {
-    width: 100%;
-  }
-}
-
-@media (max-width: $break-point-medium) {
-  .submitReportForm__time-line-cont {
-    width: $medium-width;
-  }
-  .submitForm__validation-cont {
-    width: $medium-width;
-  }
-  .submitForm__background-cont {
-    width: $medium-width;
-  }
-  .submitReportForm__simpleRep-cont {
-    width: $medium-width;
-  }
-}
-
-@media (max-width: $break-point-medium) {
-  .submitReportForm {
-    margin: 0.5vh auto;
-  }
-  .submitReportForm__time-line-cont {
-    width: $mobile-width;
-  }
-  .submitForm__validation-cont {
-    width: $mobile-width;
-  }
-  .submitForm__background-cont {
-    width: $mobile-width;
-    margin: 2vh auto 0.5vh;
-  }
-  .submitReportForm__simpleRep-cont {
-    width: $mobile-width;
-  }
-}
-
 </style>

@@ -1,21 +1,19 @@
-import { parse, stringify } from 'qs';
-import {
-  lastParse as lastParseInner,
-} from 'ero-like-sdk/dist/filters-query.pipe';
-import { reportConfig } from 'ero-like-config';
-import type { LocationQuery } from 'vue-router';
+import { parse, stringify } from 'qs'
+import { lastParse as lastParseInner } from 'ero-like-sdk/dist/filters-query.pipe'
+import { reportConfig } from 'ero-like-config'
+import type { LocationQuery } from 'vue-router'
 
 export default class FiltersQueryPipe {
   static parse(query: string) {
-    const q = parse(query);
-    return lastParseInner<typeof reportConfig>(q, reportConfig);
+    const q = parse(query)
+    return lastParseInner<typeof reportConfig>(q, reportConfig)
   }
 
   static lastParse(query: LocationQuery) {
-    return lastParseInner<typeof reportConfig>(query, reportConfig);
+    return lastParseInner<typeof reportConfig>(query, reportConfig)
   }
 
   static stringify(toDo: string) {
-    return stringify(toDo);
+    return stringify(toDo)
   }
 }

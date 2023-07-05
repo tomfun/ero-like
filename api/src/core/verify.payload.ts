@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Length } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger'
+import { Length } from 'class-validator'
 
 export class VerifyPayload {
   @ApiProperty({
@@ -28,7 +28,7 @@ QIdSswmBJN8Sp8eNQ9jjGAvJZOzhBBMnFD1NAkbTBJ4zZb02bbY=
     minimum: 90,
   })
   @Length(90)
-  clearSignArmored: string;
+  clearSignArmored: string
 }
 
 export class ImportAndVerifyPayload extends VerifyPayload {
@@ -103,5 +103,5 @@ yB2jQjJns1lWvQ==
 `,
   })
   @Length(70, 65536)
-  publicKeyArmored: string;
+  publicKeyArmored: string
 }

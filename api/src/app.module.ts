@@ -1,14 +1,14 @@
-import { DynamicModule, Inject, Module, OnModuleDestroy } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { SentryModule } from '@ntegral/nestjs-sentry';
-import { AppClusterService } from './app-cluster.service';
+import { DynamicModule, Inject, Module, OnModuleDestroy } from '@nestjs/common'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { SentryModule } from '@ntegral/nestjs-sentry'
+import { AppClusterService } from './app-cluster.service'
 
-import { strictConfigForRoot } from './app.module-config';
-import { AppSchema } from './app.schema';
-import { CoreModule } from './core/core.module';
-import { entities } from './entity';
-import { config as typeOrmConfig } from './pg.config-factory';
-import { ReportModule } from './report/report.module';
+import { strictConfigForRoot } from './app.module-config'
+import { AppSchema } from './app.schema'
+import { CoreModule } from './core/core.module'
+import { entities } from './entity'
+import { config as typeOrmConfig } from './pg.config-factory'
+import { ReportModule } from './report/report.module'
 
 @Module({})
 export class AppModule implements OnModuleDestroy {
@@ -31,11 +31,11 @@ export class AppModule implements OnModuleDestroy {
         TypeOrmModule.forFeature(entities),
       ],
       providers: [AppClusterService],
-    };
+    }
   }
-  @Inject() appClusterService: AppClusterService;
+  @Inject() appClusterService: AppClusterService
 
   async onModuleDestroy() {
-    await this.appClusterService.stop();
+    await this.appClusterService.stop()
   }
 }

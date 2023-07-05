@@ -1,26 +1,26 @@
-import { BlockEntity } from './block.entity';
-import { UserEntity } from './user.entity';
+import { BlockEntity } from './block.entity'
+import { UserEntity } from './user.entity'
 
 export class PublicKeyEntity {
-  id: string;
+  id: string
 
-  block: BlockEntity;
+  block: BlockEntity
 
-  user: UserEntity | null;
+  user: UserEntity | null
 
-  createdAt: Date;
+  createdAt: Date
 
-  updatedAt: Date;
+  updatedAt: Date
 
-  invalidAt: Date | null;
+  invalidAt: Date | null
 
-  type: string;
+  type: string
 
-  primaryKeyFingerprint: string | ArrayBuffer;
+  primaryKeyFingerprint: string | ArrayBuffer
 
-  keygrip: string | ArrayBuffer;
+  keygrip: string | ArrayBuffer
 
-  publicKeyFingerprint: string | ArrayBuffer;
+  publicKeyFingerprint: string | ArrayBuffer
 
-  publicKey: string | ArrayBuffer;
+  publicKey: string | ArrayBuffer
 }

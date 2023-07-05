@@ -1,4 +1,4 @@
-import { QueryRunner } from 'typeorm';
+import { QueryRunner } from 'typeorm'
 
 export class addKeygripPublicKey1680776879945 {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -6,6 +6,6 @@ export class addKeygripPublicKey1680776879945 {
     await queryRunner.query(`
     ALTER TABLE "publicKey"
         ADD "keygrip" bytea not null;
-    `);
+    `)
   }
 }

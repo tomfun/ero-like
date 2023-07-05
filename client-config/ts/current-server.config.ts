@@ -4,36 +4,38 @@ import {
   NumberFilters,
   StringField,
   QueryOperator,
-  ReportFilterType, TypeSymbol, FiltersSymbol, KeyClassSymbol,
-} from 'ero-like-sdk/dist/filters-query.pipe';
+  ReportFilterType,
+  TypeSymbol,
+  FiltersSymbol,
+  KeyClassSymbol,
+} from 'ero-like-sdk/dist/filters-query.pipe'
 
 export {
   QueryOperator,
   NumberField,
   StringField,
-} from 'ero-like-sdk/dist/filters-query.pipe';
+} from 'ero-like-sdk/dist/filters-query.pipe'
 
-export interface ReportDFilters
-  extends ReportFilterType<typeof reportConfig.d> {
-  [TypeSymbol]: typeof Object;
-  'substances.*.namePsychonautWikiOrg'?: StringField;
-  dateTimestamp?: NumberField;
-  title?: StringField;
+export interface ReportDFilters extends ReportFilterType<typeof reportConfig.d> {
+  [TypeSymbol]: typeof Object
+  'substances.*.namePsychonautWikiOrg'?: StringField
+  dateTimestamp?: NumberField
+  title?: StringField
 }
 
 export interface ReportFilters extends ReportFilterType<typeof reportConfig> {
-  [TypeSymbol]: typeof Object;
+  [TypeSymbol]: typeof Object
 
   signature?: {
-    [TypeSymbol]: typeof Object;
+    [TypeSymbol]: typeof Object
     user?: {
-      [TypeSymbol]: typeof Object;
-      id?: StringField;
-      nick?: StringField;
-    };
+      [TypeSymbol]: typeof Object
+      id?: StringField
+      nick?: StringField
+    }
   }
 
-  d?: ReportDFilters;
+  d?: ReportDFilters
 }
 
 export const reportConfig = {
@@ -56,4 +58,4 @@ export const reportConfig = {
       [KeyClassSymbol]: 'jsonb_values_of_key' as const,
     },
   },
-};
+}

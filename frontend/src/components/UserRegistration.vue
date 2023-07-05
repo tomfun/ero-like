@@ -6,12 +6,14 @@
     <div class="formgrid grid">
       <div class="field col">
         <label for="publicKeyArmored">{{ $t('public_key_label') }}</label>
-        <Textarea v-model="publicKeyArmored"
-                  cols="66"
-                  :autoResize="true"
-                  id="publicKeyArmored"
-                  name="publicKeyArmored"
-                  :placeholder="$t('public_key_placeholder')"/>
+        <Textarea
+          v-model="publicKeyArmored"
+          cols="66"
+          :autoResize="true"
+          id="publicKeyArmored"
+          name="publicKeyArmored"
+          :placeholder="$t('public_key_placeholder')"
+        />
         <p>
           {{ $t('public_key_warning') }}
         </p>
@@ -21,17 +23,18 @@
         <Panel :header="$t('how_to_set_public_user')" toggleable :collapsed="true">
           <p class="m-0" v-html="$t('how_to_set_public_user_details')"></p>
         </Panel>
-        <p v-html="$t('check_before_sending')">
-        </p>
+        <p v-html="$t('check_before_sending')"></p>
       </div>
       <div class="field col">
         <label for="clearSignArmored">{{ $t('signature_label') }}</label>
-        <Textarea v-model="clearSignArmored"
-                  name="clearSignArmored"
-                  id="clearSignArmored"
-                  cols="66"
-                  :auto-resize="true"
-                  :placeholder="$t('signature_placeholder')"/>
+        <Textarea
+          v-model="clearSignArmored"
+          name="clearSignArmored"
+          id="clearSignArmored"
+          cols="66"
+          :auto-resize="true"
+          :placeholder="$t('signature_placeholder')"
+        />
         <Panel :header="$t('how_to_clear_sign')" toggleable :collapsed="true">
           <p class="m-0" v-html="$t('how_to_clear_sign_details')"></p>
         </Panel>
@@ -41,7 +44,7 @@
           <Button @click="submit(true)">{{ $t('check_button') }}</Button>
           <Button @click="submit(false)">{{ $t('submit_button') }}</Button>
         </div>
-        <Message severity="error" v-for="(error) in errors" :key="error">
+        <Message severity="error" v-for="error in errors" :key="error">
           {{ error }}
         </Message>
         <Message severity="success" v-if="user.id">
@@ -49,14 +52,26 @@
         </Message>
         <Message severity="info" v-if="user.agreementSignature.primaryKeyFingerprint">
           <span
-            v-html="$t('user_info_message', { nick: user.nick, primaryKeyFingerprint: user.agreementSignature.primaryKeyFingerprint })" />
+            v-html="
+              $t('user_info_message', {
+                nick: user.nick,
+                primaryKeyFingerprint: user.agreementSignature.primaryKeyFingerprint,
+              })
+            "
+          />
           <span
-            v-if="user.agreementSignature.primaryKeyFingerprint === user.agreementSignature.usedKeyFingerprint">
+            v-if="
+              user.agreementSignature.primaryKeyFingerprint ===
+              user.agreementSignature.usedKeyFingerprint
+            "
+          >
             {{ $t('signature_made_directly') }}
           </span>
           <span v-else>{{
-              $t('sub_key_id', { usedKeyFingerprint: user.agreementSignature.usedKeyFingerprint })
-            }}</span>
+            $t('sub_key_id', {
+              usedKeyFingerprint: user.agreementSignature.usedKeyFingerprint,
+            })
+          }}</span>
         </Message>
       </div>
     </div>
@@ -64,8 +79,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { BadRequestError, userRegister } from '../services/api';
+import { defineComponent } from 'vue'
+import { BadRequestError, userRegister } from '../services/api'
 
 export default defineComponent({
   name: 'UserRegistration',
@@ -85,23 +100,23 @@ export default defineComponent({
       },
       publicKeyArmored: '',
       clearSignArmored: '',
-    };
+    }
   },
   methods: {
     async submit(check?: boolean) {
       try {
         this.user = await userRegister(this, check)
-        this.errors.length = 0;
+        this.errors.length = 0
       } catch (e) {
         if (e instanceof BadRequestError) {
-          this.errors = e.errors;
+          this.errors = e.errors
         } else {
-          this.errors = [(e as Error).message];
+          this.errors = [(e as Error).message]
         }
       }
     },
   },
-});
+})
 </script>
 
 <style scoped lang="scss">

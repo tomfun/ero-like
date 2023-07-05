@@ -1,8 +1,8 @@
-import { DataSourceOptions } from 'typeorm';
+import { DataSourceOptions } from 'typeorm'
 
-import * as migrations from './migration';
-import { entities } from './entity';
-import { PgSchema } from './pg.schema';
+import * as migrations from './migration'
+import { entities } from './entity'
+import { PgSchema } from './pg.schema'
 
 export const config = (config: PgSchema): DataSourceOptions => ({
   type: 'postgres',
@@ -20,4 +20,4 @@ export const config = (config: PgSchema): DataSourceOptions => ({
   //   migrationsDir: 'migration',
   //   subscribersDir: 'src/subscriber',
   // },
-});
+})

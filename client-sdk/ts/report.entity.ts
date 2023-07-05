@@ -1,14 +1,13 @@
-import { SignatureEntity } from './signature.entity';
-import { UserEntity } from './user.entity';
+import { SignatureEntity } from './signature.entity'
 
 export class ReportDataSubstanceBodyPayload {
-  timeSecond: number;
+  timeSecond: number
 
-  namePsychonautWikiOrg: string;
+  namePsychonautWikiOrg: string
 
-  dose: number;
+  dose: number
 
-  doseUnit: string;
+  doseUnit: string
 
   // activeSubstance
   // todo: array
@@ -16,56 +15,56 @@ export class ReportDataSubstanceBodyPayload {
   // coefficientToGram: number;
   // coefficientToGramActiveSubstancePsychonautWikiOrg: string;
 
-  routeOfAdministration: string;
+  routeOfAdministration: string
 
-  surePercent: number;
+  surePercent: number
 }
 
 export class ReportDataUserBodyPayload {
-  ageYear: number;
+  ageYear: number
 
-  isMale: number;
+  isMale: number
 
-  heightMeter: number;
+  heightMeter: number
 
-  weightGram: number;
+  weightGram: number
 
-  country: string;
+  country: string
 }
 
 export class ReportDataTimeLineReportBodyPayload {
-  timeSecond: number;
+  timeSecond: number
 
-  report: string;
+  report: string
 }
 
 /**
  * Is not true class. It is not used. But type the same
  */
 export class ReportDataBodyPayload {
-  title: string;
+  title: string
 
-  substances: Array<ReportDataSubstanceBodyPayload>;
+  substances: Array<ReportDataSubstanceBodyPayload>
 
-  user: ReportDataUserBodyPayload;
+  user: ReportDataUserBodyPayload
 
-  background: string;
+  background: string
 
-  generalReport: string;
+  generalReport: string
 
-  timeLineReport: Array<ReportDataTimeLineReportBodyPayload>;
+  timeLineReport: Array<ReportDataTimeLineReportBodyPayload>
 
-  dateTimestamp: number;
+  dateTimestamp: number
   // todo: effect, tolerance
   // https://psychonautwiki.org/wiki/Experience_index
 }
 
 export class ReportEntity {
-  id: string;
+  id: string
 
-  signature: SignatureEntity;
+  signature: SignatureEntity
 
-  createdAt: Date;
+  createdAt: Date
 
-  d: ReportDataBodyPayload;
+  d: ReportDataBodyPayload
 }

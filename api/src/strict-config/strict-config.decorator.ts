@@ -1,7 +1,7 @@
-import { Inject } from '@nestjs/common';
-import { PARAMTYPES_METADATA } from '@nestjs/common/constants';
-import { PROPERTY_TYPES } from './strict-config.constants';
-import { getConfigToken } from './strict-config.utils';
+import { Inject } from '@nestjs/common'
+import { PARAMTYPES_METADATA } from '@nestjs/common/constants'
+import { PROPERTY_TYPES } from './strict-config.constants'
+import { getConfigToken } from './strict-config.utils'
 
 // todo: add type definition with types checking
 export const InjectConfig =
@@ -11,11 +11,11 @@ export const InjectConfig =
   (target, key, index) => {
     const type = key
       ? Reflect.getMetadata(PROPERTY_TYPES, target, key)
-      : Reflect.getMetadata(PARAMTYPES_METADATA, target, key)[index];
+      : Reflect.getMetadata(PARAMTYPES_METADATA, target, key)[index]
     if (!type) {
       throw new TypeError(
         `Wrong type for constructor parameter name. InjectConfig('${configPath}')`,
-      );
+      )
     }
-    return Inject(getConfigToken(configPath, type))(target, key, index);
-  };
+    return Inject(getConfigToken(configPath, type))(target, key, index)
+  }
