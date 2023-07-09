@@ -1,4 +1,4 @@
-FROM nginx
+FROM nginx:alpine3.17
 
 COPY docker/nginx/conf.d_default.conf /etc/nginx/templates/default.conf.template
 ENV NGINX_REVERSE_PROXY_API=api:3000
