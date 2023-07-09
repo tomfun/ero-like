@@ -60,6 +60,34 @@ export class GpgService {
     return isOutString ? chunks.join('') : Buffer.concat(chunks as Buffer[])
   }
 
+  public async version(): Promise<string> {
+    const errs = []
+    const chunks = [] as Array<Buffer | string>
+    const getSignature = spawn('gpg', ['--version'], {
+      stdio: 'pipe',
+      env: {
+        GNUPGHOME: '/no-where',
+        TZ: 'UTC',
+      },
+    })
+    const codePromise = new Promise((r, reject) => {
+      getSignature.on('close', r)
+      getSignature.on('error', reject)
+    })
+
+    getSignature.stderr.setEncoding('utf-8')
+    getSignature.stderr.on('data', (ch) => errs.push(ch))
+    getSignature.stdout.setEncoding('utf-8')
+    getSignature.stdout.on('data', (ch) => chunks.push(ch))
+
+    const code = await codePromise
+    this.logger.debug(`cp gpg --version finished code: ${code}`)
+    if (code !== 0) {
+      throw new Error('gpg version failed:' + errs.join(''))
+    }
+    return chunks.join('')
+  }
+
   async verify(verifyPayload: VerifyPayload) {
     const errs = []
     try {

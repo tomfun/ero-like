@@ -6,6 +6,8 @@ WORKDIR /ero-like/api
 
 CMD ["node", "--trace-warnings", "--enable-source-maps", "dist/main"]
 
+HEALTHCHECK --interval=600s --timeout=60s --retries=5 CMD wget --timeout=15 -q -O /dev/null --tries=1 http://localhost:$PORT/api/health || exit 1
+
 COPY api/package*.json ./
 COPY client-sdk /ero-like/client-sdk
 COPY client-config /ero-like/client-config
