@@ -27,6 +27,12 @@ import metaManager from './metaManager'
 import router from './router'
 import store from './store'
 
+declare module 'vue' {
+  interface ComponentCustomProperties {
+    $store: typeof store
+  }
+}
+
 import englishMessages from './locales/en/messages.ftl'
 
 export const app = createApp(App)

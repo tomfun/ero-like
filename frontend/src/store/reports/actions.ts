@@ -2,8 +2,13 @@ import type { ActionContext } from 'vuex'
 import { get } from 'lodash-es'
 import type { FilterRecordPair } from '../../services/api'
 import api from '../../services/api'
-import type { Pagination, Report, Reports, State } from './state'
-import { PAGINATION, REPORTS } from './state'
+import type {
+  Pagination,
+  Report,
+  Reports,
+  ReportsModuleState,
+} from './reportsModuleState'
+import { PAGINATION, REPORTS } from './reportsModuleState'
 import { ADD_DATA, SET_PAGINATION, SET_LOADING } from './mutations'
 
 export const FETCH_REPORTS = 'load_reports'
@@ -202,7 +207,7 @@ let fetchReportsConsistentlyPromiseCallCount = 0
 
 export default {
   async [FETCH_REPORTS](
-    { commit, state }: ActionContext<State, unknown>,
+    { commit, state }: ActionContext<ReportsModuleState, unknown>,
     desired: Omit<Pagination, 'viewIds' | 'ids'>,
   ) {
     commit(SET_LOADING, true)

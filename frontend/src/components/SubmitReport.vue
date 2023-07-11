@@ -76,7 +76,12 @@
       </Message>
     </template>
     <Panel header="Report signature" toggleable :collapsed="step !== 'signing'">
-      <ContentSignature v-if="validJson" :content="validJson" />
+      <ContentSignature
+        v-if="validJson"
+        :content="validJson"
+        :labelFor="id('clearSignArmored')"
+        label-text="Signed report"
+      />
     </Panel>
     <div class="float-label-spacing">
       <div class="p-float-label p-float-label-shift">

@@ -1,8 +1,8 @@
-import state from './reportsModuleState'
+import state from './gpgToolsModuleState'
 import actions from './actions'
 import mutations from './mutations'
 
-export const REPORTS_MODULE = 'reports'
+export const GPG_TOOLS_MODULE = 'gpg-tools' as const
 
 export default {
   namespaced: true,
@@ -11,4 +11,4 @@ export default {
   mutations,
 }
 
-export * from './reportsModuleState'
+export * from './gpgToolsModuleState'

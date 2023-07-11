@@ -24,52 +24,67 @@ app_terms_of_use = Terms of Use Agreement
 app_add_translations = Add translations
 user_registration = User Registration
 public_key_label = Public key (gpg public key block)
-public_key_placeholder = 
-  -----BEGIN PGP PUBLIC KEY BLOCK-----
-
-  mQINBF//CqwBEADQ622oqnAs9qFAH8sM0rXo+U8BOg95G8/16awsPsOPjdV1kxNs
-  •••
-    •
-    •
-    •
-  •••
-  =O9gO
-  -----END PGP PUBLIC KEY BLOCK-----
 public_key_warning = ! This information is public! When you upload your public key it's irreversible
 how_to_get_keys = How to get keys
-how_to_get_keys_details =
-  You need to know id of key or user:<br>
-  <code>gpg --list-keys</code><br>
-  <a href="https://docs.github.com/en/authentication/managing-commit-signature-verification/checking-for-existing-gpg-keys">
-  Detailed instructions </a>.
-  If you <a
+how_to_get_keys_details_list =
+  <b>List keys.</b> You need to know id of key or user to export it, full list of created keys (users
+  associated to a key) you may see with:<br>
+how_to_get_keys_details_list_instructions =
+  It may shows empty list if yuo don't have any yet (you need create it, see lower).
+  Or it can be big list:<br/>
+  <code>
+  /home/tomfun/.gnupg/pubring.kbx<br/>
+  -------------------------------<br/>
+  sec   rsa4096/AAE6AD94022ABBF1 2022-07-25 [SC]<br/>
+  05F9ED8812AA8CD52A716B24AAE6AD94022ABBF1<br/>
+  uid                 [ultimate] tomfun<br/>
+  uid                 [ultimate] fakeidentityWithoutEmail<br/>
+  uid                 [ultimate] keep (it) secret &lt;some@example.com><br/>
+  ssb   rsa4096/9E13AD316FB3A47D 2022-07-25 [E]
+  </code><br/>
+  <b>Copy username</b>. Here <i>fakeidentityWithoutEmail</i> is good candidate to use. Copy your &lt;user> and use with the next export command
+how_to_get_keys_details_create =
+  <b>If</b> you <a
     href="https://docs.github.com/en/authentication/managing-commit-signature-verification/generating-a-new-gpg-key">
   don't have yet keys you can
-  <b>create</b></a> them. After you have decided which user to use you need to print you public keys and user data:
+  <b>create</b></a> them:
+how_to_get_keys_details_export =
+  <b>Print you public keys</b> for a user you have decided to use &lt;user>:
   <br>
   <code>gpg --armor --export </code>
-  <b>$user</b><br>
+  <i>$user</i><br>
+  For example if your user is "<code>user</code>":<br>
+  <code>gpg --armor --export user</code><br>
   For example if your key is <code>DD45FA4DC50F85F1</code>:<br>
   <code>gpg --armor --export DD45FA4DC50F85F1</code>
-  <br> For example if your user is "<code>user</code>":<br>
-  <code>gpg --armor --export user</code><br>
-  After that you have to select all text result, copy, and paste it in the field above. <br>
-how_to_set_public_user = How to set public user
+  After that you have to select all text result with <br/><code>
+  -----BEGIN PGP PUBLIC<br/> .... <br/>...END PGP PUBLIC KEY BLOCK-----<code>
+how_to_get_keys_details_copy =
+  <b>then copy, and paste</b> it in the field "Public key", it is above. <br>
+  <a href="https://docs.github.com/en/authentication/managing-commit-signature-verification/checking-for-existing-gpg-keys">
+    Detailed instructions </a>.
+how_to_set_public_user = How to filter out exposed information
 how_to_set_public_user_details =
-  gpg and ero-like needs username. However we don't need email and there is no verification for a moment. You may add new name for your secret key and hide other names and emails. Edit your user names you can with:
+  When you export public key a lot of things exported: Sub keys, dates, signatures or even photo you set up for<br/>
+  gpg and ero-like need username. However we don't need email and there is no verification
+  for a moment. You should set email for a key only if you want others to reach you. Otherwise
+  it is better to hide it. <small>Remember, public key and your email is visible for everyone, so
+  it is good to hide it from spammers.</small> You may add new user identity (<code>uid</code>)
+  with name (and empty email) for your secret key and hide other names and emails (uid<i>s</i>).
+  Edit your user names you can with:
   <br>
   <code>gpg --edit-key </code><b>$user</b><br>
   <a
   href="https://github.com/tomfun/ero-like/blob/ff66d8a21689ae5393a65c0b9e8c990649c7a73b/README-gpg.md#edit-names-and-email">
-  more details here </a>. To filter out any user containing @ (email):<br
+  more details here </a>.<br/>
+  To filter out any user identity containing @ (email):<br
   ><code>gpg --export-filter keep-uid='uid!~@'
   --armor --export </code><b>$user</b><br>
   <a
-
   href="https://github.com/tomfun/ero-like/blob/ff66d8a21689ae5393a65c0b9e8c990649c7a73b/README-gpg.md#export-your-key">
   details here </a>.
 check_before_sending = 
-  ! Before sending information you may see all data you will send:<br/>
+  ! Before sending information you may review all data you will, example:<br/>
   <code>gpg --armor --export DD45FA4DC50F85F1 | gpg --list-packets</code><br/>
 signature_label = Signature (gpg clear-sign output)
 signature_placeholder = 
@@ -87,14 +102,7 @@ signature_placeholder =
   •••
   =B0/L
   -----END PGP SIGNATURE-----
-how_to_clear_sign = How do clear sign
-how_to_clear_sign_details =
-  You need to know public key id or your local user which was used to export public key. Follow for instructions for the another field [gpg public key]<br>
-  <code>gpg --list-keys</code><br>
-  <a href="https://docs.github.com/en/authentication/managing-commit-signature-verification/checking-for-existing-gpg-keys"> Detailed instructions </a>.
-  After you had decided which user to use you need to use it instead of $user:<br>
-  <code>echo -e 'I read and agree with all terms of use of ero-like and confirm my registration on ero-like' | gpg --clear-sign --disable-signer-uid --local-user </code><b>$user</b><code> - </code><br>
-  After that you have to select all text result, copy, and paste it in the field above.
+how_to_clear_sign = How to make a (cleartext) signature
 check_button = Check
 submit_button = Submit
 user_created = user created!
@@ -248,3 +256,11 @@ reports_page_keywords = ero-like, reports, storage, filters, digital signatures,
 submit_page_title = Submit Report
 submit_page_description = Submit your report on ero-like. Our submission form allows both simple and timelined reports. Define your substance, route of administration, dosage, quality, and timeline to share your experience. Note: Only registered users can submit reports.
 submit_page_keywords = ero-like, report submission, simple report, timelined report, substance, dosage, quality, timeline, register
+
+gpg_tool_linux = Linux
+gpg_tool_inner = This browser
+
+content_signature_linux_list = <p><b>List keys.</b> Choose the appropriate user (and/or key) you'd like to use to sign your data:</p>
+content_signature_linux_command = <p><b>Execute the following command.</b> Copy the code provided below and
+  <b>Paste</b> it into your terminal (console), replacing &lt;user> with the user/key you selected previously:</p>
+content_signature_linux_command_result = <b>Copy the result</b> and paste it in the
