@@ -13,3 +13,6 @@ name_on_pwo = Название на Psychonaut Wiki Org
 route_of_admin = Способ введения
 author_info = Информация о авторе
 background = О себе
+description = Описание
+home = Главная
+reports = Репорты
