@@ -56,8 +56,6 @@ const softwareToComponentMap = {
   [Software.Inner]: KeyForLinux, // todo
 }
 
-console.log(await generateKeys({ passphrase: '123456' }))
-
 export default defineComponent({
   name: 'PublicKey',
   components: {
@@ -102,6 +100,9 @@ export default defineComponent({
     },
     handleTabChange(event: TabViewClickEvent) {
       this.setSoftware(this.tabToSoftwareMap[event.index])
+    },
+    async generateKeys() {
+      console.log(await generateKeys({ passphrase: '123456' }))
     },
   },
 })

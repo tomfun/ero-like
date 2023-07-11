@@ -65,11 +65,9 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { BadRequestError, userRegister } from '../services/api'
-import { generateKeys } from '../services/openpgp'
 import ContentSignature from './ContentSignature.vue'
 import PublicKey from './UserRegistration/PublicKey.vue'
 
-console.log(await generateKeys({ passphrase: '123456' }))
 export default defineComponent({
   name: 'UserRegistration',
   components: {
