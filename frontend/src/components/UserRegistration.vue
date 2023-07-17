@@ -15,11 +15,25 @@
           id="clearSignArmored"
           cols="66"
           rows="16"
-          :placeholder="$t('signature_placeholder')"
+          placeholder="-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+I read and agree with all terms of use of ero-like and confirm my registration on ero-like
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEVUcfD9jeufsD1JVP3UX6TcUPhfEFAmC7Q2gACgkQ3UX6TcUP
+•••
+  •
+  •
+  •
+•••
+=B0/L
+-----END PGP SIGNATURE-----"
         />
         <ContentSignature
           content="I read and agree with all terms of use of ero-like and confirm my registration on ero-like"
           :labelText="$t('signature_label')"
+          @update:signature="clearSignArmored = $event"
           labelFor="clearSignArmored"
         />
       </div>

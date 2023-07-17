@@ -87,21 +87,6 @@ check_before_sending =
   ! Before sending information you may review all data you will, example:<br/>
   <code>gpg --armor --export DD45FA4DC50F85F1 | gpg --list-packets</code><br/>
 signature_label = Signature (gpg clear-sign output)
-signature_placeholder = 
-  -----BEGIN PGP SIGNED MESSAGE-----
-  Hash: SHA256
-  
-  I read and agree with all terms of use of ero-like and confirm my registration on ero-like
-  -----BEGIN PGP SIGNATURE-----
-  
-  iQIzBAABCgAdFiEEVUcfD9jeufsD1JVP3UX6TcUPhfEFAmC7Q2gACgkQ3UX6TcUP
-  •••
-    •
-    •
-    •
-  •••
-  =B0/L
-  -----END PGP SIGNATURE-----
 how_to_clear_sign = How to make a (cleartext) signature
 check_button = Check
 submit_button = Submit
@@ -264,3 +249,49 @@ content_signature_linux_list = <p><b>List keys.</b> Choose the appropriate user 
 content_signature_linux_command = <p><b>Execute the following command.</b> Copy the code provided below and
   <b>Paste</b> it into your terminal (console), replacing &lt;user> with the user/key you selected previously:</p>
 content_signature_linux_command_result = <b>Copy the result</b> and paste it in the
+load_inner_keys = Load previously saved keys file
+generate_inner_keys = Generate new keys and save them to file
+load = Load
+generate = Generate
+if_download_is_not_started_click_here = if download is not started shortly click here
+generating_secure_keys = Secure keys is being generated. Tt may need some time. In bad cases it could take a lot. Please wait
+load_secure_keys_parse_error = Secure keys is not recognised in the file
+load_no_keys_error = You must load file with previously saved keys. Keys are empty
+load_passphrase_small_error = Password for keys must be harder and longer
+load_no_passphrase_error = Password is empty
+load_feature = <p>This feature is designed to load your private key <b>into your browser</b>,
+  without transferring it to any server. However, to fully embrace a zero-trust approach
+  towards our application or browser, you should store your keys outside the browser.</p>
+field_password = Password for accessing keys
+field_password_help = When keys generated they will require this password for signing, encrypting and so on
+field_password_2 = Same password
+field_password_help = If you forget the password you can throw your keys. There is not password recovery!
+generating_storing = You should save your keys in a good and private place. And you should
+  store or remember password well. You can store keys on dropbox, but use it on your own
+  risk - the keys and password can be stolen or forged. Keys are your honest name, they
+  are your reputation. Cherish your name, build chains of trust, check, comment, and sign
+  with your reputation - with your keys.
+generating_storing_use_gpg = <p>While our browser-based key generator provides a
+      convenient way to generate and store keys, we strongly advise you to consider a more
+      secure method such as GnuPG. Browsers are not the safest place to store your keys
+      due to potential security risks.</p>
+  <p>Your keys are akin to your digital signature and are representative of your online
+    reputation. Treat them with the utmost care.</p>
+  <p>Some security guidelines suggest not storing your main private key on a device
+    connected to the internet. Instead, you could consider storing only sub-keys with a
+    short lifespan, which reduces the risks associated with key theft or forgery.</p>
+  <p>We recommend using GnuPG, a free and open-source software, for key generation,
+    storage, and management. It offers more options for configuration and ensures better
+    security for your keys. Also you may choose your nickname or email / xmpp and more...</p>
+  <p>Remember, the safety and integrity of your keys lie in your hands. Handle them wisely
+    to maintain your digital identity and reputation.</p>
+passwords_not_match = Passwords not match
+generate_after_save = After you have securely stored the keys and memorized the passphrase,
+  please load them into the browser through the form above
+sign = Sign
+ReadPrivateKeyOpenpgpError = There is problem while using loaded private key. It may be because of wrong or corrupted keys file. Technical error: { $message }
+DecryptPrivateKeyOpenpgpError = There is problem while using loaded private key. It may be because of wrong or corrupted keys file. Or you entered wrong password. Technical details: { $message }
+SignOpenpgpError = There is problem while creating signature. It may be because of expired or wrong key options. Or key not found. Technical details: { $message }
+UnknownError = Unknown error: { $message }
+sign_allowed = To get clear sign signature press "Sign"
+sign_you_need_keys = To sign with the keys in this browser you need load keys first

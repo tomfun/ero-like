@@ -80,6 +80,7 @@
         v-if="validJson"
         :content="validJson"
         :labelFor="id('clearSignArmored')"
+        @update:signature="clearSignArmored = $event"
         label-text="Signed report"
       />
     </Panel>
@@ -147,6 +148,7 @@ import { getter } from './InputMaskTime.vue'
 import CommonSubmitReport from './SubmitRepor/CommonSubmitReport.vue'
 import SubstanceItem from './SubstanceItem.vue'
 import TimeLineReportItem from './TimeLineReportItem.vue'
+import idMixin from './id.mixin'
 
 const STORAGE_KEY = 'report-alpha1'
 const TIME_FORMAT = 'short' as const
@@ -156,7 +158,18 @@ const TimeLineReportList = GenericOrderedList as typeof GenericOrderedList<
   typeof TimeLineReportItem
 >
 
+function newReport() {
+  return {
+    substances: [{ timeSecond: 0, namePsychonautWikiOrg: '' } as ReportSubstanceAlpha1],
+    timeLineReport: [{ timeSecond: 0, report: '' }],
+    background: '',
+    dateTimestamp: Math.round(Date.now() / 10000) * 10,
+    title: '',
+  }
+}
+
 export default defineComponent({
+  mixins: [idMixin],
   name: 'SubmitReport',
   components: {
     CommonSubmitReport,
@@ -173,9 +186,8 @@ export default defineComponent({
     } catch (e) {
       // ignore
     }
-    const reportData: ReportDataAlpha1 = storedReport || this.newReport()
+    const reportData: ReportDataAlpha1 = storedReport || newReport()
     return {
-      uid: Math.random().toString(27).slice(2),
       isDev: import.meta.env.DEV,
       reportData,
       simple: reportData.timeLineReport.length < 2,
@@ -201,20 +213,6 @@ export default defineComponent({
     },
   },
   methods: {
-    newReport() {
-      return {
-        substances: [
-          { timeSecond: 0, namePsychonautWikiOrg: '' } as ReportSubstanceAlpha1,
-        ],
-        timeLineReport: [{ timeSecond: 0, report: '' }],
-        background: '',
-        dateTimestamp: Math.round(Date.now() / 10000) * 10,
-        title: '',
-      }
-    },
-    id(id: string) {
-      return this.uid + id.toString()
-    },
     handleFormFill() {
       this.reportData.substances = [
         {
@@ -286,7 +284,7 @@ export default defineComponent({
       try {
         this.validJson = await reportSubmit(this.clearSignArmored)
         this.errors.length = 0
-        this.reportData = this.newReport()
+        this.reportData = newReport()
         try {
           localStorage.removeItem(STORAGE_KEY)
         } catch (e) {

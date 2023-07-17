@@ -1,4 +1,7 @@
 export const SOFTWARE = 'software' as const
+export const PUBLIC_KEY_ARMORED = 'publicKeyArmored' as const
+export const PRIVATE_KEY_ARMORED = 'privateKeyArmored' as const
+export const PASSPHRASE = 'passphrase' as const
 export enum Software {
   Linux = 'Linux',
   Inner = 'Inner',
@@ -13,6 +16,10 @@ export const ALL_SOFTWARE_REV = ALL_SOFTWARE.reduce(
 
 export interface GpgToolsModuleState {
   [SOFTWARE]: Software
+  [PUBLIC_KEY_ARMORED]: string | null
+  [PRIVATE_KEY_ARMORED]: string | null
+  revocationCertificate: string | null
+  [PASSPHRASE]: string
 }
 
 const NAMESPACE_PREFIX_LOCAL_STORAGE = 'gpg-tools'
@@ -31,6 +38,10 @@ const software: Software =
 
 const state: GpgToolsModuleState = {
   [SOFTWARE]: software,
+  [PUBLIC_KEY_ARMORED]: null,
+  [PRIVATE_KEY_ARMORED]: null,
+  revocationCertificate: null,
+  [PASSPHRASE]: '',
 }
 
 export default state

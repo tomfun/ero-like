@@ -9,6 +9,7 @@
     id="publicKeyArmored"
     name="publicKeyArmored"
     placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----
+
 mQINBF//CqwBEADQ622oqnAs9qFAH8sM0rXo+U8BOg95G8/16awsPsOPjdV1kxNs
 •••
   •
@@ -30,17 +31,17 @@ mQINBF//CqwBEADQ622oqnAs9qFAH8sM0rXo+U8BOg95G8/16awsPsOPjdV1kxNs
       v-for="(s, i) in tabToSoftwareMap"
       :key="i"
     >
-      <component :is="softwareToComponentMap[s]" />
+      <component :is="softwareToComponentMap[s]" @update:publicKey="setNewValue" />
     </TabPanel>
   </TabView>
 </template>
 
 <script lang="ts">
+import { enums } from 'openpgp'
 import TabPanel from 'primevue/tabpanel'
 import TabView from 'primevue/tabview'
 import type { TabViewClickEvent } from 'primevue/tabview'
-import { defineComponent } from 'vue'
-import { generateKeys } from '../../services/openpgp'
+import { defineComponent, markRaw } from 'vue'
 import {
   Software,
   ALL_SOFTWARE,
@@ -48,12 +49,14 @@ import {
   GPG_TOOLS_MODULE,
   SOFTWARE,
 } from '../../store/gpg-tools'
-import { SET_SOFTWARE } from '../../store/gpg-tools/actions'
+import { SET_SOFTWARE } from '../../store/gpg-tools/mutations'
 import KeyForLinux from './PublicKey/KeyForLinux.vue'
+import KeyForInner from './PublicKey/KeyForInner.vue'
+import publicKey = enums.publicKey
 
 const softwareToComponentMap = {
   [Software.Linux]: KeyForLinux,
-  [Software.Inner]: KeyForLinux, // todo
+  [Software.Inner]: KeyForInner,
 }
 
 export default defineComponent({
@@ -79,11 +82,19 @@ export default defineComponent({
       uid: Math.random().toString(27).slice(2),
       tabToSoftwareMap: ALL_SOFTWARE,
       softwareTabMap: ALL_SOFTWARE_REV,
-      softwareToComponentMap,
+      softwareToComponentMap: markRaw(softwareToComponentMap) as Readonly<
+        typeof softwareToComponentMap
+      >,
       Software,
     }
   },
   computed: {
+    publicKey() {
+      return publicKey
+    },
+    enums() {
+      return enums
+    },
     selectedSoftware() {
       return this.$store.state[GPG_TOOLS_MODULE][SOFTWARE]
     },
@@ -100,9 +111,6 @@ export default defineComponent({
     },
     handleTabChange(event: TabViewClickEvent) {
       this.setSoftware(this.tabToSoftwareMap[event.index])
-    },
-    async generateKeys() {
-      console.log(await generateKeys({ passphrase: '123456' }))
     },
   },
 })
