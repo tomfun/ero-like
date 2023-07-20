@@ -53,11 +53,13 @@
 <script lang="ts">
 import type { ReportTimeLineItemAlpha1 } from '../services/api'
 import { defineComponent } from 'vue'
+import idMixin from './id.mixin'
 import InputMaskTime, { type TimeFormat } from './InputMaskTime.vue'
 
 export type T = ReportTimeLineItemAlpha1
 
 export default defineComponent({
+  mixins: [idMixin],
   name: 'SubstanceItem',
   components: { InputMaskTime },
   props: {
@@ -90,15 +92,7 @@ export default defineComponent({
       return typeof item === 'object' && typeof item.timeSecond === 'number'
     },
   },
-  data() {
-    return {
-      uid: Math.random().toString(27).slice(2),
-    }
-  },
   methods: {
-    id(id: string) {
-      return this.uid + id.toString()
-    },
     setSingleValue(key: keyof T, value: T[keyof T]) {
       this.setNewValue({ [key]: value })
     },

@@ -4,6 +4,7 @@ import {
   PASSPHRASE,
   PRIVATE_KEY_ARMORED,
   PUBLIC_KEY_ARMORED,
+  NAMESPACE_PREFIX_LOCAL_STORAGE,
 } from './gpgToolsModuleState'
 
 export const SET_SOFTWARE = 'set_pagination' as const
@@ -26,5 +27,13 @@ export default {
   },
   [SET_SOFTWARE](state: GpgToolsModuleState, software: Software) {
     state[SOFTWARE] = software
+    try {
+      localStorage.setItem(
+        [NAMESPACE_PREFIX_LOCAL_STORAGE, 'Software'].join('.'),
+        software,
+      )
+    } catch (e) {
+      //
+    }
   },
 }

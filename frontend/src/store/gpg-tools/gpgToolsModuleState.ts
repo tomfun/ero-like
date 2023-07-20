@@ -22,7 +22,7 @@ export interface GpgToolsModuleState {
   [PASSPHRASE]: string
 }
 
-const NAMESPACE_PREFIX_LOCAL_STORAGE = 'gpg-tools'
+export const NAMESPACE_PREFIX_LOCAL_STORAGE = 'gpg-tools'
 let softwareRaw: string | null = null
 try {
   softwareRaw = localStorage.getItem(

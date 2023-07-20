@@ -37,7 +37,6 @@ mQINBF//CqwBEADQ622oqnAs9qFAH8sM0rXo+U8BOg95G8/16awsPsOPjdV1kxNs
 </template>
 
 <script lang="ts">
-import { enums } from 'openpgp'
 import TabPanel from 'primevue/tabpanel'
 import TabView from 'primevue/tabview'
 import type { TabViewClickEvent } from 'primevue/tabview'
@@ -52,7 +51,6 @@ import {
 import { SET_SOFTWARE } from '../../store/gpg-tools/mutations'
 import KeyForLinux from './PublicKey/KeyForLinux.vue'
 import KeyForInner from './PublicKey/KeyForInner.vue'
-import publicKey = enums.publicKey
 
 const softwareToComponentMap = {
   [Software.Linux]: KeyForLinux,
@@ -79,7 +77,6 @@ export default defineComponent({
   },
   data() {
     return {
-      uid: Math.random().toString(27).slice(2),
       tabToSoftwareMap: ALL_SOFTWARE,
       softwareTabMap: ALL_SOFTWARE_REV,
       softwareToComponentMap: markRaw(softwareToComponentMap) as Readonly<
@@ -89,12 +86,6 @@ export default defineComponent({
     }
   },
   computed: {
-    publicKey() {
-      return publicKey
-    },
-    enums() {
-      return enums
-    },
     selectedSoftware() {
       return this.$store.state[GPG_TOOLS_MODULE][SOFTWARE]
     },
@@ -102,9 +93,6 @@ export default defineComponent({
   methods: {
     setSoftware(v: Software) {
       return this.$store.commit([GPG_TOOLS_MODULE, SET_SOFTWARE].join('/'), v)
-    },
-    id(id: string) {
-      return this.uid + id.toString()
     },
     setNewValue(value: string) {
       this.$emit('update:modelValue', value)

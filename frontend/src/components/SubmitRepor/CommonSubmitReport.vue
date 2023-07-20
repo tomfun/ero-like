@@ -47,6 +47,7 @@ import { defineComponent, type PropType } from 'vue'
 import { useFormat } from '../../format.js/useFormat'
 import type { ReportDataAlpha1, ReportSubstanceAlpha1 } from '../../services/api'
 import GenericOrderedList from '../GenericOrderedList.vue'
+import idMixin from '../id.mixin'
 import type { TimeFormat } from '../InputMaskTime.vue'
 import SubstanceItem from '../SubstanceItem.vue'
 
@@ -56,6 +57,7 @@ const SubstanceList = GenericOrderedList as typeof GenericOrderedList<
 >
 
 export default defineComponent({
+  mixins: [idMixin],
   name: 'CommonSubmitReport',
   components: {
     SubstanceList,
@@ -82,11 +84,6 @@ export default defineComponent({
       dateFormatShort,
     }
   },
-  data() {
-    return {
-      uid: Math.random().toString(27).slice(2),
-    }
-  },
   computed: {
     SubstanceItem() {
       return SubstanceItem
@@ -101,9 +98,6 @@ export default defineComponent({
     },
   },
   methods: {
-    id(id: string) {
-      return this.uid + id.toString()
-    },
     setSingleValue(
       key: keyof ReportDataAlpha1,
       value: ReportDataAlpha1[keyof ReportDataAlpha1],
