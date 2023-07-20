@@ -5,25 +5,7 @@
     </h1>
     <div class="formgrid grid">
       <div class="field col">
-        <label for="publicKeyArmored">{{ $t('public_key_label') }}</label>
-        <Textarea
-          v-model="publicKeyArmored"
-          cols="66"
-          :autoResize="true"
-          id="publicKeyArmored"
-          name="publicKeyArmored"
-          :placeholder="$t('public_key_placeholder')"
-        />
-        <p>
-          {{ $t('public_key_warning') }}
-        </p>
-        <Panel :header="$t('how_to_get_keys')" toggleable :collapsed="true">
-          <p class="m-0" v-html="$t('how_to_get_keys_details')"></p>
-        </Panel>
-        <Panel :header="$t('how_to_set_public_user')" toggleable :collapsed="true">
-          <p class="m-0" v-html="$t('how_to_set_public_user_details')"></p>
-        </Panel>
-        <p v-html="$t('check_before_sending')"></p>
+        <PublicKey v-model="publicKeyArmored" />
       </div>
       <div class="field col">
         <label for="clearSignArmored">{{ $t('signature_label') }}</label>
@@ -32,12 +14,28 @@
           name="clearSignArmored"
           id="clearSignArmored"
           cols="66"
-          :auto-resize="true"
-          :placeholder="$t('signature_placeholder')"
+          rows="16"
+          placeholder="-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+I read and agree with all terms of use of ero-like and confirm my registration on ero-like
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEVUcfD9jeufsD1JVP3UX6TcUPhfEFAmC7Q2gACgkQ3UX6TcUP
+•••
+  •
+  •
+  •
+•••
+=B0/L
+-----END PGP SIGNATURE-----"
         />
-        <Panel :header="$t('how_to_clear_sign')" toggleable :collapsed="true">
-          <p class="m-0" v-html="$t('how_to_clear_sign_details')"></p>
-        </Panel>
+        <ContentSignature
+          content="I read and agree with all terms of use of ero-like and confirm my registration on ero-like"
+          :labelText="$t('signature_label')"
+          @update:signature="clearSignArmored = $event"
+          labelFor="clearSignArmored"
+        />
       </div>
       <div class="col-12">
         <div class="card flex justify-content-center flex-wrap gap-3">
@@ -81,9 +79,15 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { BadRequestError, userRegister } from '../services/api'
+import ContentSignature from './ContentSignature.vue'
+import PublicKey from './UserRegistration/PublicKey.vue'
 
 export default defineComponent({
   name: 'UserRegistration',
+  components: {
+    ContentSignature,
+    PublicKey,
+  },
   data() {
     return {
       errors: [] as string[],
@@ -120,6 +124,10 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
+.card div {
+  margin: 0.1em;
+}
+form:deep(#publicKeyArmored, #clearSignArmored),
 textarea {
   min-width: 20em;
   width: 100%;

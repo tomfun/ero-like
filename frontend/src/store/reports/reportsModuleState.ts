@@ -27,7 +27,7 @@ export interface IsLoading {
   isLoading: boolean
 }
 
-export interface State {
+export interface ReportsModuleState {
   [REPORTS]: Reports
   [PAGINATION]: Pagination
   [IS_LOADING]: IsLoading
@@ -67,4 +67,4 @@ export default {
   [IS_LOADING]: {
     isLoading: false,
   },
-} as State
+} as ReportsModuleState

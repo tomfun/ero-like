@@ -1,4 +1,4 @@
-import state from './state'
+import state from './reportsModuleState'
 import actions from './actions'
 import mutations from './mutations'
 
@@ -11,4 +11,4 @@ export default {
   mutations,
 }
 
-export * from './state'
+export * from './reportsModuleState'

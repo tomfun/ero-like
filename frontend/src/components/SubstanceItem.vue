@@ -150,6 +150,7 @@
 import type { ReportSubstanceAlpha1, PsychonautWikiSubstance } from '../services/api'
 import { defineComponent } from 'vue'
 import { fetchPsychonautWikiSubstanceList } from '../services/api'
+import idMixin from './id.mixin'
 import InputMaskTime, { type TimeFormat } from './InputMaskTime.vue'
 import SubstanceItemView from './SubstanceItemView.vue'
 
@@ -157,6 +158,7 @@ export type T = Partial<ReportSubstanceAlpha1> &
   Pick<ReportSubstanceAlpha1, 'timeSecond' | 'namePsychonautWikiOrg'>
 
 export default defineComponent({
+  mixins: [idMixin],
   name: 'SubstanceItem',
   components: { SubstanceItemView, InputMaskTime },
   props: {
@@ -207,7 +209,6 @@ export default defineComponent({
       isTimeValid: this.isFirst
         ? this.modelValue.timeSecond <= 0
         : this.modelValue.timeSecond > 0 || this.modelValue.namePsychonautWikiOrg, // :(
-      uid: Math.random().toString(27).slice(2),
       suggestions: builtInSubstances,
       psychonautWikiSubstanceList: builtInSubstances,
       doseUnitOptions: ['mg', 'µg', 'g'],
@@ -242,9 +243,6 @@ export default defineComponent({
     },
   },
   methods: {
-    id(id: string) {
-      return this.uid + id.toString()
-    },
     setSingleValue(
       key: keyof ReportSubstanceAlpha1,
       value: ReportSubstanceAlpha1[keyof ReportSubstanceAlpha1],

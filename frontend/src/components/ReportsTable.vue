@@ -138,13 +138,12 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { mapActions, mapState } from 'vuex'
+import { mapActions } from 'vuex'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { debounce, get } from 'lodash-es'
 import { useFormat } from '../format.js/useFormat'
-import type { State as ReportsState } from '../store/reports'
-import type { Pagination } from '../store/reports'
+import type { Pagination, Reports } from '../store/reports'
 import { IS_LOADING, PAGINATION, REPORTS, REPORTS_MODULE } from '../store/reports'
 import { FETCH_REPORTS } from '../store/reports/actions'
 import type { ReportFilters, Report } from '../services/api'
@@ -165,11 +164,6 @@ type ModelReportFilters = ReportFilters & {
   'signature.user.nick': {
     suggestions: string[]
   }
-}
-
-type ReportsTableThis = {
-  pagination: Pagination
-  reports: Report[]
 }
 
 export default defineComponent({
@@ -367,35 +361,34 @@ export default defineComponent({
     },
   },
   computed: {
-    ...mapState(REPORTS_MODULE, {
-      isLoading: IS_LOADING,
-      pagination: PAGINATION,
-      data: REPORTS,
-    }),
-    ...mapState(REPORTS_MODULE, {
-      reports(state: unknown): Report[] {
-        const { data } = state as ReportsState
-        return (this as unknown as ReportsTableThis).pagination.viewIds.map(
-          (id) => data[id],
-        )
-      },
-      maxSubstanceTimeSecond() {
-        const { reports } = this as unknown as ReportsTableThis
-        // const { reports } = (this as unknown as { reports: Report[] });
-        return reports.reduce((max, r) => {
-          const times = r.d.substances
-            .map((s) => s.timeSecond)
-            .filter((t) => !Number.isNaN(t) && Number.isFinite(t))
-          //  because tslib update
-          // eslint-disable-next-line prefer-spread
-          const localMax = Math.max.apply(Math, times)
-          return Math.max(max, localMax)
-        }, 1)
-      },
-      encodedQuery(): string {
-        return (this as unknown as ReportsTableThis).pagination.encodedQuery
-      },
-    }),
+    isLoading(): boolean {
+      return this.$store.state[REPORTS_MODULE][IS_LOADING].isLoading
+    },
+    data(): Reports {
+      return this.$store.state[REPORTS_MODULE][REPORTS]
+    },
+    pagination(): Pagination {
+      return this.$store.state[REPORTS_MODULE][PAGINATION]
+    },
+    reports(): Report[] {
+      const { data } = this.$store.state[REPORTS_MODULE]
+      return this.pagination.viewIds.map((id) => data[id])
+    },
+    maxSubstanceTimeSecond() {
+      const { reports } = this
+      return reports.reduce((max, r) => {
+        const times = r.d.substances
+          .map((s) => s.timeSecond)
+          .filter((t) => !Number.isNaN(t) && Number.isFinite(t))
+        //  because tslib update
+        // eslint-disable-next-line prefer-spread
+        const localMax = Math.max.apply(Math, times)
+        return Math.max(max, localMax)
+      }, 1)
+    },
+    encodedQuery(): string {
+      return this.pagination.encodedQuery
+    },
   },
   watch: {
     encodedQuery() {

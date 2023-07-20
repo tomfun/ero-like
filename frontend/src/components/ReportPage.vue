@@ -54,8 +54,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { useMeta } from 'vue-meta'
-import { mapActions, mapState } from 'vuex'
-import type { State as ReportsState } from '../store/reports'
+import { mapActions } from 'vuex'
 import { REPORTS_MODULE } from '../store/reports'
 import { FETCH_REPORT } from '../store/reports/actions'
 import type { Report } from '../services/api'
@@ -109,12 +108,10 @@ export default defineComponent({
     reportId() {
       return this.$route.params.id as string
     },
-    ...mapState(REPORTS_MODULE, {
-      report(state: unknown): Report {
-        const { data } = state as ReportsState
-        return data[(this as any).reportId] || ({} as Report)
-      },
-    }),
+    report(): Report {
+      const { data } = this.$store.state[REPORTS_MODULE]
+      return data[this.reportId] || ({} as Report)
+    },
     isLoading(): boolean {
       return this.loading !== 0
     },

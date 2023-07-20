@@ -20,8 +20,10 @@
 
 <script lang="ts">
 import { defineComponent, type ComponentPublicInstance } from 'vue'
+import idMixin from './id.mixin'
 
 export default defineComponent({
+  mixins: [idMixin],
   name: 'CopyText',
   props: {
     content: {
@@ -40,15 +42,11 @@ export default defineComponent({
   },
   data() {
     return {
-      uid: Math.random().toString(27).slice(2),
       copied: null as string | null,
       tooltipText: '',
     }
   },
   methods: {
-    id(id: string) {
-      return this.uid + id.toString()
-    },
     notifyCopied() {
       this.$emit('copied')
     },
